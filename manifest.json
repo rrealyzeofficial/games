@@ -1,0 +1,10 @@
+{
+  "name": "REALYZE!!",
+  "short_name": "REALYZE!!",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#ff5f9e",
+  "orientation": "landscape",
+  "icons": []
+}
