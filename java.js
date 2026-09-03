@@ -19,6 +19,12 @@ const $ = (id) => document.getElementById(id);
 (function initMobileDesktopCanvas() {
     const isMobile = () => window.matchMedia("(max-width: 900px)").matches;
 
+    function applyMobileDesktopScale() {
+        if (!isMobile()) {
+            document.body?.classList.remove("realyze-mobile-pc");
+            document.body?.style.removeProperty("--realyze-mobile-scale");
+            return;
+        }
 
         const sw = Math.max(1, Number(window.screen?.width || window.innerWidth));
         const sh = Math.max(1, Number(window.screen?.height || window.innerHeight));
@@ -3387,19 +3393,6 @@ $("characterBack")?.addEventListener("click", () => {
 });
 
 
-$("friendsButton").addEventListener(
-    "click",
-    () => {
-
-        showLobbyToast(
-            "FRIENDS",
-            "Friend system is coming soon."
-        );
-
-    }
-);
-
-
 $("rankButton").addEventListener(
     "click",
     () => {
@@ -5966,3 +5959,385 @@ document.addEventListener(
 
 
 })();
+/* =========================================================
+   FRIEND SYSTEM
+========================================================= */
+
+function normalizeFriendData(user) {
+    if (!user) return;
+    if (!Array.isArray(user.friends)) user.friends = [];
+    if (!Array.isArray(user.friendRequests)) user.friendRequests = [];
+    if (!Array.isArray(user.sentFriendRequests)) user.sentFriendRequests = [];
+    if (!user.friendChats || typeof user.friendChats !== "object") user.friendChats = {};
+}
+
+function getFriendRequestUser(username) {
+    return getFriendUser(username);
+}
+
+function hasFriendRequest(from, to) {
+    normalizeFriendData(to);
+    return to.friendRequests.includes(from.username);
+}
+
+function hasSentFriendRequest(from, to) {
+    normalizeFriendData(from);
+    return from.sentFriendRequests.includes(to.username);
+}
+
+function sendFriendRequest(from, to) {
+    if (!from || !to || from.username === to.username) return false;
+    normalizeFriendData(from);
+    normalizeFriendData(to);
+    if (from.friends.includes(to.username)) return false;
+    if (hasSentFriendRequest(from, to) || hasFriendRequest(from, to)) return false;
+    from.sentFriendRequests.push(to.username);
+    to.friendRequests.push(from.username);
+    const users = getUsers();
+    users[from.username] = from;
+    users[to.username] = to;
+    saveUsers(users);
+    return true;
+}
+
+function acceptFriendRequest(username) {
+    const me = getCurrentUser();
+    const other = getFriendRequestUser(username);
+    if (!me || !other) return false;
+    normalizeFriendData(me);
+    normalizeFriendData(other);
+    if (!me.friendRequests.includes(username)) return false;
+
+    me.friendRequests = me.friendRequests.filter(name => name !== username);
+    other.sentFriendRequests = other.sentFriendRequests.filter(name => name !== me.username);
+    if (!me.friends.includes(username)) me.friends.push(username);
+    if (!other.friends.includes(me.username)) other.friends.push(me.username);
+
+    const users = getUsers();
+    users[me.username] = me;
+    users[other.username] = other;
+    saveUsers(users);
+    return true;
+}
+
+function declineFriendRequest(username) {
+    const me = getCurrentUser();
+    const other = getFriendRequestUser(username);
+    if (!me || !other) return false;
+    normalizeFriendData(me);
+    normalizeFriendData(other);
+    me.friendRequests = me.friendRequests.filter(name => name !== username);
+    other.sentFriendRequests = other.sentFriendRequests.filter(name => name !== me.username);
+    const users = getUsers();
+    users[me.username] = me;
+    users[other.username] = other;
+    saveUsers(users);
+    return true;
+}
+
+function cancelFriendRequest(username) {
+    const me = getCurrentUser();
+    const other = getFriendRequestUser(username);
+    if (!me || !other) return false;
+    normalizeFriendData(me);
+    normalizeFriendData(other);
+    me.sentFriendRequests = me.sentFriendRequests.filter(name => name !== username);
+    other.friendRequests = other.friendRequests.filter(name => name !== me.username);
+    const users = getUsers();
+    users[me.username] = me;
+    users[other.username] = other;
+    saveUsers(users);
+    return true;
+}
+
+function getFriendUser(username) {
+    const users = getUsers();
+    return users[username] || null;
+}
+
+
+let activeFriendChatUser = null;
+
+function renderFriends() {
+    const user = getCurrentUser();
+    if (!user) return;
+    normalizeFriendData(user);
+
+    const list = $("friendsList");
+    const count = $("friendCount");
+    const listCount = $("friendListCount");
+    if (!list) return;
+
+    const friends = user.friends
+        .map(name => getFriendUser(name))
+        .filter(Boolean);
+    const requests = user.friendRequests
+        .map(name => getFriendRequestUser(name))
+        .filter(Boolean);
+
+    if (count) count.textContent = friends.length;
+    if (listCount) listCount.textContent = friends.length;
+
+    const requestsHtml = requests.length ? `
+        <section class="friend-requests-block">
+            <div class="friend-requests-title">
+                <span>FRIEND REQUESTS</span>
+                <strong>${requests.length}</strong>
+            </div>
+            <div class="friend-request-list">
+                ${requests.map(friend => `
+                    <article class="friend-item friend-request-item">
+                        <div class="friend-avatar">${String(friend.username || "?").charAt(0).toUpperCase()}</div>
+                        <div class="friend-player-info">
+                            <strong>${escapeFriendHtml(friend.username)}</strong>
+                            <span>WANTS TO BE YOUR FRIEND</span>
+                        </div>
+                        <div class="friend-request-actions">
+                            <button class="friend-accept-button" type="button" data-accept-user="${escapeFriendAttr(friend.username)}">ACCEPT</button>
+                            <button class="friend-decline-button" type="button" data-decline-user="${escapeFriendAttr(friend.username)}">DECLINE</button>
+                        </div>
+                    </article>
+                `).join("")}
+            </div>
+        </section>
+    ` : "";
+
+    const friendsHtml = friends.length ? friends.map(friend => `
+        <article class="friend-item">
+            <div class="friend-avatar">${String(friend.username || "?").charAt(0).toUpperCase()}</div>
+            <div class="friend-player-info">
+                <strong>${escapeFriendHtml(friend.username)}</strong>
+                <span>REALYZE!! PLAYER</span>
+            </div>
+            <button class="friend-chat-button" type="button" data-chat-user="${escapeFriendAttr(friend.username)}">CHAT</button>
+        </article>
+    `).join("") : '<div class="friends-empty">Bạn chưa có bạn bè.<br>Hãy tìm ID Name để kết bạn.</div>';
+
+    list.innerHTML = requestsHtml + friendsHtml;
+
+    list.querySelectorAll("[data-chat-user]").forEach(button => {
+        button.addEventListener("click", () => openFriendChat(button.dataset.chatUser));
+    });
+    list.querySelectorAll("[data-accept-user]").forEach(button => {
+        button.addEventListener("click", () => {
+            if (acceptFriendRequest(button.dataset.acceptUser)) {
+                renderFriends();
+                showLobbyToast("FRIENDS", `Đã chấp nhận ${button.dataset.acceptUser}.`);
+            }
+        });
+    });
+    list.querySelectorAll("[data-decline-user]").forEach(button => {
+        button.addEventListener("click", () => {
+            if (declineFriendRequest(button.dataset.declineUser)) {
+                renderFriends();
+                showLobbyToast("FRIENDS", `Đã từ chối lời mời từ ${button.dataset.declineUser}.`);
+            }
+        });
+    });
+}
+
+function escapeFriendHtml(value) {
+    return String(value ?? "").replace(/[&<>'"]/g, c => ({
+        "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#39;", '"': "&quot;"
+    }[c]));
+}
+
+function escapeFriendAttr(value) {
+    return escapeFriendHtml(value);
+}
+
+function searchFriends() {
+    const user = getCurrentUser();
+    const input = $("friendSearchInput");
+    const results = $("friendSearchResults");
+    if (!user || !input || !results) return;
+
+    const query = input.value.trim();
+    if (!query) {
+        results.innerHTML = '<div class="friends-empty">Nhập ID Name để tìm người chơi.</div>';
+        return;
+    }
+
+    const users = getUsers();
+    const target = users[query];
+
+    if (!target) {
+        results.innerHTML = '<div class="friends-empty">Không tìm thấy ID Name này.</div>';
+        return;
+    }
+
+    if (target.username === user.username) {
+        results.innerHTML = '<div class="friends-empty">Đây là ID Name của bạn.</div>';
+        return;
+    }
+
+    normalizeFriendData(user);
+    const alreadyFriend = user.friends.includes(target.username);
+    const incoming = user.friendRequests.includes(target.username);
+    const outgoing = user.sentFriendRequests.includes(target.username);
+
+    let action = '';
+    if (alreadyFriend) {
+        action = '<button class="friend-chat-button" type="button" id="searchResultChat">CHAT</button>';
+    } else if (incoming) {
+        action = '<button class="friend-accept-button" type="button" id="searchResultAccept">ACCEPT</button>';
+    } else if (outgoing) {
+        action = '<button class="friend-cancel-button" type="button" id="searchResultCancel">CANCEL REQUEST</button>';
+    } else {
+        action = '<button class="friend-add-button" type="button" id="searchResultAdd">ADD FRIEND</button>';
+    }
+
+    results.innerHTML = `
+        <article class="friend-search-result">
+            <div class="friend-avatar">${String(target.username).charAt(0).toUpperCase()}</div>
+            <div class="friend-player-info">
+                <strong>${escapeFriendHtml(target.username)}</strong>
+                <span>${alreadyFriend ? 'FRIEND' : incoming ? 'WANTS TO BE YOUR FRIEND' : outgoing ? 'REQUEST SENT' : 'REALYZE!! PLAYER'}</span>
+            </div>
+            <div class="friend-search-action">${action}</div>
+        </article>
+    `;
+
+    $("searchResultChat")?.addEventListener("click", () => openFriendChat(target.username));
+    $("searchResultAccept")?.addEventListener("click", () => {
+        if (acceptFriendRequest(target.username)) {
+            renderFriends(); searchFriends();
+            showLobbyToast("FRIENDS", `Đã chấp nhận ${target.username}.`);
+        }
+    });
+    $("searchResultCancel")?.addEventListener("click", () => {
+        if (cancelFriendRequest(target.username)) {
+            searchFriends();
+            showLobbyToast("FRIENDS", `Đã huỷ lời mời tới ${target.username}.`);
+        }
+    });
+    $("searchResultAdd")?.addEventListener("click", () => {
+        const me = getCurrentUser();
+        const other = getFriendUser(target.username);
+        if (!me || !other) return;
+        if (sendFriendRequest(me, other)) {
+            searchFriends();
+            showLobbyToast("FRIENDS", `Đã gửi lời mời kết bạn tới ${target.username}.`);
+        }
+    });
+}
+
+function openFriendChat(username) {
+    const me = getCurrentUser();
+    const friend = getFriendUser(username);
+    if (!me || !friend) return;
+    normalizeFriendData(me);
+
+    if (!me.friends.includes(username)) {
+        showLobbyToast("FRIENDS", "Bạn chỉ có thể chat với bạn bè.");
+        return;
+    }
+
+    activeFriendChatUser = username;
+    const overlay = $("friendChatOverlay");
+    if (!overlay) return;
+    $("friendChatName").textContent = username;
+    renderFriendChatMessages();
+    overlay.classList.remove("hidden");
+    overlay.setAttribute("aria-hidden", "false");
+    setTimeout(() => $("friendChatInput")?.focus(), 0);
+}
+
+function closeFriendChat() {
+    activeFriendChatUser = null;
+    const overlay = $("friendChatOverlay");
+    if (!overlay) return;
+    overlay.classList.add("hidden");
+    overlay.setAttribute("aria-hidden", "true");
+}
+
+function getFriendChatKey(a, b) {
+    return [a, b].sort().join("__");
+}
+
+function renderFriendChatMessages() {
+    const me = getCurrentUser();
+    const box = $("friendChatMessages");
+    if (!me || !box || !activeFriendChatUser) return;
+    normalizeFriendData(me);
+
+    const key = getFriendChatKey(me.username, activeFriendChatUser);
+    const messages = Array.isArray(me.friendChats[key]) ? me.friendChats[key] : [];
+
+    if (!messages.length) {
+        box.innerHTML = '<div class="friend-chat-empty">Chưa có tin nhắn. Hãy bắt đầu cuộc trò chuyện!</div>';
+        return;
+    }
+
+    box.innerHTML = messages.map(message => `
+        <div class="friend-chat-message ${message.from === me.username ? "mine" : "theirs"}">
+            <span>${escapeFriendHtml(message.text)}</span>
+        </div>
+    `).join("");
+    box.scrollTop = box.scrollHeight;
+}
+
+function sendFriendMessage(text) {
+    const me = getCurrentUser();
+    const other = getFriendUser(activeFriendChatUser);
+    if (!me || !other || !text.trim()) return;
+    normalizeFriendData(me);
+    normalizeFriendData(other);
+
+    if (!me.friends.includes(other.username)) return;
+
+    const key = getFriendChatKey(me.username, other.username);
+    const message = {
+        from: me.username,
+        text: text.trim(),
+        time: Date.now()
+    };
+
+    if (!Array.isArray(me.friendChats[key])) me.friendChats[key] = [];
+    if (!Array.isArray(other.friendChats[key])) other.friendChats[key] = [];
+    me.friendChats[key].push(message);
+    other.friendChats[key].push(message);
+
+    const users = getUsers();
+    users[me.username] = me;
+    users[other.username] = other;
+    saveUsers(users);
+    renderFriendChatMessages();
+}
+
+function initFriendSystem() {
+    $("friendsButton")?.addEventListener("click", () => {
+        const user = getCurrentUser();
+        if (!user) return;
+        normalizeFriendData(user);
+        updateUser(user);
+        renderFriends();
+        $("friendSearchInput").value = "";
+        $("friendSearchResults").innerHTML = '<div class="friends-empty">Nhập ID Name để tìm người chơi.</div>';
+        showScreen("friendsScreen");
+    });
+
+    $("friendsBack")?.addEventListener("click", () => showScreen("lobbyScreen"));
+    $("friendSearchButton")?.addEventListener("click", searchFriends);
+    $("friendSearchInput")?.addEventListener("keydown", event => {
+        if (event.key === "Enter") {
+            event.preventDefault();
+            searchFriends();
+        }
+    });
+    $("friendChatClose")?.addEventListener("click", closeFriendChat);
+    $("friendChatForm")?.addEventListener("submit", event => {
+        event.preventDefault();
+        const input = $("friendChatInput");
+        if (!input) return;
+        sendFriendMessage(input.value);
+        input.value = "";
+        input.focus();
+    });
+    $("friendChatOverlay")?.addEventListener("click", event => {
+        if (event.target === event.currentTarget) closeFriendChat();
+    });
+}
+
+document.addEventListener("DOMContentLoaded", initFriendSystem, { once: true });
+if (document.readyState !== "loading") initFriendSystem();

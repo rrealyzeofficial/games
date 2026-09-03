@@ -1438,6 +1438,79 @@
 </section>
 
 <!-- =========================================================
+     FRIENDS
+========================================================= -->
+<section id="friendsScreen" class="game-screen friends-screen hidden">
+    <header class="card-topbar friends-topbar">
+        <button id="friendsBack" class="back-button" type="button">← <span>LOBBY</span></button>
+        <div class="card-heading">
+            <span>REALYZE!!</span>
+            <h1>FRIENDS</h1>
+        </div>
+        <div class="card-counter">
+            <span>FRIENDS</span>
+            <strong id="friendCount">0</strong>
+        </div>
+    </header>
+
+    <main class="friends-main">
+        <div class="friends-page-heading">
+            <span class="card-eyebrow">SOCIAL</span>
+            <h2>MY <em>FRIENDS</em></h2>
+            <p>Connect with REALYZE!! players and chat together.</p>
+        </div>
+
+        <div class="friends-layout">
+            <section class="friends-panel friends-list-panel">
+                <div class="friends-panel-heading">
+                    <div>
+                        <span>YOUR LIST</span>
+                        <h3>FRIENDS</h3>
+                    </div>
+                    <strong id="friendListCount">0</strong>
+                </div>
+                <div id="friendsList" class="friends-list"></div>
+            </section>
+
+            <section class="friends-panel friends-search-panel">
+                <div class="friends-panel-heading">
+                    <div>
+                        <span>FIND PLAYERS</span>
+                        <h3>SEARCH FRIENDS</h3>
+                    </div>
+                </div>
+                <div class="friend-search-box">
+                    <input id="friendSearchInput" type="text" maxlength="20" autocomplete="off" placeholder="Nhập ID Name...">
+                    <button id="friendSearchButton" type="button">SEARCH</button>
+                </div>
+                <p class="friend-search-note">Tìm người chơi bằng ID Name đã đăng ký trong REALYZE!!</p>
+                <div id="friendSearchResults" class="friend-search-results">
+                    <div class="friends-empty">Nhập ID Name để tìm người chơi.</div>
+                </div>
+            </section>
+        </div>
+    </main>
+</section>
+
+<!-- FRIEND CHAT -->
+<div id="friendChatOverlay" class="friend-chat-overlay hidden" aria-hidden="true">
+    <div class="friend-chat-modal" role="dialog" aria-modal="true" aria-labelledby="friendChatName">
+        <header class="friend-chat-header">
+            <div>
+                <span>CHAT WITH</span>
+                <h2 id="friendChatName">PLAYER</h2>
+            </div>
+            <button id="friendChatClose" type="button" aria-label="Close">×</button>
+        </header>
+        <div id="friendChatMessages" class="friend-chat-messages"></div>
+        <form id="friendChatForm" class="friend-chat-form">
+            <input id="friendChatInput" type="text" maxlength="300" autocomplete="off" placeholder="Nhập tin nhắn...">
+            <button type="submit">SEND</button>
+        </form>
+    </div>
+</div>
+
+<!-- =========================================================
      GACHA
 ========================================================= -->
 
