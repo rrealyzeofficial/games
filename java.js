@@ -144,11 +144,32 @@ async function apiRequest(path, options = {}) {
         return { messages: (data || []).map(m => ({ from: m.sender_id === session.user.id ? me.username : q, text: m.body, time: new Date(m.created_at).getTime() })) };
     }
 
-    if (path === "/api/friends/chat" && method === "POST") {
-        const { error } = await db.rpc("send_friend_message", { target_username: String(body.username || ""), message_body: String(body.text || "") });
-        if (error) throw error;
-        return { ok: true };
+if (path === "/api/friends/chat" && method === "POST") {
+    const username = String(body.username || "").trim();
+    const text = String(body.text || "").trim();
+
+    if (!username || !text) {
+        throw new Error("Tin nhắn không được để trống.");
     }
+
+    const { data: authData, error: authError } = await db.auth.getUser();
+
+    if (authError || !authData?.user) {
+        throw new Error("Phiên đăng nhập không hợp lệ.");
+    }
+
+    const { error } = await db.rpc("send_friend_message", {
+        target_username: username,
+        message_body: text
+    });
+
+    if (error) {
+        console.error("SUPABASE SEND MESSAGE ERROR:", error);
+        throw new Error(error.message || "Không thể gửi tin nhắn.");
+    }
+
+    return { ok: true };
+}
 
     throw new Error("API route not found.");
 }
