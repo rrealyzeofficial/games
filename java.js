@@ -5924,6 +5924,41 @@ async function searchFriends(){const u=await syncMe(),input=$("friendSearchInput
 async function openFriendChat(n){const u=await syncMe();if(!u||(u.friends||[]).indexOf(n)<0){showLobbyToast('FRIENDS','Bạn chỉ có thể chat với bạn bè.');return;}activeFriendChatUser=n;$("friendChatName").textContent=n;try{const d=await apiRequest('/api/friends/chat?username='+encodeURIComponent(n));activeFriendChatMessages=d.messages||[];renderFriendChatMessages();$("friendChatOverlay").classList.remove('hidden');$("friendChatOverlay").setAttribute('aria-hidden','false');}catch(e){showLobbyToast('CHAT',e.message);}}
 function closeFriendChat(){activeFriendChatUser=null;activeFriendChatMessages=[];$("friendChatOverlay")?.classList.add('hidden');$("friendChatOverlay")?.setAttribute('aria-hidden','true');}
 function renderFriendChatMessages(){const u=getCurrentUser(),box=$("friendChatMessages");if(!u||!box)return;box.innerHTML=activeFriendChatMessages.length?activeFriendChatMessages.map(m=>`<div class="friend-chat-message ${m.from===u.username?'mine':'theirs'}"><span>${escapeFriendHtml(m.text)}</span></div>`).join(''):'<div class="friend-chat-empty">Chưa có tin nhắn. Hãy bắt đầu cuộc trò chuyện!</div>';box.scrollTop=box.scrollHeight;}
-async function sendFriendMessage(text){if(!activeFriendChatUser||!text.trim())return;try{await apiRequest('/api/friends/chat',{method:'POST',body:JSON.stringify({username:activeFriendChatUser,text:text.trim()})});const d=await apiRequest('/api/friends/chat?username='+encodeURIComponent(activeFriendChatUser));activeFriendChatMessages=d.messages||[];renderFriendChatMessages();}catch(e){showLobbyToast('CHAT',e.message);}}
+async function sendFriendMessage(text) {
+    if (!activeFriendChatUser || !text.trim()) return;
+
+    try {
+        if (!window.REALYZE_DB) {
+            throw new Error('Supabase chưa được kết nối.');
+        }
+
+        const u = getCurrentUser();
+        if (!u) {
+            throw new Error('Bạn chưa đăng nhập.');
+        }
+
+        const { error: sendError } = await window.REALYZE_DB
+            .rpc('send_friend_message', {
+                p_username: activeFriendChatUser,
+                p_text: text.trim()
+            });
+
+        if (sendError) throw sendError;
+
+        const { data, error: getError } = await window.REALYZE_DB
+            .rpc('get_friend_messages', {
+                p_username: activeFriendChatUser
+            });
+
+        if (getError) throw getError;
+
+        activeFriendChatMessages = Array.isArray(data) ? data : [];
+        renderFriendChatMessages();
+
+    } catch (e) {
+        console.error('SEND CHAT ERROR:', e);
+        showLobbyToast('CHAT', e.message || 'Không thể gửi tin nhắn.');
+    }
+}
 function initFriendSystem(){$("friendsButton")?.addEventListener('click',async()=>{if(!getCurrentUser())return;await renderFriends();$("friendSearchInput").value='';$("friendSearchResults").innerHTML='<div class="friends-empty">Nhập ID Name để tìm người chơi.</div>';showScreen('friendsScreen');});$("friendsBack")?.addEventListener('click',()=>showScreen('lobbyScreen'));$("friendSearchButton")?.addEventListener('click',searchFriends);$("friendSearchInput")?.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();searchFriends();}});$("friendChatClose")?.addEventListener('click',closeFriendChat);$("friendChatSend")?.addEventListener('click',()=>{const i=$("friendChatInput");if(i){sendFriendMessage(i.value);i.value='';}});$("friendChatInput")?.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();$("friendChatSend")?.click();}});}
 document.addEventListener('DOMContentLoaded',initFriendSystem,{once:true});if(document.readyState!=='loading')initFriendSystem();
