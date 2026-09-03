@@ -98,47 +98,27 @@ html,body{touch-action:none;-webkit-user-select:none;user-select:none;-webkit-to
 }
 
 
-/* Mobile uses the same 1440px PC layout and scales it to the landscape viewport. */
-.lane-area, .keys, .skill-btn { touch-action: none; -webkit-tap-highlight-color: transparent; }
-
-/* =========================================================
-   MOBILE GAMEPLAY — SAME PC COMPOSITION + TOUCH
-========================================================= */
-@media (max-width: 900px) and (orientation: landscape) {
-  html, body, .game { min-width: 0 !important; width: 100% !important; }
-  .lane-area { touch-action: none; }
-  .lanes, .hit-line { touch-action: none; }
-  .keys button { touch-action: manipulation; }
-}
-
-
-/* Mobile: keep the PC gameplay composition and scale it as one canvas. */
-@media (max-width: 900px) {
-  html, body { overflow: hidden !important; width: 100%; height: 100%; }
-  body { --realyze-mobile-scale: 1; }
-  body.realyze-mobile-pc .game {
-    width: 1440px !important;
-    height: 900px !important;
-    min-width: 1440px !important;
-    position: absolute !important;
-    left: 50% !important;
-    top: 0 !important;
-    transform: translateX(-50%) scale(var(--realyze-mobile-scale));
-    transform-origin: top center;
-  }
-  body.realyze-mobile-pc::before {
-    content: "ROTATE YOUR PHONE";
+/* Mobile gameplay is landscape-only. No transform scaling is applied,
+   so touch coordinates stay aligned with the visible lanes. */
+@media (max-width: 900px) and (orientation: portrait) {
+  body::before {
+    content: "ROTATE YOUR PHONE\A\A REALYZE!! is designed to be played in landscape.";
+    white-space: pre;
     position: fixed;
     inset: 0;
     z-index: 999999;
-    display: none;
+    display: flex;
     align-items: center;
     justify-content: center;
+    text-align: center;
+    padding: 30px;
+    box-sizing: border-box;
     background: #fffafd;
     color: #ed397e;
-    font: 900 18px Arial, sans-serif;
+    font-family: Nunito, Arial, sans-serif;
+    font-size: 18px;
+    font-weight: 900;
+    letter-spacing: 1px;
+    pointer-events: auto;
   }
-}
-@media (max-width: 900px) and (orientation: portrait) {
-  body.realyze-mobile-pc::before { display: flex; }
 }

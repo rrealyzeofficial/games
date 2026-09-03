@@ -12,35 +12,30 @@ const $ = (id) => document.getElementById(id);
 
 
 /* =========================================================
-   MOBILE PC-CANVAS SCALER
-   The mobile version keeps the same 1440px desktop composition.
-   In landscape it scales the whole screen instead of reflowing cards/art.
+   MOBILE ORIENTATION
+   REALYZE!! is landscape-only on mobile. Browsers may refuse
+   orientation.lock() unless running fullscreen/PWA, so a portrait
+   guard is also used in CSS.
 ========================================================= */
-(function initMobileDesktopCanvas() {
+(function initMobileLandscape() {
     const isMobile = () => window.matchMedia("(max-width: 900px)").matches;
 
-    function applyMobileDesktopScale() {
-        if (!isMobile()) {
-            document.body?.classList.remove("realyze-mobile-pc");
-            document.body?.style.removeProperty("--realyze-mobile-scale");
-            return;
+    async function lockLandscape() {
+        if (!isMobile()) return;
+        try {
+            if (screen.orientation && screen.orientation.lock) {
+                await screen.orientation.lock("landscape");
+            }
+        } catch (_) {
+            // Normal mobile browsers can reject orientation.lock().
         }
-
-        const sw = Math.max(1, Number(window.screen?.width || window.innerWidth));
-        const sh = Math.max(1, Number(window.screen?.height || window.innerHeight));
-        const landscapeWidth = Math.max(sw, sh);
-        const scale = Math.min(landscapeWidth / 1440, 1);
-
-        document.body.classList.add("realyze-mobile-pc");
-        document.body.style.setProperty("--realyze-mobile-scale", String(scale));
     }
 
-    window.addEventListener("resize", applyMobileDesktopScale, { passive: true });
-    window.addEventListener("orientationchange", () => setTimeout(applyMobileDesktopScale, 80), { passive: true });
-    document.addEventListener("DOMContentLoaded", applyMobileDesktopScale, { once: true });
-    applyMobileDesktopScale();
+    window.addEventListener("orientationchange", lockLandscape, { passive: true });
+    document.addEventListener("DOMContentLoaded", lockLandscape, { once: true });
+    document.addEventListener("click", lockLandscape, { passive: true });
+    document.addEventListener("touchstart", lockLandscape, { passive: true });
 })();
-
 
 function getUsers() {
     try {

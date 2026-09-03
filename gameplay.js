@@ -4,22 +4,20 @@
   const $ = id => document.getElementById(id);
 
 
-  // Keep gameplay on the same 1440px PC canvas on mobile.
-  function applyMobileDesktopScale() {
-    if (!window.matchMedia('(max-width: 900px)').matches) {
-      document.body.classList.remove('realyze-mobile-pc');
-      return;
-    }
-    const vw = Math.max(1, window.innerWidth);
-    const vh = Math.max(1, window.innerHeight);
-    const landscapeWidth = Math.max(vw, vh);
-    const scale = Math.min((landscapeWidth / 1440) * 0.88, 1);
-    document.body.classList.add('realyze-mobile-pc');
-    document.body.style.setProperty('--realyze-mobile-scale', String(scale));
+  // Mobile gameplay is landscape-only. Do not scale/transform the game
+  // canvas; this keeps touch coordinates aligned with the visible lanes.
+  async function lockLandscape() {
+    try {
+      if (window.matchMedia('(max-width: 900px)').matches &&
+          screen.orientation && screen.orientation.lock) {
+        await screen.orientation.lock('landscape');
+      }
+    } catch (_) {}
   }
-  window.addEventListener('resize', applyMobileDesktopScale, {passive:true});
-  window.addEventListener('orientationchange', () => setTimeout(applyMobileDesktopScale, 80), {passive:true});
-  applyMobileDesktopScale();
+  window.addEventListener('orientationchange', lockLandscape, {passive:true});
+  document.addEventListener('DOMContentLoaded', lockLandscape, {once:true});
+  document.addEventListener('touchstart', lockLandscape, {passive:true});
+  lockLandscape();
   const params = new URLSearchParams(location.search);
   const songIndex = Number(params.get('song') || 0);
   const difficulty = params.get('difficulty') || 'EASY';
