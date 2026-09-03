@@ -96,3 +96,7 @@ html,body{touch-action:none;-webkit-user-select:none;user-select:none;-webkit-to
 @media (orientation:portrait){
   body::before{content:'PLEASE ROTATE YOUR PHONE';position:fixed;inset:0;z-index:9999;background:#fff;display:flex;align-items:center;justify-content:center;text-align:center;font-size:14px;font-weight:900;letter-spacing:2px;color:#ff5f9e;padding:30px}
 }
+
+
+/* Mobile uses the same 1440px PC layout and scales it to the landscape viewport. */
+.lane-area, .keys, .skill-btn { touch-action: none; -webkit-tap-highlight-color: transparent; }

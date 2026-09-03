@@ -353,6 +353,22 @@
     if (button) button.classList.remove('active');
   });
 
+  // Touch anywhere inside the lane area: map the touch X position to one of 4 lanes.
+  // This keeps the PC layout while making the actual playfield tappable on phones.
+  laneArea.addEventListener('pointerdown', (e) => {
+    if (e.pointerType === 'mouse') return;
+    e.preventDefault();
+    const rect = laneArea.getBoundingClientRect();
+    const x = Math.max(0, Math.min(rect.width - 1, e.clientX - rect.left));
+    const lane = Math.floor(x / (rect.width / 4));
+    hit(lane);
+    const button = document.querySelector(`.keys button[data-lane="${lane}"]`);
+    if (button) {
+      button.classList.add('active');
+      setTimeout(() => button.classList.remove('active'), 90);
+    }
+  }, { passive: false });
+
   document.querySelectorAll('.keys button').forEach(button => {
     const press = (e) => {
       e.preventDefault();

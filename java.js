@@ -54,6 +54,55 @@ function showToast(
    SCREEN SWITCHING
 ========================================================= */
 
+const COLLECTION_MUSIC_SCREENS = new Set([
+    "gachaScreen",
+    "cardScreen",
+    "characterScreen"
+]);
+
+let collectionBackgroundMusic = null;
+
+function stopCollectionBackgroundMusic() {
+    if (!collectionBackgroundMusic) return;
+
+    collectionBackgroundMusic.pause();
+    collectionBackgroundMusic.currentTime = 0;
+    collectionBackgroundMusic.src = "";
+    collectionBackgroundMusic.load();
+    collectionBackgroundMusic = null;
+}
+
+function startCollectionBackgroundMusic() {
+    if (collectionBackgroundMusic) {
+        if (collectionBackgroundMusic.paused) {
+            collectionBackgroundMusic.play().catch(() => {});
+        }
+        return;
+    }
+
+    collectionBackgroundMusic = new Audio("assets/bg.mp3");
+    collectionBackgroundMusic.loop = true;
+    collectionBackgroundMusic.preload = "auto";
+    collectionBackgroundMusic.volume = 0.12;
+
+    collectionBackgroundMusic.play().catch(error => {
+        // Trình duyệt có thể chặn autoplay; lần click chuyển màn hình tiếp theo sẽ thử lại.
+        console.log("Collection background music waiting for user interaction:", error);
+    });
+}
+
+// Mobile/Safari đôi khi cần một thao tác chạm thật để cho phép audio phát.
+// Nếu người dùng đã ở một trong 3 màn, lần chạm đầu tiên sẽ resume track.
+document.addEventListener("pointerdown", () => {
+    const activeCollectionScreen = document.querySelector(
+        ".game-screen:not(.hidden)#gachaScreen, .game-screen:not(.hidden)#cardScreen, .game-screen:not(.hidden)#characterScreen"
+    );
+
+    if (activeCollectionScreen && collectionBackgroundMusic?.paused) {
+        collectionBackgroundMusic.play().catch(() => {});
+    }
+}, { passive: true });
+
 function showScreen(screenId) {
 
     if (
@@ -69,6 +118,14 @@ function showScreen(screenId) {
         screenId !== "lobbyScreen"
     ) {
         stopLobbyMusic();
+    }
+
+    // Gacha / My Card / My Character dùng chung một track.
+    // Chuyển giữa 3 màn không restart nhạc; ra khỏi cả 3 thì dừng hẳn.
+    if (COLLECTION_MUSIC_SCREENS.has(screenId)) {
+        startCollectionBackgroundMusic();
+    } else {
+        stopCollectionBackgroundMusic();
     }
 
     document
