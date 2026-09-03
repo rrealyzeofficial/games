@@ -19,12 +19,6 @@ const $ = (id) => document.getElementById(id);
 (function initMobileDesktopCanvas() {
     const isMobile = () => window.matchMedia("(max-width: 900px)").matches;
 
-    function applyMobileDesktopScale() {
-        if (!isMobile()) {
-            document.body?.classList.remove("realyze-mobile-pc");
-            document.body?.style.removeProperty("--realyze-mobile-scale");
-            return;
-        }
 
         const sw = Math.max(1, Number(window.screen?.width || window.innerWidth));
         const sh = Math.max(1, Number(window.screen?.height || window.innerHeight));
