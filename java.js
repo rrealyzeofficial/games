@@ -1202,7 +1202,7 @@ const NOW_PLAY_SONGS = [
         artist: "VANI",
         stars: 4,
         art: null,
-        highlight: "assets/song-02.mp3",
+        highlight: "assets/song-022_[cut_133sec].mp3",
         difficulty: {
             EASY: { locked: false },
             NORMAL: { locked: true },
