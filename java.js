@@ -56,6 +56,21 @@ function showToast(
 
 function showScreen(screenId) {
 
+    if (
+        typeof gameplayAudio !== "undefined" &&
+        gameplayAudio &&
+        screenId !== "gameplayScreen"
+    ) {
+        stopGameplayAudio();
+    }
+
+    if (
+        typeof stopLobbyMusic === "function" &&
+        screenId !== "lobbyScreen"
+    ) {
+        stopLobbyMusic();
+    }
+
     document
         .querySelectorAll(
             ".screen, .game-screen"
@@ -68,6 +83,13 @@ function showScreen(screenId) {
 
     if (target) {
         target.classList.remove("hidden");
+    }
+
+    if (
+        screenId === "lobbyScreen" &&
+        typeof startLobbyMusic === "function"
+    ) {
+        startLobbyMusic();
     }
 }
 
@@ -311,8 +333,11 @@ function registerUser(
 
     gachaHistory: [],
 
-    /* chuẩn bị cho My Card */
-    myCards: []
+    /* collections */
+    myCards: [],
+    myCharacters: [],
+    selectedCharacterId: "mystery",
+    characterPity: 0
 };
 
 
@@ -617,6 +642,157 @@ function updateUser(user) {
     saveUsers(users);
 }
 
+
+
+/* =========================================================
+   LOBBY MUSIC
+========================================================= */
+
+const LOBBY_MUSIC_SONGS = [
+    { name: "VIRTUAL TO LIVE", artist: "REALYZE", src: "assets/song-012.mp3" },
+    { name: "BOUNCE", artist: "VANI", src: "assets/song-022.mp3" },
+    { name: "CRASH THE PARTY", artist: "REALYZE", src: "assets/song-032.mp3" }
+];
+
+let selectedLobbyMusic = Number(
+    localStorage.getItem("realyze_lobby_music") || 0
+);
+
+if (
+    !Number.isInteger(selectedLobbyMusic) ||
+    selectedLobbyMusic < 0 ||
+    selectedLobbyMusic >= LOBBY_MUSIC_SONGS.length
+) {
+    selectedLobbyMusic = 0;
+}
+
+let lobbyAudio = null;
+
+function stopLobbyMusic() {
+    if (lobbyAudio) {
+        lobbyAudio.pause();
+        lobbyAudio.currentTime = 0;
+        lobbyAudio = null;
+    }
+}
+
+function startLobbyMusic() {
+    const song = LOBBY_MUSIC_SONGS[selectedLobbyMusic];
+    if (!song) return;
+
+    if (
+        lobbyAudio &&
+        lobbyAudio.dataset.src === song.src &&
+        !lobbyAudio.paused
+    ) {
+        return;
+    }
+
+    stopLobbyMusic();
+
+    lobbyAudio = new Audio(song.src);
+    lobbyAudio.loop = true;
+    lobbyAudio.volume = 0.45;
+    lobbyAudio.dataset.src = song.src;
+
+    lobbyAudio.play().catch(error => {
+        console.log("Lobby music cannot play:", error);
+    });
+}
+
+function renderLobbyMusicList() {
+    const list = $("lobbyMusicList");
+    if (!list) return;
+
+    list.innerHTML = "";
+
+    LOBBY_MUSIC_SONGS.forEach((song, index) => {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "lobby-music-option";
+
+        if (index === selectedLobbyMusic) {
+            button.classList.add("active");
+        }
+
+        button.innerHTML = `
+            <span class="lobby-music-number">${String(index + 1).padStart(2, "0")}</span>
+            <span class="lobby-music-option-info">
+                <small>LOBBY TRACK</small>
+                <strong>${song.name}</strong>
+                <small>${song.artist}</small>
+            </span>
+            <span class="lobby-music-check">✓</span>
+        `;
+
+        button.addEventListener("click", () => {
+            selectedLobbyMusic = index;
+            localStorage.setItem("realyze_lobby_music", String(index));
+            updateLobbyMusicButton();
+            renderLobbyMusicList();
+            startLobbyMusic();
+        });
+
+        list.appendChild(button);
+    });
+}
+
+function updateLobbyMusicButton() {
+    const element = $("lobbyMusicButtonName");
+    const song = LOBBY_MUSIC_SONGS[selectedLobbyMusic];
+
+    if (element && song) {
+        element.textContent = song.name;
+    }
+}
+
+$("lobbyMusicButton")?.addEventListener("click", () => {
+    renderLobbyMusicList();
+    $("lobbyMusicOverlay")?.classList.remove("hidden");
+});
+
+$("closeLobbyMusic")?.addEventListener("click", () => {
+    $("lobbyMusicOverlay")?.classList.add("hidden");
+});
+
+$("lobbyMusicOverlay")?.addEventListener("click", event => {
+    if (event.target === $("lobbyMusicOverlay")) {
+        $("lobbyMusicOverlay").classList.add("hidden");
+    }
+});
+
+updateLobbyMusicButton();
+
+/* =========================================================
+   GAMEPLAY AUDIO STOP
+========================================================= */
+
+function stopGameplayAudio() {
+    // Vô hiệu hóa mọi gameplay loop cũ trước khi rời màn chơi.
+    gameplayLoopToken++;
+
+    if (gameplayAudio) {
+        gameplayAudio.pause();
+        gameplayAudio.currentTime = 0;
+        gameplayAudio.src = "";
+        gameplayAudio.load();
+        gameplayAudio = null;
+    }
+
+    if (typeof gameplayFrame !== "undefined" && gameplayFrame !== null) {
+        cancelAnimationFrame(gameplayFrame);
+        gameplayFrame = null;
+    }
+
+    // Xóa các note đang còn trên sân.
+    const laneArea = $("gameplayLaneArea");
+    if (laneArea) {
+        laneArea.querySelectorAll(".gameplay-note").forEach(note => note.remove());
+    }
+
+    gameplayNotes = [];
+    document.body.classList.remove("gameplay-active");
+}
 
 /* =========================================================
    LOBBY SETUP
@@ -923,7 +1099,7 @@ const NOW_PLAY_SONGS = [
         id: "track-01",
         name: "VIRTUAL TO LIVE",
         artist: "REALYZE (but Ebi & Mikon)",
-        stars: 5,
+        stars: 3,
         art: null,
         highlight: "assets/song-01.mp3",
         difficulty: {
@@ -934,10 +1110,11 @@ const NOW_PLAY_SONGS = [
     },
     {
         id: "track-02",
-        name: "NEON HEART",
-        artist: "REALYZE!!",
+        name: "BOUNCE",
+        artist: "VANI",
         stars: 4,
         art: null,
+        highlight: "assets/song-02.mp3",
         difficulty: {
             EASY: { locked: false },
             NORMAL: { locked: true },
@@ -946,9 +1123,10 @@ const NOW_PLAY_SONGS = [
     },
     {
         id: "track-03",
-        name: "AFTER THE RAIN",
-        artist: "REALYZE!!",
+        name: "CRASH THE PARTY",
+        artist: "REALYZE (but Shoto & Hikari & Eke)",
         stars: 5,
+        highlight: "assets/song-03.mp3",
         art: null,
         difficulty: {
             EASY: { locked: false },
@@ -1241,11 +1419,9 @@ function showNowPlayToast(
 $("nowPlayBack").addEventListener(
     "click",
     () => {
-
-        showScreen(
-            "lobbyScreen"
-        );
-
+        // Tắt preview Now Play trước khi phát nhạc sảnh.
+        stopNowPlayHighlight();
+        showScreen("lobbyScreen");
     }
 );
 
@@ -1331,27 +1507,29 @@ const TEAM_CARD_LIMIT = 4;
 ========================================================= */
 
 const CHARACTERS = [
-
     {
         id: "mystery",
         name: "NGƯỜI BÍ ẨN",
-        description:
-            "A mysterious presence accompanying you on the stage.",
-        owned: true,
-        default: true
+        description: "A mysterious presence accompanying you on the stage.",
+        image: null,
+        default: true,
+        rarity: 6,
+        rate: 0
     },
-
-    /*
-        Sau này thêm character mới ở đây.
-
-        {
-            id: "character-01",
-            name: "CHARACTER NAME",
-            description: "Character description.",
-            image: "assets/character-01.png",
-            owned: true
-        }
-    */
+    {
+        id: "lumina",
+        name: "LUMINA",
+        description: "A radiant performer whose rhythm shines across the stage.",
+        image: "assets/lumina.png",
+        default: false,
+        rarity: 6,
+        rate: 0.33333,
+        main: "VOCAL",
+        stat: { base: 13400, perLevel: 245 },
+        skillName: "RADIANT VOICE",
+        skill: "Boosts performance score during Skills.",
+        number: "001"
+    }
 ];
 
 
@@ -1388,647 +1566,152 @@ function openTeamSelect() {
 
 function getSelectedCharacter() {
 
-    return (
+    const user = getCurrentUser();
+    if (user) {
+        initGachaData(user);
+        selectedCharacterId = user.selectedCharacterId || "mystery";
+    }
+
+    const character =
         CHARACTERS.find(
-            character =>
-                character.id ===
-                selectedCharacterId
-        )
-        || CHARACTERS[0]
-    );
+            character => character.id === selectedCharacterId
+        );
+
+    if (character && isCharacterOwned(character.id)) {
+        return character;
+    }
+
+    selectedCharacterId = "mystery";
+    return CHARACTERS.find(character => character.id === "mystery") || CHARACTERS[0];
 
 }
 
 
 function renderSelectedCharacter() {
 
-    const character =
-        getSelectedCharacter();
+    const character = getSelectedCharacter();
 
-    const name =
-        $("selectedCharacterName");
+    const name = $("selectedCharacterName");
+    const visual = $("selectedCharacterVisual");
+    const rarity = $("selectedCharacterRarity");
+    const rank = $("selectedCharacterRank");
+    const level = $("selectedCharacterLevel");
 
-    const description =
-        $("selectedCharacterDescription");
+    const isRealCharacter = character && character.id !== "mystery";
+    const progress = isRealCharacter
+        ? getCharacterProgress(character)
+        : { rank: 1, level: 1 };
 
-    const visual =
-        $("selectedCharacterVisual");
+    const maxLevel = isRealCharacter
+        ? getCharacterMaxLevel(progress.rank)
+        : 60;
 
-    if (name) {
-        name.textContent =
-            character.name;
+    const stat = isRealCharacter
+        ? getCharacterStat(character)
+        : 0;
+
+    const data = isRealCharacter
+        ? (CHARACTER_INFO[character.id] || {})
+        : {};
+
+    if (name) name.textContent = character.name;
+    if (rarity) rarity.textContent = isRealCharacter ? getCardStars(Number(character.rarity || 6)) : "★";
+    if (rank) rank.textContent = isRealCharacter ? `RANK ${progress.rank}` : "DEFAULT";
+    if (level) {
+        level.textContent = isRealCharacter ? `LV. ${progress.level} / ${maxLevel}` : "DEFAULT";
     }
 
-    if (description) {
-        description.textContent =
-            character.description;
-    }
-
-    if (!visual) {
-        return;
-    }
-
+    if (!visual) return;
 
     if (character.image) {
-
         visual.className =
-            "character-preview-visual";
-
+            "character-preview-visual character-owned-visual";
         visual.innerHTML = `
-            <img
-                src="${character.image}"
-                alt="${character.name}"
-            >
+            <img src="${character.image}" alt="${character.name}">
         `;
-
     } else {
-
         visual.className =
             "character-preview-visual mystery-character";
-
-        visual.innerHTML =
-            `<span>?</span>`;
-
+        visual.innerHTML = `<span>?</span>`;
     }
-
 }
 
 
 function renderAvailableCharacters() {
+    const container = $("availableCharacters");
+    if (!container) return;
 
-    const container =
-        $("availableCharacters");
-
-    if (!container) {
+    const user = getCurrentUser();
+    if (!user) {
+        container.innerHTML = "";
         return;
     }
-
-    container.innerHTML = "";
-
-
-    CHARACTERS
-        .filter(character => character.owned)
-        .forEach(character => {
-
-            const button =
-                document.createElement("button");
-
-            button.type = "button";
-
-            button.className =
-                "available-character";
-
-
-            if (
-                character.id ===
-                selectedCharacterId
-            ) {
-
-                button.classList.add(
-                    "active"
-                );
-
-            }
-
-
-            const visual =
-                character.image
-
-                    ? `
-                        <img
-                            class="available-character-visual"
-                            src="${character.image}"
-                            alt="${character.name}"
-                        >
-                    `
-
-                    : `
-                        <div
-                            class="available-character-visual"
-                        >
-                            ?
-                        </div>
-                    `;
-
-
-            button.innerHTML = `
-
-                ${visual}
-
-                <strong>
-                    ${character.name}
-                </strong>
-
-                <small>
-                    ${
-                        character.default
-                            ? "DEFAULT"
-                            : "OWNED"
-                    }
-                </small>
-
-            `;
-
-
-            button.addEventListener(
-                "click",
-                () => {
-
-                    selectedCharacterId =
-                        character.id;
-
-                    renderSelectedCharacter();
-
-                    renderAvailableCharacters();
-
-                    setTimeout(
-                        () => {
-
-                            $("characterSelectOverlay")
-                                .classList
-                                .add("hidden");
-
-                        },
-                        180
-                    );
-
-                }
-            );
-
-
-            container.appendChild(
-                button
-            );
-
-        });
-
-}
-
-
-/* =========================================================
-   OWNED CARDS
-========================================================= */
-
-function getOwnedTeamCards() {
-
-    const user =
-        getCurrentUser();
-
-    if (!user) {
-        return [];
-    }
-
 
     initGachaData(user);
-
-
-    const cards =
-        Array.isArray(user.myCards)
-            ? user.myCards
-            : [];
-
-
-    return cards.map(card => {
-
-        ensureCardProgress(card);
-
-        const gachaCard =
-            GACHA_ITEMS.find(
-                item =>
-                    item.name ===
-                    card.name
-            );
-
-
-        return {
-
-            ...card,
-
-            image:
-                card.image
-                || gachaCard?.image
-                || null
-
-        };
-
-    });
-
-}
-
-
-/* =========================================================
-   CARD SLOT
-========================================================= */
-
-function renderTeamCardSlots() {
-
-    const container =
-        $("teamCardSlots");
-
-    if (!container) {
-        return;
-    }
-
-
+    const owned = getOwnedCharacters();
     container.innerHTML = "";
 
-
-    selectedTeamCards.forEach(
-        (card, index) => {
-
-            const button =
-                document.createElement("button");
-
-            button.type = "button";
-
-            button.className =
-                "team-card-slot";
-
-
-            if (card) {
-
-                button.classList.add(
-                    "selected"
-                );
-
-
-                const image =
-                    card.image
-
-                        ? `
-                            <img
-                                src="${card.image}"
-                                alt="${card.name}"
-                            >
-                        `
-
-                        : `
-                            <span>R!</span>
-                        `;
-
-
-                button.innerHTML = `
-
-                    <span
-                        class="team-card-slot-number"
-                    >
-                        SLOT ${index + 1}
-                    </span>
-
-                    <div
-                        class="team-card-slot-art"
-                    >
-                        ${image}
-                    </div>
-
-                    <strong
-                        class="team-card-slot-name"
-                    >
-                        ${card.name}
-                    </strong>
-
-                    <span
-                        class="team-card-slot-rank"
-                    >
-                        RANK ${card.rank || 1} • LV.${card.level || 1}
-                    </span>
-
-                `;
-
-            } else {
-
-                button.classList.add(
-                    "empty"
-                );
-
-
-                button.innerHTML = `
-
-                    <span
-                        class="team-card-slot-number"
-                    >
-                        SLOT ${index + 1}
-                    </span>
-
-                    <div
-                        class="team-card-slot-art"
-                    >
-                        <span>＋</span>
-                    </div>
-
-                    <strong
-                        class="team-card-slot-name"
-                    >
-                        SELECT CARD
-                    </strong>
-
-                    <span
-                        class="team-card-slot-rank"
-                    >
-                        EMPTY
-                    </span>
-
-                `;
-
-            }
-
-
-            button.addEventListener(
-                "click",
-                () => {
-
-                    selectedTeamCardSlot =
-                        index;
-
-                    renderAvailableTeamCards();
-
-                    $("cardSelectOverlay")
-                        .classList
-                        .remove("hidden");
-
-                }
-            );
-
-
-            container.appendChild(
-                button
-            );
-
-        }
-    );
-
-}
-
-
-/* =========================================================
-   CARD SELECT MODAL
-========================================================= */
-
-function renderAvailableTeamCards() {
-
-    const container =
-        $("availableTeamCards");
-
-    if (!container) {
-        return;
-    }
-
-
-    container.innerHTML = "";
-
-
-    const cards =
-        getOwnedTeamCards();
-
-
-    if (!cards.length) {
-
+    if (!owned.length) {
         container.innerHTML = `
-
-            <div
-                style="
-                    grid-column:1/-1;
-                    padding:35px;
-                    text-align:center;
-                    color:#a28e98;
-                    font-size:12px;
-                    font-weight:800;
-                "
-            >
-                YOU DON'T HAVE ANY CARDS YET.
-            </div>
-
-        `;
-
+            <div class="available-character-empty">
+                NO CHARACTERS OWNED YET
+            </div>`;
         return;
-
     }
 
-
-    cards.forEach(card => {
-
-        const button =
-            document.createElement("button");
-
+    owned.forEach(character => {
+        const button = document.createElement("button");
         button.type = "button";
-
-        button.className =
-            "available-team-card";
-
-
-        const usedIndex =
-            selectedTeamCards.findIndex(
-                selected =>
-                    selected &&
-                    selected.name ===
-                    card.name
-            );
-
-
-        const isUsed =
-            usedIndex !== -1;
-
-
-        if (isUsed) {
-
-            button.classList.add(
-                "disabled"
-            );
-
-        }
-
-
-        const image =
-            card.image
-
-                ? `
-                    <img
-                        src="${card.image}"
-                        alt="${card.name}"
-                    >
-                `
-
-                : `
-                    <div
-                        class="available-team-card-placeholder"
-                    >
-                        R!
-                    </div>
-                `;
-
+        button.className = "available-character my-card";
+        button.dataset.rarity = Number(character.rarity ?? 6);
+        if (character.id === user.selectedCharacterId) button.classList.add("active", "character-selected");
 
         button.innerHTML = `
+            <div class="my-card-top">
+                <span class="my-card-rarity">${getCardStars(Number(character.rarity ?? 6))}</span>
+                <span class="my-card-rank">CHARACTER</span>
+                <span class="my-card-type">LIMITED</span>
+            </div>
+            <div class="my-card-image my-character-image">
+                ${character.image
+                    ? `<img src="${character.image}" alt="${character.name}">`
+                    : `<div class="my-card-fallback">✦</div>`}
+            </div>
+            <div class="my-card-info">
+                <div class="my-card-name">${character.name}</div>
+                <div class="my-card-obtained">${character.id === user.selectedCharacterId ? "CURRENT CHARACTER" : "OWNED"}</div>
+            </div>`;
 
-            ${image}
+        button.addEventListener("click", () => {
+            selectedCharacterId = character.id;
+            user.selectedCharacterId = character.id;
+            updateUser(user);
+            renderSelectedCharacter();
+            renderAvailableCharacters();
+            renderMyCharacters();
+            $("characterSelectOverlay")?.classList.add("hidden");
+        });
 
-            <strong>
-                ${card.name}
-            </strong>
-
-            <small>
-                RANK ${card.rank || 1}
-            </small>
-
-            ${
-                isUsed
-                    ? `
-                        <span
-                            class="card-used-badge"
-                        >
-                            SLOT ${usedIndex + 1}
-                        </span>
-                    `
-                    : ""
-            }
-
-        `;
-
-
-        if (!isUsed) {
-
-            button.addEventListener(
-                "click",
-                () => {
-
-                    selectedTeamCards[
-                        selectedTeamCardSlot
-                    ] = card;
-
-
-                    $("cardSelectOverlay")
-                        .classList
-                        .add("hidden");
-
-
-                    renderTeamSelect();
-
-                }
-            );
-
-        }
-
-
-        container.appendChild(
-            button
-        );
-
+        container.appendChild(button);
     });
-
 }
-
-
-/* =========================================================
-   TEAM STATUS
-========================================================= */
-
-function getSelectedTeamCardCount() {
-
-    return selectedTeamCards
-        .filter(Boolean)
-        .length;
-
-}
-
-
-function updateTeamReadyState() {
-
-    const count =
-        getSelectedTeamCardCount();
-
-    const counter =
-        $("teamCardCount");
-
-    const progress =
-        $("teamSelectionProgress");
-
-    const message =
-        $("teamSelectionMessage");
-
-    const startButton =
-        $("startTeamPlayButton");
-
-    const readyText =
-        $("teamReadyText");
-
-    const topStatus =
-        document.querySelector(
-            ".team-top-status"
-        );
-
-
-    if (counter) {
-
-        counter.textContent =
-            `${count} / ${TEAM_CARD_LIMIT}`;
-
-    }
-
-
-    if (progress) {
-
-        progress.style.width =
-            `${(count / TEAM_CARD_LIMIT) * 100}%`;
-
-    }
-
-
-    const ready =
-        count === TEAM_CARD_LIMIT;
-
-
-    if (message) {
-
-        message.textContent =
-            ready
-
-                ? "TEAM READY — YOU CAN START"
-
-                : `SELECT ${
-                    TEAM_CARD_LIMIT - count
-                } MORE CARD${
-                    TEAM_CARD_LIMIT - count > 1
-                        ? "S"
-                        : ""
-                }`;
-
-    }
-
-
-    if (startButton) {
-
-        startButton.disabled =
-            !ready;
-
-    }
-
-
-    if (readyText) {
-
-        readyText.textContent =
-            ready
-                ? "READY"
-                : "NOT READY";
-
-    }
-
-
-    if (topStatus) {
-
-        topStatus.classList.toggle(
-            "ready",
-            ready
-        );
-
-    }
-
-}
-
 
 /* =========================================================
    TEAM RENDER
 ========================================================= */
 
 function renderTeamSelect() {
+
+    const user = getCurrentUser();
+    if (user) {
+        initGachaData(user);
+        const saved = user.selectedCharacterId;
+        if (saved && isCharacterOwned(saved)) {
+            selectedCharacterId = saved;
+        } else {
+            selectedCharacterId = "mystery";
+        }
+    }
 
     const song =
         NOW_PLAY_SONGS[
@@ -2073,20 +1756,112 @@ function renderTeamSelect() {
 
 
 /* =========================================================
+   TEAM CARD SELECT
+========================================================= */
+
+function getOwnedTeamCards() {
+    const user = getCurrentUser();
+    if (!user) return [];
+    initGachaData(user);
+    return Array.isArray(user.myCards) ? user.myCards.filter(card => Number(card.rarity || 0) >= 4) : [];
+}
+
+function getSelectedTeamCardCount() {
+    return selectedTeamCards.filter(Boolean).length;
+}
+
+function renderTeamCardSlots() {
+    const container = $("teamCardSlots");
+    if (!container) return;
+    container.innerHTML = "";
+
+    for (let i = 0; i < TEAM_CARD_LIMIT; i++) {
+        const card = selectedTeamCards[i];
+        const slot = document.createElement("button");
+        slot.type = "button";
+        slot.className = `team-card-slot ${card ? "selected" : "empty"}`;
+        slot.innerHTML = card ? `
+            <span class="team-card-slot-number">SLOT ${String(i + 1).padStart(2,"0")}</span>
+            <div class="team-card-slot-art">${card.image ? `<img src="${card.image}" alt="${card.name}">` : `<span>✦</span>`}</div>
+            <div class="team-card-slot-name">${card.name}</div>
+            <div class="team-card-slot-rank">RANK ${Number(card.rank || 1)} · LV.${Number(card.level || 1)}</div>
+        ` : `
+            <span class="team-card-slot-number">SLOT ${String(i + 1).padStart(2,"0")}</span>
+            <div class="team-card-slot-art"><span>+</span></div>
+            <div class="team-card-slot-name">CHOOSE CARD</div>
+            <div class="team-card-slot-rank">EMPTY</div>
+        `;
+        slot.addEventListener("click", () => {
+            selectedTeamCardSlot = i;
+            renderAvailableTeamCards();
+            $("cardSelectOverlay")?.classList.remove("hidden");
+        });
+        container.appendChild(slot);
+    }
+}
+
+function renderAvailableTeamCards() {
+    const container = $("availableTeamCards");
+    if (!container) return;
+    const cards = getOwnedTeamCards();
+    container.innerHTML = "";
+
+    if (!cards.length) {
+        container.innerHTML = `<div class="available-character-empty">NO CARDS OWNED YET</div>`;
+        return;
+    }
+
+    cards.forEach(card => {
+        const usedElsewhere = selectedTeamCards.some((selected, idx) => selected && selected.id === card.id && idx !== selectedTeamCardSlot);
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = `available-team-card ${usedElsewhere ? "disabled" : ""}`;
+        button.disabled = usedElsewhere;
+        button.innerHTML = `
+            ${usedElsewhere ? `<span class="card-used-badge">USED</span>` : ""}
+            ${card.image ? `<img src="${card.image}" alt="${card.name}">` : `<div class="available-team-card-placeholder">✦</div>`}
+            <strong>${card.name}</strong>
+            <small>RANK ${Number(card.rank || 1)} · LV.${Number(card.level || 1)}</small>
+        `;
+        button.addEventListener("click", () => {
+            selectedTeamCards[selectedTeamCardSlot] = card;
+            $("cardSelectOverlay")?.classList.add("hidden");
+            renderTeamSelect();
+        });
+        container.appendChild(button);
+    });
+}
+
+function updateTeamReadyState() {
+    const count = getSelectedTeamCardCount();
+    const countEl = $("teamCardCount");
+    const progress = $("teamSelectionProgress");
+    const message = $("teamSelectionMessage");
+    const ready = $("teamReadyText");
+    const start = $("startTeamPlayButton");
+
+    if (countEl) countEl.textContent = `${count} / ${TEAM_CARD_LIMIT}`;
+    if (progress) progress.style.width = `${count / TEAM_CARD_LIMIT * 100}%`;
+    if (ready) ready.textContent = count === TEAM_CARD_LIMIT ? "READY" : "NOT READY";
+    if (message) message.textContent = count === TEAM_CARD_LIMIT ? "TEAM READY — START YOUR PERFORMANCE" : `SELECT ${TEAM_CARD_LIMIT - count} MORE CARD${TEAM_CARD_LIMIT - count === 1 ? "" : "S"}`;
+    if (start) start.disabled = count !== TEAM_CARD_LIMIT;
+}
+
+/* =========================================================
    CHARACTER BUTTON
 ========================================================= */
 
 $("changeCharacterButton")
     .addEventListener(
         "click",
-        () => {
+        (event) => {
+            event.stopPropagation();
 
             renderAvailableCharacters();
 
             $("characterSelectOverlay")
                 .classList
                 .remove("hidden");
-
         }
     );
 
@@ -2207,10 +1982,9 @@ $("startTeamPlayButton")
             const selectedCharacter =
                 getSelectedCharacter();
 
+            const cardIds = selectedTeamCards.filter(Boolean).map(card => card.id);
             const gameplayUrl =
-                `gameplay.html?song=${encodeURIComponent(selectedNowPlaySong)}` +
-                `&difficulty=${encodeURIComponent(selectedNowPlayDifficulty)}` +
-                `&character=${encodeURIComponent(selectedCharacter?.id || "mystery")}`;
+                `gameplay.html?song=${encodeURIComponent(selectedNowPlaySong)}&difficulty=${encodeURIComponent(selectedNowPlayDifficulty)}&character=${encodeURIComponent(selectedCharacter.id)}&cards=${encodeURIComponent(JSON.stringify(cardIds))}`;
 
             window.location.href = gameplayUrl;
         }
@@ -2221,6 +1995,7 @@ $("startTeamPlayButton")
 ========================================================= */
 
 let gameplayAudio = null;
+let gameplayLoopToken = 0;
 
 function startRhythmGameplay() {
 
@@ -2239,7 +2014,6 @@ function startRhythmGameplay() {
 
     // Hiện màn gameplay
     showScreen("gameplayScreen");
-    document.body.classList.add("gameplay-active");
 
 // Đóng toàn bộ popup / overlay còn sót lại
 [
@@ -2276,11 +2050,10 @@ function startRhythmGameplay() {
     $("gameplayJudgement").textContent =
         "";
 
-    // Dừng gameplay audio cũ
-    if (gameplayAudio) {
-        gameplayAudio.pause();
-        gameplayAudio.currentTime = 0;
-    }
+    // Dừng gameplay audio/loop cũ trước khi tạo phiên mới.
+    stopGameplayAudio();
+    const myGameplayToken = ++gameplayLoopToken;
+    document.body.classList.add("gameplay-active");
 
     // Gameplay dùng nhạc RIÊNG
     const music =
@@ -2314,9 +2087,35 @@ function startRhythmGameplay() {
     }
 
     // LUÔN khởi động gameplay
-    startGameplayNoteEngine();
+    startGameplayNoteEngine(myGameplayToken);
 }
 
+
+
+/* =========================================================
+   GAMEPLAY EXIT
+========================================================= */
+
+$("gameplayBackButton")?.addEventListener(
+    "click",
+    () => {
+        // Tắt gameplay hoàn toàn trước khi chuyển màn hình.
+        stopGameplayAudio();
+        stopNowPlayHighlight();
+
+        showScreen("nowPlayScreen");
+
+        // Chỉ phát preview sau khi gameplay audio đã được giải phóng.
+        setTimeout(() => {
+            if (document.getElementById("nowPlayScreen")?.classList.contains("hidden")) {
+                return;
+            }
+            playNowPlayHighlight(
+                NOW_PLAY_SONGS[selectedNowPlaySong]
+            );
+        }, 0);
+    }
+);
 
 /* =========================================================
    RHYTHM NOTE SYSTEM
@@ -2424,7 +2223,7 @@ function createGameplayNotes() {
    START NOTE ENGINE
 ========================================================= */
 
-function startGameplayNoteEngine() {
+function startGameplayNoteEngine(myGameplayToken = gameplayLoopToken) {
 
     gameplayNotes =
         createGameplayNotes();
@@ -2454,10 +2253,12 @@ function startGameplayNoteEngine() {
         gameplayFrame
     );
 
-    gameplayFrame =
-        requestAnimationFrame(
-            gameplayNoteLoop
+    if (myGameplayToken === gameplayLoopToken &&
+        document.body.classList.contains("gameplay-active")) {
+        gameplayFrame = requestAnimationFrame(
+            () => gameplayNoteLoop(myGameplayToken)
         );
+    }
 }
 
 
@@ -2465,195 +2266,54 @@ function startGameplayNoteEngine() {
    NOTE LOOP
 ========================================================= */
 
-function gameplayNoteLoop() {
+function gameplayNoteLoop(myGameplayToken = gameplayLoopToken) {
 
-    if (!gameplayAudio) {
+    // Nếu phiên gameplay cũ đã bị thoát/restart thì dừng ngay.
+    if (
+        myGameplayToken !== gameplayLoopToken ||
+        !document.body.classList.contains("gameplay-active")
+    ) {
         return;
     }
 
-    const laneArea =
-        $("gameplayLaneArea");
+    const laneArea = $("gameplayLaneArea");
+    if (!laneArea) return;
 
-    if (!laneArea) {
-        return;
-    }
+    const currentTime = gameplayAudio
+        ? gameplayAudio.currentTime
+        : performance.now() / 1000;
 
-    const currentTime =
-        gameplayAudio.currentTime;
-
-    const areaHeight =
-        laneArea.clientHeight;
-
-    const hitLine =
-        areaHeight - 110;
-
-
-    gameplayNotes.forEach(
-        note => {
-
-            /*
-                Tạo note khi còn cách hit line
-                khoảng 2 giây
-            */
-
-            if (
-                !note.element &&
-                currentTime >=
-                note.time - 2
-            ) {
-
-                createGameplayNote(
-                    note,
-                    laneArea
-                );
-            }
-
-
-            if (
-                !note.element ||
-                note.hit ||
-                note.missed
-            ) {
-                return;
-            }
-
-
-            const difference =
-                note.time -
-                currentTime;
-
-
-            /*
-                Vị trí note:
-                -2 giây = trên cùng
-                0 giây = hit line
-            */
-
-            const progress =
-                1 -
-                (
-                    difference /
-                    2
-                );
-
-
-            const y =
-                -60 +
-                (
-                    hitLine + 60
-                ) *
-                progress;
-
-
-            note.element.style.transform =
-                `translateY(${y}px)`;
-
-
-            /*
-                Quá thời điểm hit
-                mà chưa bấm
-            */
-
-            if (
-                difference <
-                -GAMEPLAY_HIT_WINDOW
-            ) {
-
-                missGameplayNote(
-                    note
-                );
-            }
-
-        }
-    );
-
-
-    gameplayFrame =
-        requestAnimationFrame(
-            gameplayNoteLoop
-        );
-}
-
-function gameplayNoteLoop() {
-
-    const laneArea =
-        $("gameplayLaneArea");
-
-    if (!laneArea) {
-        return;
-    }
-
-    // Có audio thì lấy thời gian nhạc.
-    // Không có audio vẫn cho gameplay chạy.
-    const currentTime =
-        gameplayAudio
-            ? gameplayAudio.currentTime
-            : performance.now() / 1000;
-
-    const areaHeight =
-        laneArea.clientHeight;
-
-    const hitLine =
-        areaHeight - 110;
+    const areaHeight = laneArea.clientHeight;
+    const hitLine = areaHeight - 110;
 
     gameplayNotes.forEach(note => {
-
-        // Tạo note trước thời điểm hit 2 giây
-        if (
-            !note.element &&
-            currentTime >= note.time - 2
-        ) {
-
-            createGameplayNote(
-                note,
-                laneArea
-            );
+        if (!note.element && currentTime >= note.time - 2) {
+            createGameplayNote(note, laneArea);
         }
 
-        if (
-            !note.element ||
-            note.hit ||
-            note.missed
-        ) {
-            return;
-        }
+        if (!note.element || note.hit || note.missed) return;
 
-        const difference =
-            note.time - currentTime;
-
-        // 2 giây trước = trên cùng
-        // 0 giây = hit line
-        const progress =
-            1 - (
-                difference / 2
-            );
-
-        const y =
-            -60 +
-            (
-                hitLine + 60
-            ) * progress;
+        const difference = note.time - currentTime;
+        const progress = 1 - (difference / 2);
+        const y = -60 + (hitLine + 60) * progress;
 
         note.element.style.transform =
             `translate(-50%, ${y}px)`;
 
-        // Quá thời điểm hit
-        if (
-            difference <
-            -GAMEPLAY_HIT_WINDOW
-        ) {
-
+        if (difference < -GAMEPLAY_HIT_WINDOW) {
             missGameplayNote(note);
         }
-
     });
 
-    gameplayFrame =
-        requestAnimationFrame(
-            gameplayNoteLoop
+    if (
+        myGameplayToken === gameplayLoopToken &&
+        document.body.classList.contains("gameplay-active")
+    ) {
+        gameplayFrame = requestAnimationFrame(
+            () => gameplayNoteLoop(myGameplayToken)
         );
+    }
 }
-
 
 
 /* =========================================================
@@ -2844,6 +2504,15 @@ const CARD_INFO_DATA = {
         act:   { base: 4100, perLevel: 2167 },
         skillName: "NO MISS",
         skill: "Sau khi bật Skills, sẽ không thể miss trong: R1 8s • R2 9s • R3 10s • R4 11s • R5 12s."
+    },
+        "Piano": {
+        number: "005",
+        main: "RAP",
+        vocal: { base: 900, perLevel: 700 },
+        rap:   { base: 2600,  perLevel: 1700 },
+        act:   { base: 1700, perLevel: 1200 },
+        skillName: "POWER UP",
+        skill: "Tăng 35% điểm cộng sau mỗi lần bấm Skills, duy trì 10s."
     }
 };
 
@@ -2931,10 +2600,14 @@ function openCardInfo(card) {
 
 function closeCardInfo() {
     $("cardInfoOverlay")?.classList.add("hidden");
+    $("cardInfoOverlay")?.classList.remove("character-info-mode");
     cardInfoTarget = null;
+    cardInfoTargetType = "card";
 }
 
 function renderCardInfo(card) {
+    cardInfoTargetType = "card";
+    $("cardInfoOverlay")?.classList.remove("character-info-mode");
     const data = getCardInfoData(card);
     if (!data) return;
 
@@ -2990,53 +2663,26 @@ function renderCardInfo(card) {
 }
 
 function upgradeCardLevel() {
-    const card = cardInfoTarget;
-    if (!card) return;
-
-    ensureCardProgress(card);
-
-    const maxLevel = getCardMaxLevel(card.rank);
-    const level = Number(card.level);
-
-    if (level >= maxLevel) {
-        showLobbyToast(
-            "MAX LEVEL",
-            card.rank >= CARD_MAX_RANK
-                ? "This card has reached the maximum level."
-                : "Increase the card Rank to unlock more levels."
-        );
-        return;
-    }
-
-    const cost = getCardUpgradeCost(level);
+    const target = cardInfoTarget;
+    if (!target) return;
     const user = getCurrentUser();
     if (!user) return;
+    initGachaData(user);
 
-    const coins = Number(user.coins ?? 0);
-
-    if (coins < cost) {
-        showLobbyToast(
-            "NOT ENOUGH GOLD",
-            `You need ${cost.toLocaleString()} GOLD to upgrade this level.`
-        );
-        return;
+    if (cardInfoTargetType === "character") {
+        const p=getCharacterProgress(target), max=getCharacterMaxLevel(p.rank);
+        if (p.level >= max) { showLobbyToast("MAX LEVEL", p.rank < CHARACTER_MAX_RANK ? "Increase Character Rank to unlock more levels." : "This character has reached the maximum level."); return; }
+        const cost=getCardUpgradeCost(p.level); const coins=Number(user.coins||0);
+        if (coins<cost) { showLobbyToast("NOT ENOUGH GOLD", `You need ${cost.toLocaleString()} GOLD to upgrade this level.`); return; }
+        user.coins=coins-cost; p.level++; user.characterProgress[target.id]=p; updateUser(user); setupLobby(user); renderCharacterInfo(target); renderMyCharacters(); renderTeamSelect(); return;
     }
 
-    user.coins = coins - cost;
-    card.level = level + 1;
-
-    saveCardProgress(card);
-    setupLobby(user);
-    renderCardInfo(card);
-    renderMyCards();
-
-    selectedTeamCards = selectedTeamCards.map(selected =>
-        selected && selected.id === card.id ? card : selected
-    );
-
-    if (typeof renderTeamSelect === "function") {
-        renderTeamSelect();
-    }
+    ensureCardProgress(target);
+    const maxLevel=getCardMaxLevel(target.rank), level=Number(target.level);
+    if (level>=maxLevel) { showLobbyToast("MAX LEVEL", target.rank>=CARD_MAX_RANK ? "This card has reached the maximum level." : "Increase the card Rank to unlock more levels."); return; }
+    const cost=getCardUpgradeCost(level), coins=Number(user.coins||0);
+    if (coins<cost) { showLobbyToast("NOT ENOUGH GOLD", `You need ${cost.toLocaleString()} GOLD to upgrade this level.`); return; }
+    user.coins=coins-cost; target.level=level+1; saveCardProgress(target); setupLobby(user); renderCardInfo(target); renderMyCards(); selectedTeamCards=selectedTeamCards.map(selected=>selected&&selected.id===target.id?target:selected); renderTeamSelect();
 }
 
 $("cardInfoBack")?.addEventListener("click", closeCardInfo);
@@ -3049,7 +2695,12 @@ $("cardInfoOverlay")?.addEventListener("click", event => {
 });
 
 document.addEventListener("keydown", event => {
-    if (event.key === "Escape" && cardInfoTarget) {
+    if (event.key !== "Escape") return;
+    if (characterInfoTarget) {
+        closeCharacterInfo();
+        return;
+    }
+    if (cardInfoTarget) {
         closeCardInfo();
     }
 });
@@ -3640,14 +3291,17 @@ $("emptyCardGacha").addEventListener(
 $("characterButton").addEventListener(
     "click",
     () => {
-
-        showLobbyToast(
-            "CHARACTERS",
-            "Character collection is coming soon."
-        );
-
+        const user = getCurrentUser();
+        if (!user) return;
+        initGachaData(user);
+        renderMyCharacters();
+        showScreen("characterScreen");
     }
 );
+
+$("characterBack")?.addEventListener("click", () => {
+    showScreen("lobbyScreen");
+});
 
 
 $("friendsButton").addEventListener(
@@ -3705,6 +3359,305 @@ $("gachaBack").addEventListener(
 );
 
 /* =========================================================
+   CHARACTER INVENTORY
+========================================================= */
+
+function getOwnedCharacterIds() {
+    const user = getCurrentUser();
+
+    if (!user) return [];
+
+    initGachaData(user);
+
+    // Only characters actually obtained from Character Gacha belong here.
+    return [...new Set((user.myCharacters || []).filter(Boolean))];
+}
+
+
+/* =========================================================
+   CHECK CHARACTER OWNERSHIP
+========================================================= */
+
+function isCharacterOwned(
+    characterId
+) {
+
+    const ownedIds =
+        getOwnedCharacterIds();
+
+    return ownedIds.includes(
+        characterId
+    );
+}
+
+
+/* =========================================================
+   SAVE CHARACTER
+========================================================= */
+
+function saveCharacter(
+    characterId
+) {
+
+    const user =
+        getCurrentUser();
+
+    if (!user) {
+        return false;
+    }
+
+    initGachaData(user);
+
+
+    /*
+        Không lưu default character.
+    */
+    if (
+        characterId ===
+        "mystery"
+    ) {
+        return false;
+    }
+
+
+    /*
+        Đã sở hữu rồi.
+    */
+    if (
+        user.myCharacters.includes(
+            characterId
+        )
+    ) {
+        return false;
+    }
+
+
+    /*
+        Add character vào inventory.
+    */
+    user.myCharacters.push(characterId);
+    if (!user.characterProgress || typeof user.characterProgress !== "object") user.characterProgress = {};
+    if (!user.characterProgress[characterId]) user.characterProgress[characterId] = { rank: 1, level: 1 };
+
+    updateUser(user);
+
+
+    return true;
+}
+
+
+/* =========================================================
+   GET OWNED CHARACTERS
+========================================================= */
+
+function getOwnedCharacters() {
+
+    const ownedIds =
+        getOwnedCharacterIds();
+
+    return CHARACTERS.filter(
+        character =>
+            ownedIds.includes(
+                character.id
+            )
+    );
+}
+
+/* =========================================================
+   CHARACTER PROGRESSION
+========================================================= */
+const CHARACTER_MAX_RANK = 5;
+const CHARACTER_MAX_LEVEL_R1 = 60;
+const CHARACTER_LEVEL_STEP_PER_RANK = 5;
+const CHARACTER_INFO = {
+    lumina: { base: 13400, perLevel: 245, main: "VOCAL", skillName: "RADIANT VOICE", skill: "Boosts performance score during Skills." }
+};
+
+function getCharacterProgress(character) {
+    const user = getCurrentUser();
+    initGachaData(user);
+    if (!user.characterProgress || typeof user.characterProgress !== "object") user.characterProgress = {};
+    const saved = user.characterProgress[character.id] || {};
+    const rank = Math.max(1, Math.min(CHARACTER_MAX_RANK, Number(saved.rank) || 1));
+    const maxLevel = CHARACTER_MAX_LEVEL_R1 + (rank - 1) * CHARACTER_LEVEL_STEP_PER_RANK;
+    const level = Math.max(1, Math.min(maxLevel, Number(saved.level) || 1));
+    user.characterProgress[character.id] = { rank, level };
+    return user.characterProgress[character.id];
+}
+function getCharacterMaxLevel(rank) { return CHARACTER_MAX_LEVEL_R1 + (Math.max(1, Math.min(CHARACTER_MAX_RANK, Number(rank) || 1)) - 1) * CHARACTER_LEVEL_STEP_PER_RANK; }
+function getCharacterStat(character) { const p = getCharacterProgress(character); const d = CHARACTER_INFO[character.id] || {base:0,perLevel:0}; return d.base + (p.level - 1) * d.perLevel; }
+function saveCharacterProgress(character) { const user=getCurrentUser(); if (!user) return; initGachaData(user); user.characterProgress[character.id]=getCharacterProgress(character); updateUser(user); }
+let characterInfoTarget = null;
+
+function openCharacterInfo(character) {
+    if (!character || !isCharacterOwned(character.id)) return;
+
+    // Character Information belongs ONLY to MY CHARACTERS.
+    // Never reuse or open the MY CARD information overlay here.
+    $("cardInfoOverlay")?.classList.add("hidden");
+    $("cardInfoOverlay")?.classList.remove("character-info-mode");
+
+    characterInfoTarget = character;
+    renderCharacterInfo(character);
+
+    const overlay = $("characterInfoOverlay");
+    if (!overlay) return;
+    overlay.classList.remove("hidden");
+    overlay.setAttribute("aria-hidden", "false");
+}
+
+function closeCharacterInfo() {
+    $("characterInfoOverlay")?.classList.add("hidden");
+    $("characterInfoOverlay")?.setAttribute("aria-hidden", "true");
+    characterInfoTarget = null;
+}
+
+function renderCharacterInfo(character) {
+    const p = getCharacterProgress(character);
+    const d = CHARACTER_INFO[character.id] || {};
+    const max = getCharacterMaxLevel(p.rank);
+    $("characterInfoNumber").textContent = `CHARACTER #${character.number || "001"}`;
+    $("characterInfoName").textContent = character.name;
+    $("characterInfoRarity").textContent = getCardStars(character.rarity || 6);
+    $("characterInfoRank").textContent = `RANK ${p.rank}`;
+    $("characterInfoLevel").textContent = `LV. ${p.level} / ${max}`;
+    $("characterInfoLevelFill").style.width = `${Math.min(100, p.level / max * 100)}%`;
+    const cost = getCardUpgradeCost(p.level);
+    const up = $("characterInfoUpgrade");
+    up.disabled = p.level >= max;
+    $("characterInfoUpgradeCost").textContent = p.level >= max
+        ? (p.rank < CHARACTER_MAX_RANK ? "RANK UP REQUIRED" : "MAX LEVEL")
+        : `● ${cost.toLocaleString()} GOLD`;
+    $("characterInfoArt").innerHTML = character.image ? `<img src="${character.image}" alt="${character.name}">` : `<span>✦</span>`;
+    $("characterInfoVocal").textContent = getCharacterStat(character).toLocaleString();
+    $("characterInfoMainType").textContent = d.main || "VOCAL";
+    $("characterInfoSkillName").textContent = d.skillName || "SKILL";
+    $("characterInfoSkillDescription").textContent = d.skill || "—";
+}
+
+function upgradeCharacterLevel() {
+    const character = characterInfoTarget;
+    if (!character) return;
+    const user = getCurrentUser();
+    if (!user) return;
+    initGachaData(user);
+    const p = getCharacterProgress(character);
+    const max = getCharacterMaxLevel(p.rank);
+    if (p.level >= max) {
+        showLobbyToast("MAX LEVEL", p.rank < CHARACTER_MAX_RANK ? "Increase Character Rank to unlock more levels." : "This character has reached the maximum level.");
+        return;
+    }
+    const cost = getCardUpgradeCost(p.level);
+    const coins = Number(user.coins || 0);
+    if (coins < cost) {
+        showLobbyToast("NOT ENOUGH GOLD", `You need ${cost.toLocaleString()} GOLD to upgrade this level.`);
+        return;
+    }
+    user.coins = coins - cost;
+    p.level += 1;
+    user.characterProgress[character.id] = p;
+    updateUser(user);
+    setupLobby(user);
+    renderCharacterInfo(character);
+    renderMyCharacters();
+    renderTeamSelect();
+}
+
+$("characterInfoBack")?.addEventListener("click", closeCharacterInfo);
+$("characterInfoUpgrade")?.addEventListener("click", upgradeCharacterLevel);
+$("characterInfoOverlay")?.addEventListener("click", event => {
+    if (event.target === $("characterInfoOverlay")) closeCharacterInfo();
+});
+
+let cardInfoTargetType = "card";
+/* =========================================================
+   MY CHARACTERS SCREEN
+========================================================= */
+
+function selectCharacter(characterId) {
+    const user = getCurrentUser();
+    if (!user) return;
+    initGachaData(user);
+
+    if (!isCharacterOwned(characterId)) return;
+
+    user.selectedCharacterId = characterId;
+    selectedCharacterId = characterId;
+    updateUser(user);
+    renderMyCharacters();
+
+    showLobbyToast("CHARACTER SELECTED", `${characterId.toUpperCase()} is ready for gameplay.`);
+}
+
+function renderMyCharacters() {
+    const user = getCurrentUser();
+    const grid = $("myCharacterGrid");
+    const count = $("characterCount");
+    const total = $("characterTotal");
+    if (!user || !grid) return;
+
+    initGachaData(user);
+    const owned = getOwnedCharacters();
+    if (count) count.textContent = owned.length;
+    if (total) total.textContent = owned.length;
+    grid.innerHTML = "";
+
+    if (!owned.length) {
+        grid.innerHTML = `
+            <div class="empty-card-state my-character-empty-state">
+                <div class="empty-card-icon">✦</div>
+                <strong>NO CHARACTERS YET</strong>
+                <span>Your limited characters will appear here after you obtain one.</span>
+                <button type="button" id="emptyCharacterGacha">GO TO CHARACTER GACHA</button>
+            </div>`;
+        $("emptyCharacterGacha")?.addEventListener("click", openCharacterBanner);
+        return;
+    }
+
+    owned.forEach((character, index) => {
+        const progress = getCharacterProgress(character);
+        const rarity = Number(character.rarity || 6);
+        const maxLevel = getCharacterMaxLevel(progress.rank);
+        const currentStat = getCharacterStat(character);
+        const article = document.createElement("article");
+        article.className = "my-card my-character-card";
+        article.dataset.rarity = rarity;
+        article.style.animationDelay = `${index * 55}ms`;
+        if (character.id === user.selectedCharacterId) article.classList.add("character-selected");
+        article.innerHTML = `
+            <div class="my-card-top">
+                <span class="my-card-rarity">${getCardStars(rarity)}</span>
+                <span class="my-card-rank">RANK ${progress.rank}</span>
+                <span class="my-card-type">LIMIT</span>
+            </div>
+            <div class="my-card-image my-character-image">
+                ${character.image ? `<img src="${character.image}" alt="${character.name}">` : `<div class="my-card-fallback">✦</div>`}
+            </div>
+            <div class="my-card-info my-character-info-card">
+                <div class="my-character-level-line"><span>LV. ${progress.level} / ${maxLevel}</span><strong>${currentStat.toLocaleString()} VOCAL</strong></div>
+                <div class="my-card-name">${character.name}</div>
+                <div class="my-character-skill-line">${character.skillName || "SKILL"}</div>
+                <div class="my-character-action-row">
+                    <button type="button" class="my-character-use-card">${character.id === user.selectedCharacterId ? "SELECTED" : "USE CHARACTER"}</button>
+                    <button type="button" class="my-character-info-button">INFO</button>
+                </div>
+            </div>`;
+
+        article.querySelector(".my-character-use-card")?.addEventListener("click", event => {
+            event.preventDefault();
+            event.stopPropagation();
+            selectCharacter(character.id);
+        });
+        article.querySelector(".my-character-info-button")?.addEventListener("click", event => {
+            event.preventDefault();
+            event.stopPropagation();
+            openCharacterInfo(character);
+        });
+        grid.appendChild(article);
+    });
+}
+
+/* =========================================================
    GACHA - SIMPLE WORKING VERSION
 ========================================================= */
 
@@ -3746,14 +3699,52 @@ const GACHA_ITEMS = [
     },
 
     {
+        name: "Piano",
+        image: "assets/piano.png",
+        rate: 7,
+        rarity: 5,
+        type: "featured"
+    },
+
+    {
         name: "JUNK",
         image: null,
-        rate: 67.4,
+        rate: 76.7,
         rarity: 1,
         type: "junk"
     }
-];
 
+
+];
+/* =========================================================
+   CHARACTER GACHA POOL
+========================================================= */
+
+const GACHA_CHARACTERS = [
+
+    {
+        id: "lumina",
+
+        name: "LUMINA",
+
+        image:
+            "assets/lumina.png",
+
+        type:
+            "character",
+
+        rarity:
+            6,
+
+        /*
+            Tỉ lệ thấp hơn
+            item featured.
+        */
+        rate:
+            0.33333
+    }
+
+];
 /* =========================================================
    GACHA PITY / HISTORY / MY CARD DATA
 ========================================================= */
@@ -3782,6 +3773,18 @@ function initGachaData(user) {
     if (!Array.isArray(user.myCards)) {
         user.myCards = [];
     }
+if (!Array.isArray(user.myCharacters)) {
+    user.myCharacters = [];
+}
+
+    if (typeof user.selectedCharacterId !== "string") {
+        user.selectedCharacterId = "mystery";
+    }
+
+    if (typeof user.characterPity !== "number" || user.characterPity < 0) {
+        user.characterPity = 0;
+    }
+    if (!user.characterProgress || typeof user.characterProgress !== "object") user.characterProgress = {};
 
     return user;
 }
@@ -3866,6 +3869,11 @@ function saveGachaCards(
 
     results.forEach(
         item => {
+
+            /* Characters belong to My Character, not My Cards. */
+            if (item.type === "character") {
+                return;
+            }
 
             const rarity =
                 Number(
@@ -4055,6 +4063,10 @@ const resultsCount =
 const closeGachaResult =
     document.getElementById("closeGachaResult");
 
+const characterSingleRoll = document.getElementById("characterSingleRoll");
+const characterTenRoll = document.getElementById("characterTenRoll");
+
+
 let gachaBusy = false;
 
 
@@ -4161,6 +4173,28 @@ function getRandomGachaItem() {
 
 
 /* =========================================================
+   RANDOM CHARACTER REWARD
+========================================================= */
+
+function tryRollCharacter() {
+
+    const character =
+        GACHA_CHARACTERS[0];
+
+    if (!character) {
+        return null;
+    }
+
+    /* rate is treated as percent, e.g. 0.5 = 0.5% */
+    if (Math.random() * 100 < Number(character.rate ?? 0)) {
+        return { ...character };
+    }
+
+    return null;
+}
+
+
+/* =========================================================
    UPDATE GEM
 ========================================================= */
 
@@ -4239,6 +4273,14 @@ function updateGachaPityDisplay(
 
     pityElement.textContent =
         user.gachaPity;
+}
+
+
+function updateCharacterPityDisplay(user) {
+    if (!user) return;
+    initGachaData(user);
+    const el = document.getElementById("characterPityCount");
+    if (el) el.textContent = String(user.characterPity || 0);
 }
 
 /* =========================================================
@@ -4556,6 +4598,77 @@ function showGachaResult(
    ROLL
 ========================================================= */
 
+function doCharacterGacha(amount) {
+    if (gachaBusy) return;
+
+    const user = getCurrentUser();
+    if (!user) {
+        showGachaToast("LOGIN REQUIRED", "Vui lòng đăng nhập trước khi roll.");
+        return;
+    }
+
+    initGachaData(user);
+    const cost = amount === 1 ? GACHA_COST_SINGLE : GACHA_COST_TEN;
+    const gems = Number(user.gems || 0);
+    if (gems < cost) {
+        showGachaToast("NOT ENOUGH GEMS", `Bạn cần ${cost} gems để roll.`);
+        return;
+    }
+
+    const character = GACHA_CHARACTERS[0];
+    if (!character) return;
+
+    user.gems = gems - cost;
+    gachaBusy = true;
+    if (singleRoll) singleRoll.disabled = true;
+    if (tenRoll) tenRoll.disabled = true;
+    if (characterSingleRoll) characterSingleRoll.disabled = true;
+    if (characterTenRoll) characterTenRoll.disabled = true;
+
+    const results = [];
+
+    for (let i = 0; i < amount; i++) {
+        user.characterPity = Number(user.characterPity || 0) + 1;
+        const guaranteed = user.characterPity >= 100;
+        const won = guaranteed || (Math.random() * 100 < Number(character.rate || 0));
+
+        if (won) {
+            results.push({ ...character });
+            user.characterPity = 0;
+        } else {
+            results.push({
+                id: `character-miss-${Date.now()}-${i}`,
+                name: "NO CHARACTER",
+                image: null,
+                rarity: 1,
+                type: "character-miss"
+            });
+        }
+    }
+
+    const wonCharacter = results.find(item => item.type === "character");
+    if (wonCharacter) {
+        if (!Array.isArray(user.myCharacters)) user.myCharacters = [];
+        if (!user.myCharacters.includes(wonCharacter.id)) {
+            user.myCharacters.push(wonCharacter.id);
+            if (!user.characterProgress) user.characterProgress = {};
+            user.characterProgress[wonCharacter.id] = { rank: 1, level: 1 };
+        } else {
+            const progress = user.characterProgress?.[wonCharacter.id] || { rank: 1, level: 1 };
+            progress.rank = Math.min(CHARACTER_MAX_RANK, Number(progress.rank || 1) + 1);
+            user.characterProgress[wonCharacter.id] = progress;
+        }
+        user.selectedCharacterId = wonCharacter.id;
+        selectedCharacterId = wonCharacter.id;
+    }
+
+    updateUser(user);
+    renderMyCharacters();
+    updateGachaGemCount(user);
+    updateCharacterPityDisplay(user);
+    showGachaResult(results);
+}
+
 function doGacha(
     amount
 ) {
@@ -4668,7 +4781,9 @@ function doGacha(
         i++
     ) {
 
+        /* Roll character first. If no character drops, roll a normal gacha item. */
         const item =
+            tryRollCharacter() ||
             getRandomGachaItem();
 
 
@@ -4740,6 +4855,13 @@ const cardResult =
         results
     );
 
+/* Save rolled characters into My Character. */
+results
+    .filter(item => item.type === "character")
+    .forEach(item => {
+        saveCharacter(item.id);
+    });
+
 
 /*
     Save user after
@@ -4797,32 +4919,25 @@ if (
    1 ROLL
 ========================================================= */
 
-singleRoll.addEventListener(
-    "click",
-    function () {
+singleRoll?.addEventListener("click", () => {
+    doGacha(1);
+});
 
-        doGacha(
-            1
-        );
-
-    }
-);
-
+characterSingleRoll?.addEventListener("click", () => {
+    doCharacterGacha(1);
+});
 
 /* =========================================================
    10 ROLL
 ========================================================= */
 
-tenRoll.addEventListener(
-    "click",
-    function () {
+tenRoll?.addEventListener("click", () => {
+    doGacha(10);
+});
 
-        doGacha(
-            10
-        );
-
-    }
-);
+characterTenRoll?.addEventListener("click", () => {
+    doCharacterGacha(10);
+});
 
 
 /* =========================================================
@@ -4858,6 +4973,9 @@ closeGachaResult.addEventListener(
         tenRoll.disabled =
             false;
 
+        if (characterSingleRoll) characterSingleRoll.disabled = false;
+        if (characterTenRoll) characterTenRoll.disabled = false;
+
     }
 );
 
@@ -4889,6 +5007,29 @@ gachaOverlay.addEventListener(
 
 
 /* =========================================================
+   GACHA BANNERS
+========================================================= */
+
+let activeGachaBanner = "items";
+
+function setGachaBanner(name) {
+    activeGachaBanner = name;
+    $("currentBannerButton")?.classList.toggle("active", name === "items");
+    $("characterBannerButton")?.classList.toggle("active", name === "character");
+    $("itemGachaContent")?.classList.toggle("hidden", name !== "items");
+    $("characterGachaContent")?.classList.toggle("hidden", name !== "character");
+    updateGachaPityDisplay(getCurrentUser());
+    updateCharacterPityDisplay(getCurrentUser());
+}
+
+function openCharacterBanner() {
+    showScreen("gachaScreen");
+    setGachaBanner("character");
+}
+
+$("characterBannerButton")?.addEventListener("click", openCharacterBanner);
+
+/* =========================================================
    GACHA BANNER
 ========================================================= */
 
@@ -4906,9 +5047,7 @@ $("currentBannerButton")
     .addEventListener(
         "click",
         () => {
-
-            showGachaComingSoon();
-
+            setGachaBanner("items");
         }
     );
 
@@ -5223,6 +5362,262 @@ if (gemPopupCurrent) {
     }
 );
 
+/* =========================================================
+   GOLD SHOP
+========================================================= */
+
+const coinPlus =
+    $("coinPlus");
+
+const coinPopup =
+    $("coinPopup");
+
+const closeCoinPopup =
+    $("closeCoinPopup");
+
+const coinPopupCurrent =
+    $("coinPopupCurrent");
+
+const coinPopupSuccess =
+    $("coinPopupSuccess");
+
+const coinPopupSuccessText =
+    $("coinPopupSuccessText");
+
+const coinPacks =
+    document.querySelectorAll(
+        "#coinPopup .gem-pack"
+    );
+
+
+/* =========================================================
+   OPEN GOLD SHOP
+========================================================= */
+
+function openCoinPopup() {
+
+    const user =
+        getCurrentUser();
+
+    if (!user) {
+
+        showLobbyToast(
+            "LOGIN REQUIRED",
+            "Vui lòng đăng nhập trước."
+        );
+
+        return;
+    }
+
+    const coins =
+        Number(user.coins ?? 0);
+
+    if (coinPopupCurrent) {
+
+        coinPopupCurrent.textContent =
+            coins.toLocaleString();
+
+    }
+
+    if (coinPopup) {
+
+        coinPopup.classList.remove(
+            "hidden"
+        );
+
+    }
+}
+
+
+/* =========================================================
+   CLOSE GOLD SHOP
+========================================================= */
+
+function closeCoinShop() {
+
+    if (!coinPopup) return;
+
+    coinPopup.classList.add(
+        "hidden"
+    );
+}
+
+
+/* =========================================================
+   GOLD PLUS
+========================================================= */
+
+if (coinPlus) {
+
+    coinPlus.addEventListener(
+        "click",
+        event => {
+
+            event.stopPropagation();
+
+            openCoinPopup();
+
+        }
+    );
+
+}
+
+
+/* =========================================================
+   CLOSE GOLD SHOP
+========================================================= */
+
+if (closeCoinPopup) {
+
+    closeCoinPopup.addEventListener(
+        "click",
+        closeCoinShop
+    );
+
+}
+
+
+if (coinPopup) {
+
+    coinPopup.addEventListener(
+        "click",
+        event => {
+
+            if (
+                event.target ===
+                coinPopup
+            ) {
+
+                closeCoinShop();
+
+            }
+
+        }
+    );
+
+}
+
+
+/* =========================================================
+   GOLD PACKS
+========================================================= */
+
+coinPacks.forEach(
+    pack => {
+
+        pack.addEventListener(
+            "click",
+            () => {
+
+                const amount =
+                    Number(
+                        pack.dataset.coins
+                    );
+
+                const user =
+                    getCurrentUser();
+
+                if (!user) {
+
+                    closeCoinShop();
+
+                    showLobbyToast(
+                        "LOGIN REQUIRED",
+                        "Vui lòng đăng nhập trước."
+                    );
+
+                    return;
+                }
+
+
+                /* ADD GOLD */
+
+                user.coins =
+                    Number(
+                        user.coins ?? 0
+                    ) + amount;
+
+
+                /* SAVE */
+
+                updateUser(user);
+
+
+                /* UPDATE LOBBY */
+
+                const newCoinValue =
+                    Number(
+                        user.coins ?? 0
+                    );
+
+                const lobbyCoin =
+                    document.getElementById(
+                        "coinCount"
+                    );
+
+                if (lobbyCoin) {
+
+                    lobbyCoin.textContent =
+                        newCoinValue.toLocaleString();
+
+                }
+
+
+                /* UPDATE POPUP */
+
+                if (coinPopupCurrent) {
+
+                    coinPopupCurrent.textContent =
+                        newCoinValue.toLocaleString();
+
+                }
+
+
+                /* SUCCESS */
+
+                if (coinPopupSuccessText) {
+
+                    coinPopupSuccessText.textContent =
+                        `+${amount.toLocaleString()} GOLD`;
+
+                }
+
+
+                if (coinPopupSuccess) {
+
+                    coinPopupSuccess.classList.remove(
+                        "show"
+                    );
+
+                    void coinPopupSuccess.offsetWidth;
+
+                    coinPopupSuccess.classList.add(
+                        "show"
+                    );
+
+                    clearTimeout(
+                        coinPopupSuccess._hideTimer
+                    );
+
+                    coinPopupSuccess._hideTimer =
+                        setTimeout(
+                            () => {
+
+                                coinPopupSuccess.classList.remove(
+                                    "show"
+                                );
+
+                            },
+                            1800
+                        );
+
+                }
+
+            }
+        );
+
+    }
+);
 
 /* =========================================================
    AUTO INITIALIZE

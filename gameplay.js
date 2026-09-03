@@ -354,7 +354,16 @@
   });
 
   document.querySelectorAll('.keys button').forEach(button => {
-    button.addEventListener('click', () => hit(Number(button.dataset.lane)));
+    const press = (e) => {
+      e.preventDefault();
+      button.classList.add('active');
+      hit(Number(button.dataset.lane));
+    };
+    const release = () => button.classList.remove('active');
+    button.addEventListener('pointerdown', press, { passive:false });
+    button.addEventListener('pointerup', release);
+    button.addEventListener('pointercancel', release);
+    button.addEventListener('pointerleave', release);
   });
 
   $('backBtn').addEventListener('click', () => stop(true));

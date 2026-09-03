@@ -82,3 +82,17 @@ button{font:inherit}
 .result-stats strong {display:block;font-size:18px;margin-top:5px}
 .result-back {border:0;border-radius:9px;background:#ff5f9e;color:#fff;padding:12px 20px;font-size:10px;font-weight:900;letter-spacing:1px;cursor:pointer}
 @media(max-width:700px){.skill-btn{left:10px;bottom:12px;width:78px;height:46px}.result-card{padding:28px 16px}.result-stats{grid-template-columns:repeat(3,1fr)}.result-stats div:last-child{grid-column:2}.result-card h1{font-size:18px}.result-score{font-size:38px}}
+
+/* REALYZE landscape mobile gameplay */
+html,body{touch-action:none;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+.keys button{touch-action:none;-webkit-tap-highlight-color:transparent}
+@media (orientation:landscape) and (max-height:650px){
+  .topbar{height:48px;padding:0 10px}.score-track{top:48px}.stage{height:calc(100vh - 48px)}
+  .lane-area{height:calc(100vh - 70px);margin-top:10px;width:min(620px,78vw)}
+  .combo{top:58px}.judgement{top:105px}.keys{bottom:7px;grid-template-columns:repeat(4,minmax(44px,54px));gap:7px}.keys button{height:38px}
+  .skill-btn{left:10px;bottom:8px;height:42px;width:76px}
+  .song-info strong{font-size:11px}.score-box strong{font-size:17px}
+}
+@media (orientation:portrait){
+  body::before{content:'PLEASE ROTATE YOUR PHONE';position:fixed;inset:0;z-index:9999;background:#fff;display:flex;align-items:center;justify-content:center;text-align:center;font-size:14px;font-weight:900;letter-spacing:2px;color:#ff5f9e;padding:30px}
+}
