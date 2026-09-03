@@ -1231,7 +1231,8 @@ const NOW_PLAY_SONGS = [
 ========================================================= */
 
 const GAMEPLAY_SONGS = {
-    0: "assets/song-01_[cut_98sec].mp3"
+    0: "assets/song-01_[cut_98sec].mp3",
+    1: "assets/song-022_[cut_133sec].mp3"
 };
 
 let selectedNowPlaySong = 0;
