@@ -100,3 +100,42 @@ html,body{touch-action:none;-webkit-user-select:none;user-select:none;-webkit-to
 
 /* Mobile uses the same 1440px PC layout and scales it to the landscape viewport. */
 .lane-area, .keys, .skill-btn { touch-action: none; -webkit-tap-highlight-color: transparent; }
+
+/* =========================================================
+   MOBILE GAMEPLAY — SAME PC COMPOSITION + TOUCH
+========================================================= */
+@media (max-width: 900px) and (orientation: landscape) {
+  html, body, .game { min-width: 0 !important; width: 100% !important; }
+  .lane-area { touch-action: none; }
+  .lanes, .hit-line { touch-action: none; }
+  .keys button { touch-action: manipulation; }
+}
+
+
+/* Mobile: keep the PC gameplay composition and scale it as one canvas. */
+@media (max-width: 900px) {
+  html, body { overflow: hidden !important; width: 100%; height: 100%; }
+  body { --realyze-mobile-scale: 1; }
+  body.realyze-mobile-pc .game {
+    width: 1440px !important;
+    height: 900px !important;
+    min-width: 1440px !important;
+    transform: scale(var(--realyze-mobile-scale));
+    transform-origin: top left;
+  }
+  body.realyze-mobile-pc::before {
+    content: "ROTATE YOUR PHONE";
+    position: fixed;
+    inset: 0;
+    z-index: 999999;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    background: #fffafd;
+    color: #ed397e;
+    font: 900 18px Arial, sans-serif;
+  }
+}
+@media (max-width: 900px) and (orientation: portrait) {
+  body.realyze-mobile-pc::before { display: flex; }
+}

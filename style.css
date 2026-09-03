@@ -8567,3 +8567,108 @@ body {
     z-index: 2;
     pointer-events: auto;
 }
+
+/* =========================================================
+   MOBILE COMPATIBILITY — KEEP THE PC UI, SCALE IT AS ONE UNIT
+   Do not rearrange/hide the desktop interface on phones.
+========================================================= */
+@media (max-width: 900px) {
+  html, body {
+    min-width: 0 !important;
+    overflow-x: hidden !important;
+  }
+  body {
+    /* The 1440px viewport meta keeps the desktop composition intact. */
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+  }
+  .game-screen,
+  .screen {
+    width: 100% !important;
+  }
+  /* Undo the old mobile layout changes that hid/reflowed desktop UI. */
+  .play-brand,
+  .play-resources .play-resource:nth-child(2),
+  .play-resources .play-resource:nth-child(3),
+  .resource:nth-child(2),
+  .resource:nth-child(3),
+  .banner-list-title,
+  .banner-note {
+    display: initial;
+  }
+  .play-brand { display: block; }
+  .play-resources .play-resource:nth-child(2),
+  .play-resources .play-resource:nth-child(3),
+  .resource:nth-child(2),
+  .resource:nth-child(3) { display: flex; }
+}
+
+
+/* =========================================================
+   MOBILE: DESKTOP COMPOSITION SCALE
+   Keep the exact PC composition on phones. The page is designed
+   on a 1440px desktop canvas and is scaled as one unit in landscape.
+========================================================= */
+@media (max-width: 900px) {
+  html, body {
+    width: 100%;
+    min-width: 0;
+    margin: 0;
+    padding: 0;
+    overflow-x: hidden !important;
+  }
+
+  body {
+    --realyze-mobile-scale: 1;
+    position: relative;
+    background: #fffafd;
+  }
+
+  /* Do NOT let old responsive rules reflow the PC composition. */
+  body.realyze-mobile-pc .game-screen,
+  body.realyze-mobile-pc .screen {
+    width: 1440px !important;
+    min-width: 1440px !important;
+    min-height: 900px !important;
+    height: 900px !important;
+    transform: scale(var(--realyze-mobile-scale));
+    transform-origin: top left;
+  }
+
+  body.realyze-mobile-pc {
+    overflow: hidden !important;
+  }
+
+  /* Fixed overlays live outside .game-screen, so scale them too. */
+  body.realyze-mobile-pc > .card-info-overlay,
+  body.realyze-mobile-pc > .exchange-card-overlay,
+  body.realyze-mobile-pc > .gacha-result-overlay,
+  body.realyze-mobile-pc > .gem-popup-overlay,
+  body.realyze-mobile-pc > .lobby-music-overlay {
+    transform: scale(var(--realyze-mobile-scale));
+    transform-origin: top left;
+    width: calc(100vw / var(--realyze-mobile-scale));
+    height: calc(100vh / var(--realyze-mobile-scale));
+  }
+}
+
+@media (max-width: 900px) and (orientation: portrait) {
+  body.realyze-mobile-pc::before {
+    content: "ROTATE YOUR PHONE\A\A REALYZE!! is designed to be played in landscape.";
+    white-space: pre;
+    position: fixed;
+    inset: 0;
+    z-index: 999999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 30px;
+    background: #fffafd;
+    color: #ed397e;
+    font-family: Nunito, Arial, sans-serif;
+    font-size: 18px;
+    font-weight: 900;
+    letter-spacing: 1px;
+  }
+}

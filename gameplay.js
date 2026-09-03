@@ -2,6 +2,24 @@
   'use strict';
 
   const $ = id => document.getElementById(id);
+
+
+  // Keep gameplay on the same 1440px PC canvas on mobile.
+  function applyMobileDesktopScale() {
+    if (!window.matchMedia('(max-width: 900px)').matches) {
+      document.body.classList.remove('realyze-mobile-pc');
+      return;
+    }
+    const sw = Math.max(1, Number(window.screen?.width || window.innerWidth));
+    const sh = Math.max(1, Number(window.screen?.height || window.innerHeight));
+    const landscapeWidth = Math.max(sw, sh);
+    const scale = Math.min(landscapeWidth / 1440, 1);
+    document.body.classList.add('realyze-mobile-pc');
+    document.body.style.setProperty('--realyze-mobile-scale', String(scale));
+  }
+  window.addEventListener('resize', applyMobileDesktopScale, {passive:true});
+  window.addEventListener('orientationchange', () => setTimeout(applyMobileDesktopScale, 80), {passive:true});
+  applyMobileDesktopScale();
   const params = new URLSearchParams(location.search);
   const songIndex = Number(params.get('song') || 0);
   const difficulty = params.get('difficulty') || 'EASY';
