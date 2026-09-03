@@ -1,0 +1,84 @@
+*{box-sizing:border-box}
+html,body{margin:0;width:100%;height:100%;overflow:hidden;font-family:Arial,Helvetica,sans-serif;background:#fff;color:#222}
+button{font:inherit}
+.game{width:100%;height:100vh;background:#fff;position:relative;overflow:hidden}
+.topbar{height:70px;border-bottom:1px solid #eee;display:flex;align-items:center;justify-content:space-between;padding:0 22px;position:relative;z-index:10;background:#fff}
+.back{border:1px solid #ddd;background:#fff;border-radius:8px;padding:9px 14px;font-size:11px;font-weight:900;cursor:pointer}
+.song-info{position:absolute;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:3px;white-space:nowrap}
+.song-info small{font-size:8px;letter-spacing:2px;font-weight:900;color:#ff5f9e}.song-info strong{font-size:15px}.song-info span{font-size:8px;letter-spacing:1px;color:#999;font-weight:900}
+.score-box{text-align:right}.score-box small{display:block;color:#999;font-size:8px;letter-spacing:1px;font-weight:900}.score-box strong{font-size:21px;color:#ff5f9e}
+.score-track{height:4px;background:#eee;position:absolute;top:70px;left:0;width:100%;z-index:11}.score-track div{height:100%;width:0;background:#ff5f9e;transition:width .12s}
+.stage{height:calc(100vh - 70px);display:flex;justify-content:center;position:relative}
+.lane-area{position:relative;width:min(680px,90vw);height:calc(100vh - 120px);margin-top:30px;border-left:1px solid #eee;border-right:1px solid #eee;overflow:hidden;background:#fff}
+.lanes{position:absolute;inset:0;display:grid;grid-template-columns:repeat(4,1fr);z-index:1}.lanes i{border-right:1px solid #f0f0f0}.lanes i:last-child{border-right:0}
+.hit-line{position:absolute;left:0;right:0;bottom:82px;height:5px;display:grid;grid-template-columns:repeat(4,1fr);gap:4px;z-index:5}.hit-line i{background:#ff5f9e;border-radius:99px;box-shadow:0 0 12px rgba(255,95,158,.25)}
+.note{position:absolute;top:0;width:calc(25% - 12px);height:28px;border-radius:8px;background:#ff5f9e;box-shadow:0 5px 16px rgba(255,95,158,.22);z-index:4;transform:translate(-50%,0);pointer-events:none}.note::after{content:"";position:absolute;inset:4px;border-radius:5px;background:rgba(255,255,255,.2)}
+.note.hold{height:var(--hold-height,100px);transform:translate(-50%,0)}
+.note.hit{animation:hit .16s ease forwards}@keyframes hit{to{opacity:0;transform:translate(-50%,0) scale(1.25)}}
+.combo{position:absolute;top:100px;left:50%;transform:translateX(-50%);z-index:8;text-align:center;pointer-events:none}.combo strong{display:block;font-size:38px;line-height:1}.combo span{font-size:8px;letter-spacing:2px;font-weight:900;color:#ff5f9e}
+.judgement{position:absolute;top:162px;left:50%;transform:translateX(-50%);z-index:9;min-width:100px;text-align:center;font-size:17px;font-weight:900;color:#ff5f9e;pointer-events:none}.judgement.pop{animation:pop .2s ease}@keyframes pop{from{opacity:0;transform:translate(-50%,8px) scale(.8)}to{opacity:1;transform:translate(-50%,0) scale(1)}}
+.keys{position:absolute;bottom:17px;left:50%;transform:translateX(-50%);display:grid;grid-template-columns:repeat(4,54px);gap:10px;z-index:12}.keys button{height:32px;border:1px solid #ddd;background:#fff;border-radius:8px;color:#999;font-size:11px;font-weight:900}.keys button.active{border-color:#ff5f9e;background:#fff1f7;color:#ff5f9e;transform:translateY(-2px)}
+.ready{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:20;font-weight:900;font-size:20px;letter-spacing:3px;color:#ff5f9e;opacity:0;pointer-events:none}.ready.show{animation:ready 1.2s ease}@keyframes ready{0%{opacity:0;transform:translate(-50%,-50%) scale(.8)}25%,75%{opacity:1}100%{opacity:0;transform:translate(-50%,-50%) scale(1.05)}}
+@media(max-width:700px){.topbar{height:62px;padding:0 10px}.score-track{top:62px}.stage{height:calc(100vh - 62px)}.lane-area{width:96vw;height:calc(100vh - 105px);margin-top:25px}.song-info strong{font-size:12px;max-width:150px;overflow:hidden;text-overflow:ellipsis}.combo{top:88px}.judgement{top:148px}.keys{grid-template-columns:repeat(4,46px);gap:7px}.keys button{width:46px;height:30px}}
+
+/* Easy hold assist: long notes are judged on the initial press, no precise release timing required. */
+.note.hold{min-height:42px}
+
+/* =========================================================
+   SKILL BUTTON
+========================================================= */
+.skill-btn {
+  position:absolute;
+  left:24px;
+  bottom:18px;
+  z-index:30;
+  width:92px;
+  height:52px;
+  border:1px solid #ddd;
+  border-radius:10px;
+  background:#fff;
+  color:#999;
+  cursor:pointer;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:2px;
+}
+.skill-btn .skill-title {font-size:9px;letter-spacing:2px;font-weight:900}
+.skill-btn strong {font-size:12px;font-weight:900}
+.skill-btn.ready {border-color:#ff5f9e;background:#fff1f7;color:#ff5f9e;box-shadow:0 0 16px rgba(255,95,158,.18)}
+.skill-btn.active {transform:translateY(-2px);background:#ff5f9e;color:#fff}
+
+/* =========================================================
+   RESULT
+========================================================= */
+.result {
+  position:absolute;
+  inset:0;
+  z-index:200;
+  background:rgba(255,255,255,.97);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+.result.hidden {display:none}
+.result-card {
+  width:min(560px,92vw);
+  padding:36px 34px 30px;
+  border:1px solid #eee;
+  border-radius:18px;
+  background:#fff;
+  box-shadow:0 20px 60px rgba(0,0,0,.08);
+  text-align:center;
+}
+.result-label {font-size:9px;letter-spacing:3px;font-weight:900;color:#ff5f9e}
+.result-card h1 {margin:8px 0 4px;font-size:24px}
+.result-score {font-size:48px;font-weight:900;color:#ff5f9e;margin-top:8px}
+.result-rank {font-size:34px;font-weight:900;margin:4px 0 22px}
+.result-stats {display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:26px}
+.result-stats div {padding:12px 4px;border:1px solid #eee;border-radius:9px}
+.result-stats span {display:block;font-size:7px;letter-spacing:.5px;color:#999;font-weight:900}
+.result-stats strong {display:block;font-size:18px;margin-top:5px}
+.result-back {border:0;border-radius:9px;background:#ff5f9e;color:#fff;padding:12px 20px;font-size:10px;font-weight:900;letter-spacing:1px;cursor:pointer}
+@media(max-width:700px){.skill-btn{left:10px;bottom:12px;width:78px;height:46px}.result-card{padding:28px 16px}.result-stats{grid-template-columns:repeat(3,1fr)}.result-stats div:last-child{grid-column:2}.result-card h1{font-size:18px}.result-score{font-size:38px}}

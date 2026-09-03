@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>REALYZE!! — Gameplay</title>
+<link rel="stylesheet" href="gameplay.css">
+</head>
+<body>
+<section id="game" class="game">
+  <header class="topbar">
+    <button id="backBtn" class="back">← BACK</button>
+    <div class="song-info">
+      <small>REALYZE!!</small>
+      <strong id="songName">VIRTUAL TO LIVE</strong>
+      <span id="difficulty">EASY</span>
+    </div>
+    <div class="score-box"><small>SCORE</small><strong id="score">0</strong></div>
+  </header>
+
+  <div class="score-track"><div id="scoreFill"></div></div>
+  <div id="combo" class="combo"><strong id="comboNumber">0</strong><span>COMBO</span></div>
+  <div id="judgement" class="judgement"></div>
+
+  <main class="stage">
+    <div id="laneArea" class="lane-area">
+      <div class="lanes"><i></i><i></i><i></i><i></i></div>
+      <div class="hit-line"><i></i><i></i><i></i><i></i></div>
+    </div>
+  </main>
+
+  <div class="keys">
+    <button data-lane="0" data-key="d">D</button>
+    <button data-lane="1" data-key="f">F</button>
+    <button data-lane="2" data-key="j">J</button>
+    <button data-lane="3" data-key="k">K</button>
+  </div>
+
+  <button id="skillBtn" class="skill-btn" type="button">
+    <span class="skill-title">SKILL</span>
+    <strong id="skillTimer">READY</strong>
+  </button>
+
+  <div id="ready" class="ready">GET READY</div>
+
+  <!-- RESULT -->
+  <section id="result" class="result hidden">
+    <div class="result-card">
+      <small class="result-label">SONG COMPLETE</small>
+      <h1 id="resultTitle">VIRTUAL TO LIVE</h1>
+      <div class="result-score" id="resultScore">0</div>
+      <div class="result-rank" id="resultRank">C</div>
+
+      <div class="result-stats">
+        <div><span>PERFECT</span><strong id="resultPerfect">0</strong></div>
+        <div><span>GREAT</span><strong id="resultGreat">0</strong></div>
+        <div><span>OKAY</span><strong id="resultOkay">0</strong></div>
+        <div><span>MISS</span><strong id="resultMiss">0</strong></div>
+        <div><span>MAX COMBO</span><strong id="resultMaxCombo">0</strong></div>
+      </div>
+
+      <button id="resultBackBtn" class="result-back" type="button">BACK TO SONG SELECT</button>
+    </div>
+  </section>
+</section>
+<script src="gameplay.js"></script>
+</body>
+</html>
