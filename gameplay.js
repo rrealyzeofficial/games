@@ -13,7 +13,7 @@
     const sw = Math.max(1, Number(window.screen?.width || window.innerWidth));
     const sh = Math.max(1, Number(window.screen?.height || window.innerHeight));
     const landscapeWidth = Math.max(sw, sh);
-    const scale = Math.min(landscapeWidth / 1440, 1);
+    const scale = Math.min((landscapeWidth / 1440) * 0.88, 1);
     document.body.classList.add('realyze-mobile-pc');
     document.body.style.setProperty('--realyze-mobile-scale', String(scale));
   }

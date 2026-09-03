@@ -120,8 +120,11 @@ html,body{touch-action:none;-webkit-user-select:none;user-select:none;-webkit-to
     width: 1440px !important;
     height: 900px !important;
     min-width: 1440px !important;
-    transform: scale(var(--realyze-mobile-scale));
-    transform-origin: top left;
+    position: absolute !important;
+    left: 50% !important;
+    top: 0 !important;
+    transform: translateX(-50%) scale(var(--realyze-mobile-scale));
+    transform-origin: top center;
   }
   body.realyze-mobile-pc::before {
     content: "ROTATE YOUR PHONE";
