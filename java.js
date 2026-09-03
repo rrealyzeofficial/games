@@ -1,3 +1,11 @@
+// GHI ĐÈ BẢO VỆ: Chặn không cho ứng dụng tự động Logout khi gặp lỗi
+window.clearAuth = function(reason) {
+    console.error("=== PHÁT HIỆN TÁC NHÂN ĐẨY RA LOGIN ===");
+    console.error("Lý do:", reason);
+    console.trace(); // In ra toàn bộ dấu vết lịch sử gọi hàm
+    alert("Đã chặn văng out Login! Hãy mở F12 Console xem log màu đỏ.");
+};
+
 /* =========================================================
    REALYZE!!
    Main JavaScript
@@ -152,15 +160,15 @@ if (path === "/api/friends/chat" && method === "POST") {
         throw new Error("Tin nhắn không được để trống.");
     }
 
-    // Gửi trực tiếp tin nhắn qua RPC
-    const { error } = await db.rpc("send_friend_message", {
+    // Gọi trực tiếp hàm RPC gửi tin nhắn trên Supabase
+    const { data, error } = await db.rpc("send_friend_message", {
         target_username: username,
         message_body: text
     });
 
     if (error) {
-        console.error("SUPABASE SEND MESSAGE ERROR:", error);
-        throw new Error(error.message || "Không thể gửi tin nhắn.");
+        console.error("SUPABASE RPC ERROR:", error);
+        throw new Error(error.message || "Lỗi từ cơ sở dữ liệu Supabase.");
     }
 
     return { ok: true };
@@ -5941,70 +5949,28 @@ async function openFriendChat(n){const u=await syncMe();if(!u||(u.friends||[]).i
 function closeFriendChat(){activeFriendChatUser=null;activeFriendChatMessages=[];$("friendChatOverlay")?.classList.add('hidden');$("friendChatOverlay")?.setAttribute('aria-hidden','true');}
 function renderFriendChatMessages(){const u=getCurrentUser(),box=$("friendChatMessages");if(!u||!box)return;box.innerHTML=activeFriendChatMessages.length?activeFriendChatMessages.map(m=>`<div class="friend-chat-message ${m.from===u.username?'mine':'theirs'}"><span>${escapeFriendHtml(m.text)}</span></div>`).join(''):'<div class="friend-chat-empty">Chưa có tin nhắn. Hãy bắt đầu cuộc trò chuyện!</div>';box.scrollTop=box.scrollHeight;}
 async function sendFriendMessage(text) {
-    if (!activeFriendChatUser || !text.trim()) return;
+    if (!text || !text.trim()) return;
+    
+    // Giả sử targetUsername là người bạn đang chat cùng
+    const currentChatTarget = window.currentChatTarget; 
 
     try {
-        if (!window.REALYZE_DB) {
-            throw new Error('Supabase chưa được kết nối.');
+        const res = await apiRequest("/api/friends/chat", {
+            method: "POST",
+            body: JSON.stringify({
+                username: currentChatTarget,
+                text: text.trim()
+            })
+        });
+        
+        // Gửi thành công -> Tải lại danh sách tin nhắn
+        if (typeof loadFriendChat === 'function') {
+            loadFriendChat(currentChatTarget);
         }
-
-        // Lấy tài khoản Supabase hiện tại
-        const { data: authData, error: authError } =
-            await window.REALYZE_DB.auth.getUser();
-
-        if (authError || !authData.user) {
-            throw new Error('Phiên đăng nhập đã hết. Hãy đăng nhập lại.');
-        }
-
-        const myId = authData.user.id;
-
-        // Gửi tin nhắn bằng RPC hiện có
-        const { error: sendError } =
-            await window.REALYZE_DB.rpc('send_friend_message', {
-                target_username: activeFriendChatUser,
-                message_body: text.trim()
-            });
-
-        if (sendError) throw sendError;
-
-        // Tìm UUID của người đang chat
-        const { data: targetProfile, error: targetError } =
-            await window.REALYZE_DB
-                .from('profiles')
-                .select('id, username')
-                .eq('username', activeFriendChatUser)
-                .single();
-
-        if (targetError) throw targetError;
-
-        // Lấy toàn bộ tin nhắn giữa 2 người
-        const { data: messages, error: messageError } =
-            await window.REALYZE_DB
-                .from('messages')
-                .select('sender_id, receiver_id, body, created_at')
-                .or(
-                    `and(sender_id.eq.${myId},receiver_id.eq.${targetProfile.id}),` +
-                    `and(sender_id.eq.${targetProfile.id},receiver_id.eq.${myId})`
-                )
-                .order('created_at', { ascending: true });
-
-        if (messageError) throw messageError;
-
-        activeFriendChatMessages = (messages || []).map(m => ({
-            from: m.sender_id === myId
-                ? getCurrentUser().username
-                : activeFriendChatUser,
-            text: m.body
-        }));
-
-        renderFriendChatMessages();
-
-    } catch (e) {
-        console.error('SEND CHAT ERROR:', e);
-        showLobbyToast(
-            'CHAT',
-            e.message || 'Không thể gửi tin nhắn.'
-        );
+    } catch (err) {
+        console.error("Lỗi gửi tin nhắn:", err);
+        // HIỂN THỊ THÔNG BÁO LỖI THAY VÌ ĐỂ APP TỰ VĂNG RA LOGIN
+        alert("Gửi tin nhắn thất bại: " + err.message);
     }
 }
 function initFriendSystem() {
