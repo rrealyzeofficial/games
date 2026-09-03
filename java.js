@@ -5932,32 +5932,63 @@ async function sendFriendMessage(text) {
             throw new Error('Supabase chưa được kết nối.');
         }
 
-        const u = getCurrentUser();
-        if (!u) {
-            throw new Error('Bạn chưa đăng nhập.');
+        // Lấy tài khoản Supabase hiện tại
+        const { data: authData, error: authError } =
+            await window.REALYZE_DB.auth.getUser();
+
+        if (authError || !authData.user) {
+            throw new Error('Phiên đăng nhập đã hết. Hãy đăng nhập lại.');
         }
 
-        const { error: sendError } = await window.REALYZE_DB
-            .rpc('send_friend_message', {
-                p_username: activeFriendChatUser,
-                p_text: text.trim()
+        const myId = authData.user.id;
+
+        // Gửi tin nhắn bằng RPC hiện có
+        const { error: sendError } =
+            await window.REALYZE_DB.rpc('send_friend_message', {
+                target_username: activeFriendChatUser,
+                message_body: text.trim()
             });
 
         if (sendError) throw sendError;
 
-        const { data, error: getError } = await window.REALYZE_DB
-            .rpc('get_friend_messages', {
-                p_username: activeFriendChatUser
-            });
+        // Tìm UUID của người đang chat
+        const { data: targetProfile, error: targetError } =
+            await window.REALYZE_DB
+                .from('profiles')
+                .select('id, username')
+                .eq('username', activeFriendChatUser)
+                .single();
 
-        if (getError) throw getError;
+        if (targetError) throw targetError;
 
-        activeFriendChatMessages = Array.isArray(data) ? data : [];
+        // Lấy toàn bộ tin nhắn giữa 2 người
+        const { data: messages, error: messageError } =
+            await window.REALYZE_DB
+                .from('messages')
+                .select('sender_id, receiver_id, body, created_at')
+                .or(
+                    `and(sender_id.eq.${myId},receiver_id.eq.${targetProfile.id}),` +
+                    `and(sender_id.eq.${targetProfile.id},receiver_id.eq.${myId})`
+                )
+                .order('created_at', { ascending: true });
+
+        if (messageError) throw messageError;
+
+        activeFriendChatMessages = (messages || []).map(m => ({
+            from: m.sender_id === myId
+                ? getCurrentUser().username
+                : activeFriendChatUser,
+            text: m.body
+        }));
+
         renderFriendChatMessages();
 
     } catch (e) {
         console.error('SEND CHAT ERROR:', e);
-        showLobbyToast('CHAT', e.message || 'Không thể gửi tin nhắn.');
+        showLobbyToast(
+            'CHAT',
+            e.message || 'Không thể gửi tin nhắn.'
+        );
     }
 }
 function initFriendSystem(){$("friendsButton")?.addEventListener('click',async()=>{if(!getCurrentUser())return;await renderFriends();$("friendSearchInput").value='';$("friendSearchResults").innerHTML='<div class="friends-empty">Nhập ID Name để tìm người chơi.</div>';showScreen('friendsScreen');});$("friendsBack")?.addEventListener('click',()=>showScreen('lobbyScreen'));$("friendSearchButton")?.addEventListener('click',searchFriends);$("friendSearchInput")?.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();searchFriends();}});$("friendChatClose")?.addEventListener('click',closeFriendChat);$("friendChatSend")?.addEventListener('click',()=>{const i=$("friendChatInput");if(i){sendFriendMessage(i.value);i.value='';}});$("friendChatInput")?.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();$("friendChatSend")?.click();}});}
