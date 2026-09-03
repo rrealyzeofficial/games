@@ -8638,7 +8638,7 @@ body {
 
   /* Do NOT let old responsive rules reflow the PC composition. */
   body.realyze-mobile-pc .game-screen,
-  body.realyze-mobile-pc .screen {
+  body.realyze-mobile-pc .screen:not(#authScreen) {
     width: 1440px !important;
     min-width: 1440px !important;
     min-height: 900px !important;
