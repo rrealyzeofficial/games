@@ -38,24 +38,134 @@ const $ = (id) => document.getElementById(id);
 })();
 
 function getUsers() {
-    try {
-        return JSON.parse(
-            localStorage.getItem("realyze_users") || "{}"
-        );
-    } catch (error) {
-        console.error("Cannot read users:", error);
-        return {};
+    try { const cached = JSON.parse(localStorage.getItem("realyze_user_cache") || "null"); return cached?.username ? {[cached.username]: cached} : {}; } catch { return {}; }
+}
+function saveUsers(users) { const current = localStorage.getItem("realyze_current_user"); if (current && users?.[current]) localStorage.setItem("realyze_user_cache", JSON.stringify(users[current])); }
+const API_BASE = "";
+
+async function getDbSession() {
+    if (!window.REALYZE_DB) throw new Error("Supabase chưa được cấu hình. Hãy sửa supabase-config.js.");
+    const { data, error } = await window.REALYZE_DB.auth.getSession();
+    if (error) throw error;
+    return data.session;
+}
+
+async function loadRemoteUser() {
+    const session = await getDbSession();
+    if (!session?.user) throw new Error("Unauthorized");
+    const db = window.REALYZE_DB;
+    const { data: profile, error: profileError } = await db.from("profiles").select("id, username, game_data, created_at").eq("id", session.user.id).single();
+    if (profileError) throw profileError;
+    const { data: fd, error: fdError } = await db.rpc("get_friend_data");
+    if (fdError) throw fdError;
+    return {
+        ...(profile.game_data || {}),
+        username: profile.username,
+        friends: fd?.friends || [],
+        friendRequests: fd?.friendRequests || [],
+        sentFriendRequests: fd?.sentFriendRequests || [],
+        _supabaseId: profile.id
+    };
+}
+
+async function apiRequest(path, options = {}) {
+    const db = window.REALYZE_DB;
+    if (!db) throw new Error("Supabase chưa được cấu hình. Hãy sửa supabase-config.js.");
+    const method = (options.method || "GET").toUpperCase();
+    let body = {};
+    try { body = options.body ? JSON.parse(options.body) : {}; } catch (_) {}
+
+    if (path === "/api/register" && method === "POST") {
+        const username = String(body.username || "").trim();
+        const password = String(body.password || "");
+        const email = `${username.toLowerCase()}@accounts.realyze.local`;
+        const { data, error } = await db.auth.signUp({ email, password, options: { data: { username } } });
+        if (error) throw new Error(error.message);
+        if (!data.session) throw new Error("Đăng ký thành công. Hãy tắt Email Confirmations trong Supabase Auth để đăng nhập ngay bằng ID Name.");
+        const user = await loadRemoteUser();
+        return { user };
+    }
+
+    if (path === "/api/login" && method === "POST") {
+        const username = String(body.username || "").trim();
+        const email = `${username.toLowerCase()}@accounts.realyze.local`;
+        const { data, error } = await db.auth.signInWithPassword({ email, password: String(body.password || "") });
+        if (error) throw new Error("ID Name hoặc Password không đúng.");
+        const user = await loadRemoteUser();
+        return { user };
+    }
+
+    if (path === "/api/me" && method === "GET") return { user: await loadRemoteUser() };
+
+    if (path === "/api/user" && method === "PUT") {
+        await getDbSession();
+        const incoming = body.user || {};
+        const allowed = ['gems','coins','tickets','rank','gachaPity','characterPity','gachaHistory','myCards','myCharacters','selectedCharacterId'];
+        const current = await loadRemoteUser();
+        for (const k of allowed) if (Object.prototype.hasOwnProperty.call(incoming, k)) current[k] = incoming[k];
+        const { error } = await db.from("profiles").update({ game_data: Object.fromEntries(allowed.map(k => [k, current[k]]).filter(([,v]) => v !== undefined)) }).eq("id", current._supabaseId);
+        if (error) throw error;
+        const user = await loadRemoteUser();
+        cacheUser(user);
+        return { user };
+    }
+
+    if (path.startsWith("/api/friends/search") && method === "GET") {
+        const q = new URLSearchParams(path.split("?")[1] || "").get("q")?.trim() || "";
+        const { data, error } = await db.rpc("search_profile", { search_username: q });
+        if (error) throw error;
+        const target = data?.[0];
+        if (!target) throw new Error("Không tìm thấy ID Name này.");
+        return { user: { username: target.username, _supabaseId: target.id } };
+    }
+
+    const rpcMap = {
+        "/api/friends/request": "send_friend_request",
+        "/api/friends/accept": "accept_friend_request",
+        "/api/friends/decline": "decline_friend_request",
+        "/api/friends/cancel": "cancel_friend_request"
+    };
+    if (method === "POST" && rpcMap[path]) {
+        const arg = Object.values(body)[0];
+        const { error } = await db.rpc(rpcMap[path], { [rpcMap[path] === "send_friend_request" || rpcMap[path] === "cancel_friend_request" ? "target_username" : "requester_username"]: String(arg || "") });
+        if (error) throw error;
+        return { user: await loadRemoteUser() };
+    }
+
+    if (path.startsWith("/api/friends/chat") && method === "GET") {
+        const q = new URLSearchParams(path.split("?")[1] || "").get("username")?.trim() || "";
+        const { data: targetRows, error: targetError } = await db.rpc("search_profile", { search_username: q });
+        if (targetError || !targetRows?.[0]) throw new Error("User not found.");
+        const session = await getDbSession();
+        const targetId = targetRows[0].id;
+        const { data, error } = await db.from("messages").select("id, sender_id, receiver_id, body, created_at").or(`and(sender_id.eq.${session.user.id},receiver_id.eq.${targetId}),and(sender_id.eq.${targetId},receiver_id.eq.${session.user.id})`).order("created_at", { ascending: true });
+        if (error) throw error;
+        const me = await loadRemoteUser();
+        return { messages: (data || []).map(m => ({ from: m.sender_id === session.user.id ? me.username : q, text: m.body, time: new Date(m.created_at).getTime() })) };
+    }
+
+    if (path === "/api/friends/chat" && method === "POST") {
+        const { error } = await db.rpc("send_friend_message", { target_username: String(body.username || ""), message_body: String(body.text || "") });
+        if (error) throw error;
+        return { ok: true };
+    }
+
+    throw new Error("API route not found.");
+}
+
+function cacheUser(user) {
+    if (user?.username) {
+        localStorage.setItem("realyze_current_user", user.username);
+        localStorage.setItem("realyze_user_cache", JSON.stringify(user));
     }
 }
 
-
-function saveUsers(users) {
-    localStorage.setItem(
-        "realyze_users",
-        JSON.stringify(users)
-    );
+async function clearAuth() {
+    try { if (window.REALYZE_DB) await window.REALYZE_DB.auth.signOut(); } catch (_) {}
+    localStorage.removeItem("realyze_current_user");
+    localStorage.removeItem("realyze_auth_token");
+    localStorage.removeItem("realyze_user_cache");
 }
-
 
 function showToast(
     element,
@@ -345,132 +455,13 @@ function validUsername(username) {
 }
 
 
-function registerUser(
-    username,
-    password,
-    confirmPassword
-) {
-
-    const users = getUsers();
-
-
-    if (!validUsername(username)) {
-
-        return {
-            success: false,
-            text:
-                "ID Name phải từ 3–20 ký tự và chỉ dùng A-Z, 0-9 hoặc _."
-        };
-    }
-
-
-    if (users[username]) {
-
-        return {
-            success: false,
-            text:
-                "ID Name này đã tồn tại. Hãy chọn ID Name khác."
-        };
-    }
-
-
-    if (password.length < 6) {
-
-        return {
-            success: false,
-            text:
-                "Password phải có ít nhất 6 ký tự."
-        };
-    }
-
-
-    if (
-        password !==
-        confirmPassword
-    ) {
-
-        return {
-            success: false,
-            text:
-                "Mật khẩu xác nhận không khớp."
-        };
-    }
-
-
-    users[username] = {
-    username,
-    password,
-    createdAt: Date.now(),
-
-    gems: 5000,
-    coins: 10000,
-    tickets: 10,
-
-    rank: 1,
-
-    /* =========================
-       GACHA DATA
-    ========================= */
-
-    gachaPity: 0,
-
-    gachaHistory: [],
-
-    /* collections */
-    myCards: [],
-    myCharacters: [],
-    selectedCharacterId: "mystery",
-    characterPity: 0
-};
-
-
-
-    saveUsers(users);
-
-
-    return {
-        success: true
-    };
+async function registerUser(username,password,confirmPassword){
+    if(!validUsername(username))return{success:false,text:"ID Name phải từ 3–20 ký tự và chỉ dùng A-Z, 0-9 hoặc _."};
+    if(password.length<6)return{success:false,text:"Password phải có ít nhất 6 ký tự."};
+    if(password!==confirmPassword)return{success:false,text:"Mật khẩu xác nhận không khớp."};
+    try{const d=await apiRequest("/api/register",{method:"POST",body:JSON.stringify({username,password})});cacheUser(d.user);return{success:true,user:d.user};}catch(e){return{success:false,text:e.message};}
 }
-
-
-function loginUser(
-    username,
-    password
-) {
-
-    const users = getUsers();
-
-
-    if (!users[username]) {
-
-        return {
-            success: false,
-            text:
-                "ID Name hoặc Password không đúng."
-        };
-    }
-
-
-    if (
-        users[username].password !==
-        password
-    ) {
-
-        return {
-            success: false,
-            text:
-                "ID Name hoặc Password không đúng."
-        };
-    }
-
-
-    return {
-        success: true,
-        user:
-            users[username]
-    };
-}
+async function loginUser(username,password){try{const d=await apiRequest("/api/login",{method:"POST",body:JSON.stringify({username,password})});cacheUser(d.user);return{success:true,user:d.user};}catch(e){return{success:false,text:e.message};}}
 
 
 /* =========================================================
@@ -479,7 +470,7 @@ function loginUser(
 
 authForm.addEventListener(
     "submit",
-    (event) => {
+    async (event) => {
 
         event.preventDefault();
 
@@ -506,7 +497,7 @@ authForm.addEventListener(
 
 
             const result =
-                registerUser(
+                await registerUser(
                     username,
                     password,
                     confirmPassword
@@ -556,7 +547,7 @@ authForm.addEventListener(
         ================================= */
 
         const result =
-            loginUser(
+            await loginUser(
                 username,
                 password
             );
@@ -688,43 +679,9 @@ function startLoading(user) {
    USER DATA
 ========================================================= */
 
-function getCurrentUser() {
-
-    const username =
-        localStorage.getItem(
-            "realyze_current_user"
-        );
-
-
-    if (!username) {
-        return null;
-    }
-
-
-    const users =
-        getUsers();
-
-
-    return users[username] || null;
-}
-
-
-function updateUser(user) {
-
-    if (!user) return;
-
-
-    const users =
-        getUsers();
-
-
-    users[user.username] =
-        user;
-
-
-    saveUsers(users);
-}
-
+function getCurrentUser(){try{return JSON.parse(localStorage.getItem("realyze_user_cache")||"null");}catch{return null;}}
+function updateUser(user){if(!user?.username)return;cacheUser(user);apiRequest("/api/user",{method:"PUT",body:JSON.stringify({user})}).then(d=>d.user&&cacheUser(d.user)).catch(e=>console.error("Failed to sync user:",e));}
+async function refreshCurrentUser(){try{const d=await apiRequest("/api/me");cacheUser(d.user);return d.user;}catch{return null;}}
 
 
 /* =========================================================
@@ -5955,384 +5912,18 @@ document.addEventListener(
 
 })();
 /* =========================================================
-   FRIEND SYSTEM
+   FRIEND SYSTEM — ONLINE BACKEND
 ========================================================= */
-
-function normalizeFriendData(user) {
-    if (!user) return;
-    if (!Array.isArray(user.friends)) user.friends = [];
-    if (!Array.isArray(user.friendRequests)) user.friendRequests = [];
-    if (!Array.isArray(user.sentFriendRequests)) user.sentFriendRequests = [];
-    if (!user.friendChats || typeof user.friendChats !== "object") user.friendChats = {};
-}
-
-function getFriendRequestUser(username) {
-    return getFriendUser(username);
-}
-
-function hasFriendRequest(from, to) {
-    normalizeFriendData(to);
-    return to.friendRequests.includes(from.username);
-}
-
-function hasSentFriendRequest(from, to) {
-    normalizeFriendData(from);
-    return from.sentFriendRequests.includes(to.username);
-}
-
-function sendFriendRequest(from, to) {
-    if (!from || !to || from.username === to.username) return false;
-    normalizeFriendData(from);
-    normalizeFriendData(to);
-    if (from.friends.includes(to.username)) return false;
-    if (hasSentFriendRequest(from, to) || hasFriendRequest(from, to)) return false;
-    from.sentFriendRequests.push(to.username);
-    to.friendRequests.push(from.username);
-    const users = getUsers();
-    users[from.username] = from;
-    users[to.username] = to;
-    saveUsers(users);
-    return true;
-}
-
-function acceptFriendRequest(username) {
-    const me = getCurrentUser();
-    const other = getFriendRequestUser(username);
-    if (!me || !other) return false;
-    normalizeFriendData(me);
-    normalizeFriendData(other);
-    if (!me.friendRequests.includes(username)) return false;
-
-    me.friendRequests = me.friendRequests.filter(name => name !== username);
-    other.sentFriendRequests = other.sentFriendRequests.filter(name => name !== me.username);
-    if (!me.friends.includes(username)) me.friends.push(username);
-    if (!other.friends.includes(me.username)) other.friends.push(me.username);
-
-    const users = getUsers();
-    users[me.username] = me;
-    users[other.username] = other;
-    saveUsers(users);
-    return true;
-}
-
-function declineFriendRequest(username) {
-    const me = getCurrentUser();
-    const other = getFriendRequestUser(username);
-    if (!me || !other) return false;
-    normalizeFriendData(me);
-    normalizeFriendData(other);
-    me.friendRequests = me.friendRequests.filter(name => name !== username);
-    other.sentFriendRequests = other.sentFriendRequests.filter(name => name !== me.username);
-    const users = getUsers();
-    users[me.username] = me;
-    users[other.username] = other;
-    saveUsers(users);
-    return true;
-}
-
-function cancelFriendRequest(username) {
-    const me = getCurrentUser();
-    const other = getFriendRequestUser(username);
-    if (!me || !other) return false;
-    normalizeFriendData(me);
-    normalizeFriendData(other);
-    me.sentFriendRequests = me.sentFriendRequests.filter(name => name !== username);
-    other.friendRequests = other.friendRequests.filter(name => name !== me.username);
-    const users = getUsers();
-    users[me.username] = me;
-    users[other.username] = other;
-    saveUsers(users);
-    return true;
-}
-
-function getFriendUser(username) {
-    const users = getUsers();
-    return users[username] || null;
-}
-
-
-let activeFriendChatUser = null;
-
-function renderFriends() {
-    const user = getCurrentUser();
-    if (!user) return;
-    normalizeFriendData(user);
-
-    const list = $("friendsList");
-    const count = $("friendCount");
-    const listCount = $("friendListCount");
-    if (!list) return;
-
-    const friends = user.friends
-        .map(name => getFriendUser(name))
-        .filter(Boolean);
-    const requests = user.friendRequests
-        .map(name => getFriendRequestUser(name))
-        .filter(Boolean);
-
-    if (count) count.textContent = friends.length;
-    if (listCount) listCount.textContent = friends.length;
-
-    const requestsHtml = requests.length ? `
-        <section class="friend-requests-block">
-            <div class="friend-requests-title">
-                <span>FRIEND REQUESTS</span>
-                <strong>${requests.length}</strong>
-            </div>
-            <div class="friend-request-list">
-                ${requests.map(friend => `
-                    <article class="friend-item friend-request-item">
-                        <div class="friend-avatar">${String(friend.username || "?").charAt(0).toUpperCase()}</div>
-                        <div class="friend-player-info">
-                            <strong>${escapeFriendHtml(friend.username)}</strong>
-                            <span>WANTS TO BE YOUR FRIEND</span>
-                        </div>
-                        <div class="friend-request-actions">
-                            <button class="friend-accept-button" type="button" data-accept-user="${escapeFriendAttr(friend.username)}">ACCEPT</button>
-                            <button class="friend-decline-button" type="button" data-decline-user="${escapeFriendAttr(friend.username)}">DECLINE</button>
-                        </div>
-                    </article>
-                `).join("")}
-            </div>
-        </section>
-    ` : "";
-
-    const friendsHtml = friends.length ? friends.map(friend => `
-        <article class="friend-item">
-            <div class="friend-avatar">${String(friend.username || "?").charAt(0).toUpperCase()}</div>
-            <div class="friend-player-info">
-                <strong>${escapeFriendHtml(friend.username)}</strong>
-                <span>REALYZE!! PLAYER</span>
-            </div>
-            <button class="friend-chat-button" type="button" data-chat-user="${escapeFriendAttr(friend.username)}">CHAT</button>
-        </article>
-    `).join("") : '<div class="friends-empty">Bạn chưa có bạn bè.<br>Hãy tìm ID Name để kết bạn.</div>';
-
-    list.innerHTML = requestsHtml + friendsHtml;
-
-    list.querySelectorAll("[data-chat-user]").forEach(button => {
-        button.addEventListener("click", () => openFriendChat(button.dataset.chatUser));
-    });
-    list.querySelectorAll("[data-accept-user]").forEach(button => {
-        button.addEventListener("click", () => {
-            if (acceptFriendRequest(button.dataset.acceptUser)) {
-                renderFriends();
-                showLobbyToast("FRIENDS", `Đã chấp nhận ${button.dataset.acceptUser}.`);
-            }
-        });
-    });
-    list.querySelectorAll("[data-decline-user]").forEach(button => {
-        button.addEventListener("click", () => {
-            if (declineFriendRequest(button.dataset.declineUser)) {
-                renderFriends();
-                showLobbyToast("FRIENDS", `Đã từ chối lời mời từ ${button.dataset.declineUser}.`);
-            }
-        });
-    });
-}
-
-function escapeFriendHtml(value) {
-    return String(value ?? "").replace(/[&<>'"]/g, c => ({
-        "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#39;", '"': "&quot;"
-    }[c]));
-}
-
-function escapeFriendAttr(value) {
-    return escapeFriendHtml(value);
-}
-
-function searchFriends() {
-    const user = getCurrentUser();
-    const input = $("friendSearchInput");
-    const results = $("friendSearchResults");
-    if (!user || !input || !results) return;
-
-    const query = input.value.trim();
-    if (!query) {
-        results.innerHTML = '<div class="friends-empty">Nhập ID Name để tìm người chơi.</div>';
-        return;
-    }
-
-    const users = getUsers();
-    const target = users[query];
-
-    if (!target) {
-        results.innerHTML = '<div class="friends-empty">Không tìm thấy ID Name này.</div>';
-        return;
-    }
-
-    if (target.username === user.username) {
-        results.innerHTML = '<div class="friends-empty">Đây là ID Name của bạn.</div>';
-        return;
-    }
-
-    normalizeFriendData(user);
-    const alreadyFriend = user.friends.includes(target.username);
-    const incoming = user.friendRequests.includes(target.username);
-    const outgoing = user.sentFriendRequests.includes(target.username);
-
-    let action = '';
-    if (alreadyFriend) {
-        action = '<button class="friend-chat-button" type="button" id="searchResultChat">CHAT</button>';
-    } else if (incoming) {
-        action = '<button class="friend-accept-button" type="button" id="searchResultAccept">ACCEPT</button>';
-    } else if (outgoing) {
-        action = '<button class="friend-cancel-button" type="button" id="searchResultCancel">CANCEL REQUEST</button>';
-    } else {
-        action = '<button class="friend-add-button" type="button" id="searchResultAdd">ADD FRIEND</button>';
-    }
-
-    results.innerHTML = `
-        <article class="friend-search-result">
-            <div class="friend-avatar">${String(target.username).charAt(0).toUpperCase()}</div>
-            <div class="friend-player-info">
-                <strong>${escapeFriendHtml(target.username)}</strong>
-                <span>${alreadyFriend ? 'FRIEND' : incoming ? 'WANTS TO BE YOUR FRIEND' : outgoing ? 'REQUEST SENT' : 'REALYZE!! PLAYER'}</span>
-            </div>
-            <div class="friend-search-action">${action}</div>
-        </article>
-    `;
-
-    $("searchResultChat")?.addEventListener("click", () => openFriendChat(target.username));
-    $("searchResultAccept")?.addEventListener("click", () => {
-        if (acceptFriendRequest(target.username)) {
-            renderFriends(); searchFriends();
-            showLobbyToast("FRIENDS", `Đã chấp nhận ${target.username}.`);
-        }
-    });
-    $("searchResultCancel")?.addEventListener("click", () => {
-        if (cancelFriendRequest(target.username)) {
-            searchFriends();
-            showLobbyToast("FRIENDS", `Đã huỷ lời mời tới ${target.username}.`);
-        }
-    });
-    $("searchResultAdd")?.addEventListener("click", () => {
-        const me = getCurrentUser();
-        const other = getFriendUser(target.username);
-        if (!me || !other) return;
-        if (sendFriendRequest(me, other)) {
-            searchFriends();
-            showLobbyToast("FRIENDS", `Đã gửi lời mời kết bạn tới ${target.username}.`);
-        }
-    });
-}
-
-function openFriendChat(username) {
-    const me = getCurrentUser();
-    const friend = getFriendUser(username);
-    if (!me || !friend) return;
-    normalizeFriendData(me);
-
-    if (!me.friends.includes(username)) {
-        showLobbyToast("FRIENDS", "Bạn chỉ có thể chat với bạn bè.");
-        return;
-    }
-
-    activeFriendChatUser = username;
-    const overlay = $("friendChatOverlay");
-    if (!overlay) return;
-    $("friendChatName").textContent = username;
-    renderFriendChatMessages();
-    overlay.classList.remove("hidden");
-    overlay.setAttribute("aria-hidden", "false");
-    setTimeout(() => $("friendChatInput")?.focus(), 0);
-}
-
-function closeFriendChat() {
-    activeFriendChatUser = null;
-    const overlay = $("friendChatOverlay");
-    if (!overlay) return;
-    overlay.classList.add("hidden");
-    overlay.setAttribute("aria-hidden", "true");
-}
-
-function getFriendChatKey(a, b) {
-    return [a, b].sort().join("__");
-}
-
-function renderFriendChatMessages() {
-    const me = getCurrentUser();
-    const box = $("friendChatMessages");
-    if (!me || !box || !activeFriendChatUser) return;
-    normalizeFriendData(me);
-
-    const key = getFriendChatKey(me.username, activeFriendChatUser);
-    const messages = Array.isArray(me.friendChats[key]) ? me.friendChats[key] : [];
-
-    if (!messages.length) {
-        box.innerHTML = '<div class="friend-chat-empty">Chưa có tin nhắn. Hãy bắt đầu cuộc trò chuyện!</div>';
-        return;
-    }
-
-    box.innerHTML = messages.map(message => `
-        <div class="friend-chat-message ${message.from === me.username ? "mine" : "theirs"}">
-            <span>${escapeFriendHtml(message.text)}</span>
-        </div>
-    `).join("");
-    box.scrollTop = box.scrollHeight;
-}
-
-function sendFriendMessage(text) {
-    const me = getCurrentUser();
-    const other = getFriendUser(activeFriendChatUser);
-    if (!me || !other || !text.trim()) return;
-    normalizeFriendData(me);
-    normalizeFriendData(other);
-
-    if (!me.friends.includes(other.username)) return;
-
-    const key = getFriendChatKey(me.username, other.username);
-    const message = {
-        from: me.username,
-        text: text.trim(),
-        time: Date.now()
-    };
-
-    if (!Array.isArray(me.friendChats[key])) me.friendChats[key] = [];
-    if (!Array.isArray(other.friendChats[key])) other.friendChats[key] = [];
-    me.friendChats[key].push(message);
-    other.friendChats[key].push(message);
-
-    const users = getUsers();
-    users[me.username] = me;
-    users[other.username] = other;
-    saveUsers(users);
-    renderFriendChatMessages();
-}
-
-function initFriendSystem() {
-    $("friendsButton")?.addEventListener("click", () => {
-        const user = getCurrentUser();
-        if (!user) return;
-        normalizeFriendData(user);
-        updateUser(user);
-        renderFriends();
-        $("friendSearchInput").value = "";
-        $("friendSearchResults").innerHTML = '<div class="friends-empty">Nhập ID Name để tìm người chơi.</div>';
-        showScreen("friendsScreen");
-    });
-
-    $("friendsBack")?.addEventListener("click", () => showScreen("lobbyScreen"));
-    $("friendSearchButton")?.addEventListener("click", searchFriends);
-    $("friendSearchInput")?.addEventListener("keydown", event => {
-        if (event.key === "Enter") {
-            event.preventDefault();
-            searchFriends();
-        }
-    });
-    $("friendChatClose")?.addEventListener("click", closeFriendChat);
-    $("friendChatForm")?.addEventListener("submit", event => {
-        event.preventDefault();
-        const input = $("friendChatInput");
-        if (!input) return;
-        sendFriendMessage(input.value);
-        input.value = "";
-        input.focus();
-    });
-    $("friendChatOverlay")?.addEventListener("click", event => {
-        if (event.target === event.currentTarget) closeFriendChat();
-    });
-}
-
-document.addEventListener("DOMContentLoaded", initFriendSystem, { once: true });
-if (document.readyState !== "loading") initFriendSystem();
+function normalizeFriendData(u){if(!u)return;if(!Array.isArray(u.friends))u.friends=[];if(!Array.isArray(u.friendRequests))u.friendRequests=[];if(!Array.isArray(u.sentFriendRequests))u.sentFriendRequests=[];}
+let activeFriendChatUser=null,activeFriendChatMessages=[];
+function escapeFriendHtml(v){return String(v??'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));}
+function escapeFriendAttr(v){return escapeFriendHtml(v);}
+async function syncMe(){return await refreshCurrentUser();}
+async function renderFriends(){const u=await syncMe();const list=$("friendsList");if(!u||!list)return;normalizeFriendData(u);const friends=u.friends||[],req=u.friendRequests||[];if($("friendCount"))$("friendCount").textContent=friends.length;if($("friendListCount"))$("friendListCount").textContent=friends.length;const rh=req.length?`<section class="friend-requests-block"><div class="friend-requests-title"><span>FRIEND REQUESTS</span><strong>${req.length}</strong></div><div class="friend-request-list">${req.map(n=>`<article class="friend-item friend-request-item"><div class="friend-avatar">${String(n).charAt(0).toUpperCase()}</div><div class="friend-player-info"><strong>${escapeFriendHtml(n)}</strong><span>WANTS TO BE YOUR FRIEND</span></div><div class="friend-request-actions"><button class="friend-accept-button" data-accept-user="${escapeFriendAttr(n)}">ACCEPT</button><button class="friend-decline-button" data-decline-user="${escapeFriendAttr(n)}">DECLINE</button></div></article>`).join('')}</div></section>`:'';const fh=friends.length?friends.map(n=>`<article class="friend-item"><div class="friend-avatar">${String(n).charAt(0).toUpperCase()}</div><div class="friend-player-info"><strong>${escapeFriendHtml(n)}</strong><span>REALYZE!! PLAYER</span></div><button class="friend-chat-button" data-chat-user="${escapeFriendAttr(n)}">CHAT</button></article>`).join(''):'<div class="friends-empty">Bạn chưa có bạn bè.<br>Hãy tìm ID Name để kết bạn.</div>';list.innerHTML=rh+fh;list.querySelectorAll('[data-chat-user]').forEach(b=>b.onclick=()=>openFriendChat(b.dataset.chatUser));list.querySelectorAll('[data-accept-user]').forEach(b=>b.onclick=async()=>{try{const d=await apiRequest('/api/friends/accept',{method:'POST',body:JSON.stringify({username:b.dataset.acceptUser})});cacheUser(d.user);renderFriends();}catch(e){showLobbyToast('FRIENDS',e.message);}});list.querySelectorAll('[data-decline-user]').forEach(b=>b.onclick=async()=>{try{const d=await apiRequest('/api/friends/decline',{method:'POST',body:JSON.stringify({username:b.dataset.declineUser})});cacheUser(d.user);renderFriends();}catch(e){showLobbyToast('FRIENDS',e.message);}});}
+async function searchFriends(){const u=await syncMe(),input=$("friendSearchInput"),results=$("friendSearchResults");if(!u||!input||!results)return;const q=input.value.trim();if(!q){results.innerHTML='<div class="friends-empty">Nhập ID Name để tìm người chơi.</div>';return;}let t;try{t=(await apiRequest('/api/friends/search?q='+encodeURIComponent(q))).user;}catch(e){results.innerHTML=`<div class="friends-empty">${escapeFriendHtml(e.message)}</div>`;return;}normalizeFriendData(u);if(t.username===u.username){results.innerHTML='<div class="friends-empty">Đây là ID Name của bạn.</div>';return;}const f=u.friends.includes(t.username),inc=u.friendRequests.includes(t.username),out=u.sentFriendRequests.includes(t.username);const a=f?'<button class="friend-chat-button" id="searchResultChat">CHAT</button>':inc?'<button class="friend-accept-button" id="searchResultAccept">ACCEPT</button>':out?'<button class="friend-cancel-button" id="searchResultCancel">CANCEL REQUEST</button>':'<button class="friend-add-button" id="searchResultAdd">ADD FRIEND</button>';results.innerHTML=`<article class="friend-search-result"><div class="friend-avatar">${t.username.charAt(0).toUpperCase()}</div><div class="friend-player-info"><strong>${escapeFriendHtml(t.username)}</strong><span>${f?'FRIEND':inc?'WANTS TO BE YOUR FRIEND':out?'REQUEST SENT':'REALYZE!! PLAYER'}</span></div><div class="friend-search-action">${a}</div></article>`;$("searchResultChat")?.addEventListener('click',()=>openFriendChat(t.username));$("searchResultAccept")?.addEventListener('click',async()=>{try{const d=await apiRequest('/api/friends/accept',{method:'POST',body:JSON.stringify({username:t.username})});cacheUser(d.user);await renderFriends();await searchFriends();}catch(e){showLobbyToast('FRIENDS',e.message);}});$("searchResultCancel")?.addEventListener('click',async()=>{try{const d=await apiRequest('/api/friends/cancel',{method:'POST',body:JSON.stringify({username:t.username})});cacheUser(d.user);await searchFriends();}catch(e){showLobbyToast('FRIENDS',e.message);}});$("searchResultAdd")?.addEventListener('click',async()=>{try{const d=await apiRequest('/api/friends/request',{method:'POST',body:JSON.stringify({username:t.username})});cacheUser(d.user);await searchFriends();showLobbyToast('FRIENDS',`Đã gửi lời mời tới ${t.username}.`);}catch(e){showLobbyToast('FRIENDS',e.message);}});}
+async function openFriendChat(n){const u=await syncMe();if(!u||(u.friends||[]).indexOf(n)<0){showLobbyToast('FRIENDS','Bạn chỉ có thể chat với bạn bè.');return;}activeFriendChatUser=n;$("friendChatName").textContent=n;try{const d=await apiRequest('/api/friends/chat?username='+encodeURIComponent(n));activeFriendChatMessages=d.messages||[];renderFriendChatMessages();$("friendChatOverlay").classList.remove('hidden');$("friendChatOverlay").setAttribute('aria-hidden','false');}catch(e){showLobbyToast('CHAT',e.message);}}
+function closeFriendChat(){activeFriendChatUser=null;activeFriendChatMessages=[];$("friendChatOverlay")?.classList.add('hidden');$("friendChatOverlay")?.setAttribute('aria-hidden','true');}
+function renderFriendChatMessages(){const u=getCurrentUser(),box=$("friendChatMessages");if(!u||!box)return;box.innerHTML=activeFriendChatMessages.length?activeFriendChatMessages.map(m=>`<div class="friend-chat-message ${m.from===u.username?'mine':'theirs'}"><span>${escapeFriendHtml(m.text)}</span></div>`).join(''):'<div class="friend-chat-empty">Chưa có tin nhắn. Hãy bắt đầu cuộc trò chuyện!</div>';box.scrollTop=box.scrollHeight;}
+async function sendFriendMessage(text){if(!activeFriendChatUser||!text.trim())return;try{await apiRequest('/api/friends/chat',{method:'POST',body:JSON.stringify({username:activeFriendChatUser,text:text.trim()})});const d=await apiRequest('/api/friends/chat?username='+encodeURIComponent(activeFriendChatUser));activeFriendChatMessages=d.messages||[];renderFriendChatMessages();}catch(e){showLobbyToast('CHAT',e.message);}}
+function initFriendSystem(){$("friendsButton")?.addEventListener('click',async()=>{if(!getCurrentUser())return;await renderFriends();$("friendSearchInput").value='';$("friendSearchResults").innerHTML='<div class="friends-empty">Nhập ID Name để tìm người chơi.</div>';showScreen('friendsScreen');});$("friendsBack")?.addEventListener('click',()=>showScreen('lobbyScreen'));$("friendSearchButton")?.addEventListener('click',searchFriends);$("friendSearchInput")?.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();searchFriends();}});$("friendChatClose")?.addEventListener('click',closeFriendChat);$("friendChatSend")?.addEventListener('click',()=>{const i=$("friendChatInput");if(i){sendFriendMessage(i.value);i.value='';}});$("friendChatInput")?.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();$("friendChatSend")?.click();}});}
+document.addEventListener('DOMContentLoaded',initFriendSystem,{once:true});if(document.readyState!=='loading')initFriendSystem();
