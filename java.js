@@ -152,12 +152,7 @@ if (path === "/api/friends/chat" && method === "POST") {
         throw new Error("Tin nhắn không được để trống.");
     }
 
-    const { data: authData, error: authError } = await db.auth.getUser();
-
-    if (authError || !authData?.user) {
-        throw new Error("Phiên đăng nhập không hợp lệ.");
-    }
-
+    // Gửi trực tiếp tin nhắn qua RPC
     const { error } = await db.rpc("send_friend_message", {
         target_username: username,
         message_body: text
@@ -6012,5 +6007,51 @@ async function sendFriendMessage(text) {
         );
     }
 }
-function initFriendSystem(){$("friendsButton")?.addEventListener('click',async()=>{if(!getCurrentUser())return;await renderFriends();$("friendSearchInput").value='';$("friendSearchResults").innerHTML='<div class="friends-empty">Nhập ID Name để tìm người chơi.</div>';showScreen('friendsScreen');});$("friendsBack")?.addEventListener('click',()=>showScreen('lobbyScreen'));$("friendSearchButton")?.addEventListener('click',searchFriends);$("friendSearchInput")?.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();searchFriends();}});$("friendChatClose")?.addEventListener('click',closeFriendChat);$("friendChatSend")?.addEventListener('click',()=>{const i=$("friendChatInput");if(i){sendFriendMessage(i.value);i.value='';}});$("friendChatInput")?.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();$("friendChatSend")?.click();}});}
-document.addEventListener('DOMContentLoaded',initFriendSystem,{once:true});if(document.readyState!=='loading')initFriendSystem();
+function initFriendSystem() {
+    $("friendsButton")?.addEventListener('click', async () => {
+        if (!getCurrentUser()) return;
+        await renderFriends();
+        if ($("friendSearchInput")) $("friendSearchInput").value = '';
+        if ($("friendSearchResults")) $("friendSearchResults").innerHTML = '<div class="friends-empty">Nhập ID Name để tìm người chơi.</div>';
+        showScreen('friendsScreen');
+    });
+
+    $("friendsBack")?.addEventListener('click', () => showScreen('lobbyScreen'));
+    $("friendSearchButton")?.addEventListener('click', searchFriends);
+    $("friendSearchInput")?.addEventListener('keydown', e => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            searchFriends();
+        }
+    });
+
+    $("friendChatClose")?.addEventListener('click', closeFriendChat);
+
+    // XỬ LÝ GỬI TIN NHẮN AN TOÀN (CHỐNG RELOAD TRANG & CHỐNG LỖI AUTH)
+    const handleSend = async (e) => {
+        if (e) e.preventDefault(); // Chặn triệt để Reload trang
+        const i = $("friendChatInput");
+        if (i && i.value.trim()) {
+            const messageText = i.value.trim();
+            i.value = ''; // Xóa input ngay để trải nghiệm mượt hơn
+            try {
+                await sendFriendMessage(messageText);
+            } catch (err) {
+                console.error("Lỗi gửi tin nhắn:", err);
+                alert("Không thể gửi tin nhắn: " + (err.message || "Lỗi kết nối"));
+            }
+        }
+    };
+
+    $("friendChatSend")?.addEventListener('click', handleSend);
+
+    $("friendChatInput")?.addEventListener('keydown', e => {
+        if (e.key === 'Enter') {
+            e.preventDefault(); // Chặn Enter submit form
+            handleSend(e);
+        }
+    });
+}
+
+document.addEventListener('DOMContentLoaded', initFriendSystem, { once: true });
+if (document.readyState !== 'loading') initFriendSystem();
