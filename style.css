@@ -8573,6 +8573,18 @@ body {
    Do not rearrange/hide the desktop interface on phones.
 ========================================================= */
 @media (max-width: 900px) {
+  /* Authentication must use the real mobile viewport so form controls
+     receive correct touch coordinates. The desktop-canvas scaling is
+     intentionally not applied to the login/register screen. */
+  body.realyze-mobile-pc #authScreen {
+    width: 100vw !important;
+    min-width: 0 !important;
+    height: 100vh !important;
+    min-height: 100vh !important;
+    transform: none !important;
+    transform-origin: center center !important;
+  }
+
   html, body {
     min-width: 0 !important;
     overflow-x: hidden !important;
