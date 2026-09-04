@@ -9136,3 +9136,10 @@ body {
 .event-limited-card img{width:72%;height:72%;object-fit:cover}
 .event-limited-card>div{width:100%;padding:4px 6px;text-align:center}
 #eventLobbyAudio{display:none}
+
+.play-maintenance-notice {
+    font-size: 11px;
+    opacity: 0.7;
+    text-align: center;
+    margin-bottom: 6px;
+}
