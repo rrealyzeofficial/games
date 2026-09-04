@@ -108,14 +108,26 @@ async function apiRequest(path, options = {}) {
     if (path === "/api/user" && method === "PUT") {
         await getDbSession();
         const incoming = body.user || {};
-        const allowed = ['gems','coins','tickets','rank','gachaPity','characterPity','gachaHistory','myCards','myCharacters','selectedCharacterId'];
-        const current = await loadRemoteUser();
-        for (const k of allowed) if (Object.prototype.hasOwnProperty.call(incoming, k)) current[k] = incoming[k];
-        const { error } = await db.from("profiles").update({ game_data: Object.fromEntries(allowed.map(k => [k, current[k]]).filter(([,v]) => v !== undefined)) }).eq("id", current._supabaseId);
+        const allowed = ['gems','coins','tickets','rank','gachaPity','characterPity','akitoPity','gachaHistory','myCards','myCharacters','characterProgress','selectedCharacterId','eventPoints','eventEnergy','eventClaimedRewards','eventShopPurchases','eventMailbox','eventTeam','eventCardMemory','eventMusic'];
+        const session = await getDbSession();
+        if (!session?.user?.id) throw new Error("Unauthorized");
+
+        // IMPORTANT: do not read the remote profile before every write.
+        // Rapid upgrades can otherwise read an older server snapshot and write it back,
+        // causing LV.6 -> 7 -> 8 -> 9 -> 6 style rollbacks.
+        const gameData = Object.fromEntries(
+            allowed
+                .filter(k => Object.prototype.hasOwnProperty.call(incoming, k))
+                .map(k => [k, incoming[k]])
+        );
+        const { error } = await db.from("profiles")
+            .update({ game_data: gameData })
+            .eq("id", session.user.id);
         if (error) throw error;
-        const user = await loadRemoteUser();
-        cacheUser(user);
-        return { user };
+
+        // Return the exact state we just wrote. Do not replace the local cache with
+        // another remote read while newer client changes may already be pending.
+        return { user: { ...incoming, _supabaseId: session.user.id } };
     }
 
     if (path.startsWith("/api/friends/search") && method === "GET") {
@@ -173,6 +185,26 @@ if (path === "/api/friends/chat" && method === "POST") {
 
     return { ok: true };
 }
+
+    if (path.startsWith("/api/daily-attendance") && method === "GET") {
+        await getDbSession();
+        const query = path.includes("?") ? path.split("?")[1] : "";
+        const month = new URLSearchParams(query).get("month");
+        const parts = getVietnamDateParts();
+        const monthKey = month || `${parts.year}-${String(parts.month).padStart(2, "0")}`;
+        const { data, error } = await db.rpc("get_daily_attendance", { month_key_input: monthKey });
+        if (error) throw new Error(error.message || "Không thể tải lịch điểm danh.");
+        return { attendance: data || [] };
+    }
+
+    if (path === "/api/daily-attendance/claim" && method === "POST") {
+        await getDbSession();
+        const { data, error } = await db.rpc("claim_daily_attendance");
+        if (error) throw new Error(error.message || "Không thể nhận thưởng điểm danh.");
+        const user = await loadRemoteUser();
+        cacheUser(user);
+        return { result: data || {}, user };
+    }
 
     throw new Error("API route not found.");
 }
@@ -688,6 +720,8 @@ function startLoading(user) {
                                 "lobbyScreen"
                             );
 
+                            scheduleDailyAttendanceOnLogin();
+
                         },
                         300
                     );
@@ -704,8 +738,227 @@ function startLoading(user) {
 ========================================================= */
 
 function getCurrentUser(){try{return JSON.parse(localStorage.getItem("realyze_user_cache")||"null");}catch{return null;}}
-function updateUser(user){if(!user?.username)return;cacheUser(user);apiRequest("/api/user",{method:"PUT",body:JSON.stringify({user})}).then(d=>d.user&&cacheUser(d.user)).catch(e=>console.error("Failed to sync user:",e));}
+let userSyncChain = Promise.resolve();
+let userSyncVersion = 0;
+function updateUser(user){
+    if (!user?.username) return userSyncChain;
+
+    // Local state is the source of truth for the UI. Every call captures the exact
+    // state at the moment the button was pressed, then writes snapshots in order.
+    cacheUser(user);
+    const version = ++userSyncVersion;
+    const snapshot = JSON.parse(JSON.stringify(user));
+
+    userSyncChain = userSyncChain
+        .catch(() => {})
+        .then(() => apiRequest("/api/user", {
+            method: "PUT",
+            body: JSON.stringify({ user: snapshot })
+        }))
+        .then(() => {
+            // Never replace the current cache with a stale server read.
+            // The newest local snapshot already contains every previous upgrade.
+            if (version === userSyncVersion) {
+                cacheUser(snapshot);
+            }
+        })
+        .catch(e => console.error("Failed to sync user:", e));
+
+    return userSyncChain;
+}
 async function refreshCurrentUser(){try{const d=await apiRequest("/api/me");cacheUser(d.user);return d.user;}catch{return null;}}
+
+
+/* =========================================================
+   DAILY LOGIN / CHECK-IN
+   Server-side only. Attendance state is stored in Supabase.
+========================================================= */
+let dailyAttendanceOpen = false;
+
+function getVietnamDateParts(date = new Date()) {
+    const parts = new Intl.DateTimeFormat("en-CA", {
+        timeZone: "Asia/Ho_Chi_Minh",
+        year: "numeric", month: "2-digit", day: "2-digit"
+    }).formatToParts(date);
+    const out = {};
+    parts.forEach(p => { if (p.type !== "literal") out[p.type] = p.value; });
+    return { year: Number(out.year), month: Number(out.month), day: Number(out.day) };
+}
+
+function getDailyReward(day) {
+    const d = Number(day);
+    if (d % 8 === 0) return { type: "gems", amount: 320, label: "320 💎" };
+    const cycleDay = ((d - 1) % 8) + 1;
+    const amount = 50 + cycleDay * 50;
+    return { type: "coins", amount, label: `${amount.toLocaleString("en-US")} ●` };
+}
+
+function getDailyRewardText(day) {
+    const reward = getDailyReward(day);
+    return Number(day) === 15 || Number(day) === 30
+        ? `${reward.label} + 1 × 6★ CHARACTER`
+        : reward.label;
+}
+
+function getDailyAttendanceMiniElements() {
+    return {
+        card: $("dailyAttendanceMini"),
+        title: $("dailyAttendanceMiniTitle"),
+        reward: $("dailyAttendanceMiniReward")
+    };
+}
+
+async function updateDailyAttendanceMini() {
+    const { card, title, reward } = getDailyAttendanceMiniElements();
+    if (!card || !title || !reward) return;
+
+    const date = getVietnamDateParts();
+    title.textContent = `NGÀY ${date.day} · ĐIỂM DANH`;
+
+    try {
+        const monthKey = `${date.year}-${String(date.month).padStart(2, "0")}`;
+        const response = await apiRequest(`/api/daily-attendance?month=${encodeURIComponent(monthKey)}`);
+        const todayRow = (response.attendance || []).find(row => Number(row.day) === date.day);
+
+        if (todayRow) {
+            card.classList.add("claimed");
+            reward.textContent = `ĐÃ NHẬN · ${getDailyRewardText(date.day)}`;
+        } else {
+            card.classList.remove("claimed");
+            reward.textContent = `NHẬN ${getDailyRewardText(date.day)}`;
+        }
+    } catch (error) {
+        console.error("Daily attendance mini card load failed:", error);
+        card.classList.remove("claimed");
+        reward.textContent = "XEM LỊCH ĐIỂM DANH";
+    }
+}
+
+function getMonthLabel(year, month) {
+    return new Intl.DateTimeFormat("vi-VN", {
+        timeZone: "Asia/Ho_Chi_Minh", month: "long", year: "numeric"
+    }).format(new Date(Date.UTC(year, month - 1, 1, 12)));
+}
+
+function getDaysInMonth(year, month) {
+    return new Date(Date.UTC(year, month, 0)).getUTCDate();
+}
+
+async function openDailyAttendancePopup() {
+    const overlay = $("dailyAttendanceOverlay");
+    if (!overlay || dailyAttendanceOpen) return;
+    dailyAttendanceOpen = true;
+    overlay.classList.remove("hidden");
+    overlay.setAttribute("aria-hidden", "false");
+
+    const date = getVietnamDateParts();
+    const monthKey = `${date.year}-${String(date.month).padStart(2, "0")}`;
+    const monthTitle = $("dailyAttendanceMonth");
+    const grid = $("dailyAttendanceGrid");
+    const claimButton = $("dailyAttendanceClaim");
+    const status = $("dailyAttendanceStatus");
+
+    if (monthTitle) monthTitle.textContent = getMonthLabel(date.year, date.month);
+    if (status) status.textContent = "ĐANG TẢI LỊCH ĐIỂM DANH...";
+    if (grid) grid.innerHTML = "";
+    if (claimButton) { claimButton.disabled = true; claimButton.textContent = "LOADING..."; }
+
+    try {
+        const response = await apiRequest(`/api/daily-attendance?month=${encodeURIComponent(monthKey)}`);
+        const claimed = new Map((response.attendance || []).map(row => [Number(row.day), row]));
+        renderDailyAttendanceCalendar(date, claimed);
+        const todayRow = claimed.get(date.day);
+        if (todayRow) {
+            if (claimButton) { claimButton.disabled = true; claimButton.textContent = "ĐÃ NHẬN HÔM NAY ✓"; }
+            if (status) status.textContent = `Bạn đã nhận: ${getDailyRewardText(date.day)}.`;
+        } else {
+            if (claimButton) { claimButton.disabled = false; claimButton.textContent = `NHẬN THƯỞNG NGÀY ${date.day}`; }
+            if (status) status.textContent = `Hôm nay là ngày ${date.day}. Hãy nhận phần thưởng của hôm nay!`;
+        }
+    } catch (error) {
+        console.error("Daily attendance load failed:", error);
+        if (status) status.textContent = `Không thể tải lịch điểm danh (${error?.message || "Supabase error"})`;
+        if (claimButton) { claimButton.disabled = true; claimButton.textContent = "TẠM THỜI KHÔNG KHẢ DỤNG"; }
+    }
+}
+
+function renderDailyAttendanceCalendar(date, claimed) {
+    const grid = $("dailyAttendanceGrid");
+    if (!grid) return;
+    grid.innerHTML = "";
+    const firstDay = new Date(Date.UTC(date.year, date.month - 1, 1)).getUTCDay();
+    const mondayOffset = (firstDay + 6) % 7;
+    for (let i = 0; i < mondayOffset; i++) {
+        const blank = document.createElement("div");
+        blank.className = "daily-attendance-day empty";
+        grid.appendChild(blank);
+    }
+    for (let day = 1; day <= getDaysInMonth(date.year, date.month); day++) {
+        const cell = document.createElement("div");
+        const isToday = day === date.day;
+        const isPast = day < date.day;
+        const row = claimed.get(day);
+        const isClaimed = !!row;
+        let state = isClaimed ? "claimed" : isToday ? "today" : isPast ? "pass" : "future";
+        cell.className = `daily-attendance-day ${state}${isToday ? " is-today" : ""}`;
+        const badge = isClaimed ? "✓" : isPast ? "PASS" : isToday ? "TODAY" : "LOCK";
+        cell.innerHTML = `
+            <div class="daily-attendance-day-number">${day}</div>
+            <div class="daily-attendance-reward">${getDailyRewardText(day)}</div>
+            <div class="daily-attendance-state">${badge}</div>`;
+        grid.appendChild(cell);
+    }
+}
+
+async function claimDailyAttendance() {
+    const button = $("dailyAttendanceClaim");
+    const status = $("dailyAttendanceStatus");
+    if (!button || button.disabled) return;
+    button.disabled = true;
+    button.textContent = "NHẬN THƯỞNG...";
+    try {
+        const response = await apiRequest("/api/daily-attendance/claim", { method: "POST", body: "{}" });
+        const result = response.result || {};
+        const reward = result.reward_type === "gems"
+            ? `${Number(result.reward_amount || 0).toLocaleString("en-US")} 💎`
+            : `${Number(result.reward_amount || 0).toLocaleString("en-US")} ●`;
+        const characterText = result.reward_character_id ? " + 1 × 6★ CHARACTER" : "";
+        if (result.already_claimed) {
+            if (status) status.textContent = "Hôm nay đã được nhận trước đó.";
+            button.textContent = "ĐÃ NHẬN HÔM NAY ✓";
+        } else {
+            if (status) status.textContent = `Đã nhận thành công: ${reward}${characterText}.`;
+            button.textContent = "ĐÃ NHẬN ✓";
+            if (response.user) {
+                cacheUser(response.user);
+                setupLobby(response.user);
+                renderSelectedCharacter();
+                renderMyCharacters();
+            }
+        }
+        const date = getVietnamDateParts();
+        const monthKey = `${date.year}-${String(date.month).padStart(2, "0")}`;
+        const refreshed = await apiRequest(`/api/daily-attendance?month=${encodeURIComponent(monthKey)}`);
+        renderDailyAttendanceCalendar(date, new Map((refreshed.attendance || []).map(row => [Number(row.day), row])));
+    } catch (error) {
+        console.error("Daily attendance claim failed:", error);
+        if (status) status.textContent = error?.message || "Không thể nhận thưởng hôm nay.";
+        button.disabled = false;
+        button.textContent = "THỬ LẠI";
+    }
+}
+
+function closeDailyAttendance() {
+    const overlay = $("dailyAttendanceOverlay");
+    if (!overlay) return;
+    overlay.classList.add("hidden");
+    overlay.setAttribute("aria-hidden", "true");
+    dailyAttendanceOpen = false;
+}
+
+function scheduleDailyAttendanceOnLogin() {
+    setTimeout(() => openDailyAttendancePopup(), 450);
+}
 
 
 /* =========================================================
@@ -884,27 +1137,28 @@ function setupLobby(user) {
 
     $("gemCount")
         .textContent =
-        user.gems ?? 5000;
+        Number(user.gems ?? 5000).toLocaleString();
 
 
     $("coinCount")
         .textContent =
-        user.coins ?? 10000;
+        Number(user.coins ?? 10000).toLocaleString();
 
 
     $("ticketCount")
         .textContent =
-        user.tickets ?? 10;
+        Number(user.tickets ?? 10).toLocaleString();
 
 
     $("gachaGemCount")
         .textContent =
-        user.gems ?? 5000;
+        Number(user.gems ?? 5000).toLocaleString();
 
 
     loadAvatar(
         user.username
     );
+    updateDailyAttendanceMini();
 }
 
 
@@ -1443,6 +1697,10 @@ function renderNowPlayDetail() {
 
 function renderNowPlay() {
 
+    const currentUser = getCurrentUser();
+    if (currentUser) {
+        updateGachaGemCount(currentUser);
+    }
     updateNowPlayPlayer();
 
     renderNowPlaySongList();
@@ -1595,6 +1853,52 @@ const CHARACTERS = [
         skill: "Boosts performance score during Skills.",
         number: "001"
     }
+,
+    {
+        id: "akito",
+        name: "AKITO",
+        description: "A limited event performer who amplifies stage rewards.",
+        image: "assets/akito.png",
+        default: false,
+        rarity: 6,
+        rate: 0.33333,
+        main: "ACT",
+        stat: { base: 19450, perLevel: 510 },
+        skillName: "REWARD AMPLIFIER",
+        skill: "After completing a stage, increases the amount of stage rewards by 35%.",
+        rewardMultiplier: 1.35,
+        number: "002"
+    },
+    {
+        id: "kohane",
+        name: "KOHANE",
+        description: "The featured performer of SHINE WITHOUT END, raising rewards through her event skill.",
+        image: "assets/kohane.png",
+        default: false,
+        rarity: 6,
+        rate: 0,
+        main: "RAP",
+        stat: { base: 21034, perLevel: 410 },
+        skillName: "SHINING REWARD",
+        skill: "After completing a stage, increases the amount of stage rewards by 45%.",
+        rewardMultiplier: 1.45,
+        number: "003",
+        eventOnly: true
+    },
+    {
+        id: "miku",
+        name: "HATSUNE MIKU",
+        description: "A special 5★ performer available from the LUMINA and AKITO banners.",
+        image: "assets/miku.png",
+        default: false,
+        rarity: 5,
+        rate: 5,
+        main: "VOCAL",
+        stat: { base: 9879, perLevel: 654 },
+        skillName: "COLORFUL VOICE",
+        skill: "Event: special performance effects.",
+        number: "004"
+    }
 ];
 
 
@@ -1688,6 +1992,8 @@ function renderSelectedCharacter() {
 
     if (!visual) return;
 
+    if (character.id === "akito" && !character.image) character.image = "assets/akito.png";
+        if (character.id === "kohane" && !character.image) character.image = "assets/kohane.png";
     if (character.image) {
         visual.className =
             "character-preview-visual character-owned-visual";
@@ -3382,17 +3688,88 @@ $("rankButton").addEventListener(
 );
 
 
-$("eventButton").addEventListener(
-    "click",
-    () => {
+/* =========================================================
+   SHINE WITHOUT END EVENT
+========================================================= */
+const EVENT_MAX_POINTS = 1000000;
+const EVENT_REWARDS = [
+ {points:25000,title:"GOLD",amount:5000},{points:50000,title:"GEMS",amount:100},{points:75000,title:"EVENT TICKET",amount:5},
+ {points:100000,title:"EVENT LIMITED CARD",amount:1,card:true,cardId:"event-card-100k"},{points:125000,title:"GOLD",amount:12000},
+ {points:150000,title:"KOHANE ★★★★★★",amount:1,character:true,characterId:"kohane"},{points:175000,title:"EVENT TICKET",amount:10},
+ {points:200000,title:"GEMS",amount:250},{points:225000,title:"GOLD",amount:18000},{points:250000,title:"KOHANE ★★★★★★",amount:1,character:true,characterId:"kohane"},
+ {points:275000,title:"EVENT TICKET",amount:15},{points:300000,title:"EVENT LIMITED CARD",amount:1,card:true,cardId:"event-card-300k"},
+ {points:350000,title:"GEMS",amount:400},{points:400000,title:"KOHANE ★★★★★★",amount:1,character:true,characterId:"kohane"},
+ {points:450000,title:"GOLD",amount:30000},{points:500000,title:"EVENT LIMITED CARD",amount:1,card:true,cardId:"event-card-500k"},
+ {points:550000,title:"EVENT TICKET",amount:20},{points:600000,title:"GEMS",amount:650},{points:650000,title:"KOHANE ★★★★★★",amount:1,character:true,characterId:"kohane"},
+ {points:700000,title:"EVENT LIMITED CARD",amount:1,card:true,cardId:"event-card-700k"},{points:750000,title:"GOLD",amount:45000},{points:800000,title:"EVENT TICKET",amount:30},
+ {points:850000,title:"KOHANE ★★★★★★",amount:1,character:true,characterId:"kohane"},{points:900000,title:"EVENT LIMITED CARD",amount:1,card:true,cardId:"event-card-900k"},
+ {points:925000,title:"GEMS",amount:1000},{points:950000,title:"GOLD",amount:60000},{points:975000,title:"EVENT TICKET",amount:50},
+ {points:1000000,title:"EVENT GRAND REWARD",amount:1,gems:2500,gold:100000,tickets:100}
+];
+const EVENT_SHOP = [
+ {id:"event-gold",title:"GOLD ×5,000",cost:1500,currency:"coins",amount:5000,limit:20},
+ {id:"event-gems",title:"GEMS ×100",cost:3000,currency:"gems",amount:100,limit:10},
+ {id:"event-ticket",title:"EVENT TICKET ×1",cost:2500,currency:"tickets",amount:1,limit:30},
+ {id:"event-card-piece",title:"CARD MEMORY ×1",cost:5000,currency:"eventCardMemory",amount:1,limit:10}
+];
+function ensureEventData(user){if(!user)return;if(!Number.isFinite(Number(user.eventPoints)))user.eventPoints=0;user.eventPoints=Math.max(0,Math.min(EVENT_MAX_POINTS,Number(user.eventPoints)));if(!Number.isFinite(Number(user.eventEnergy)))user.eventEnergy=100;user.eventEnergy=Math.max(0,Math.min(100,Number(user.eventEnergy)));if(!Array.isArray(user.eventClaimedRewards))user.eventClaimedRewards=[];if(!user.eventShopPurchases||typeof user.eventShopPurchases!=="object")user.eventShopPurchases={};if(!Array.isArray(user.eventMailbox))user.eventMailbox=[];}
+function getEventLevel(points){return Math.min(100,Math.floor(Number(points||0)/1000)+1)}
+function rewardMailboxKey(reward,index){return `event-${reward.points}-${index}`}
+function syncEventMilestoneMail(user){ensureEventData(user);const points=Number(user.eventPoints||0);EVENT_REWARDS.forEach((reward,index)=>{if(points<reward.points)return;const id=rewardMailboxKey(reward,index);if(!user.eventMailbox.some(m=>m.id===id))user.eventMailbox.push({id,points:reward.points,title:reward.title,reward:{...reward},claimed:false,createdAt:Date.now()})})}
+function applyEventReward(user,reward){if(reward.card){user.myCards=Array.isArray(user.myCards)?user.myCards:[];const id=reward.cardId||`event-card-${reward.points}`;if(!user.myCards.some(c=>c&&c.id===id))user.myCards.push({id,name:"SHINING MOMENT",image:"assets/event1.png",rarity:6,type:"event",event:"SHINE WITHOUT END"})}else if(reward.character){user.myCharacters=Array.isArray(user.myCharacters)?user.myCharacters:[];user.characterProgress=user.characterProgress||{};if(!user.myCharacters.includes(reward.characterId)){user.myCharacters.push(reward.characterId);user.characterProgress[reward.characterId]={rank:1,level:1}}else{const p=user.characterProgress[reward.characterId]||{rank:1,level:1};p.rank=Math.min(5,Math.max(1,Number(p.rank)||1)+1);p.level=Math.min(getCharacterMaxLevel(p.rank),Number(p.level)||1);user.characterProgress[reward.characterId]=p}}else if(reward.title==="GEMS")user.gems=Number(user.gems||0)+Number(reward.amount||0);else if(reward.title==="GOLD")user.coins=Number(user.coins||0)+Number(reward.amount||0);else if(reward.title==="EVENT TICKET")user.tickets=Number(user.tickets||0)+Number(reward.amount||0);else if(reward.title==="EVENT GRAND REWARD"){user.gems=Number(user.gems||0)+Number(reward.gems||0);user.coins=Number(user.coins||0)+Number(reward.gold||0);user.tickets=Number(user.tickets||0)+Number(reward.tickets||0)}}
+function renderEventMailbox(){const user=getCurrentUser();if(!user)return;ensureEventData(user);syncEventMilestoneMail(user);const list=$("eventMailboxList"),badge=$("eventMailboxBadge");if(!list)return;const unread=user.eventMailbox.filter(m=>!m.claimed).length;if(badge)badge.textContent=unread?unread:"";list.innerHTML=user.eventMailbox.length?user.eventMailbox.slice().sort((a,b)=>b.points-a.points).map(m=>`<article class="event-mail-row ${m.claimed?"claimed":""}"><div class="event-mail-points">${Number(m.points).toLocaleString()} PT</div><div class="event-mail-copy"><small>SHINE WITHOUT END</small><strong>${m.title}</strong></div><button class="event-mail-claim" data-mail-id="${m.id}" ${m.claimed?"disabled":""}>${m.claimed?"CLAIMED":"CLAIM"}</button></article>`).join(""):`<div class="event-mail-row"><div class="event-mail-copy"><strong>NO EVENT MAIL</strong><span>Milestone rewards will arrive here automatically.</span></div></div>`;list.querySelectorAll('[data-mail-id]').forEach(b=>b.onclick=()=>claimEventMail(b.dataset.mailId));}
+function claimEventMail(id){const user=getCurrentUser();if(!user)return;ensureEventData(user);const mail=user.eventMailbox.find(m=>m.id===id);if(!mail||mail.claimed)return;applyEventReward(user,mail.reward||{});mail.claimed=true;mail.claimedAt=Date.now();updateUser(user);renderEventPage();renderEventMailbox()}
+function renderEventRewards(){const user=getCurrentUser();if(!user)return;ensureEventData(user);syncEventMilestoneMail(user);const points=Number(user.eventPoints||0),list=$("eventRewardsList");if(!list)return;list.innerHTML=EVENT_REWARDS.map((r,i)=>{const unlocked=points>=r.points,claimed=user.eventMailbox.some(m=>m.id===rewardMailboxKey(r,i)&&m.claimed);return `<article class="event-reward-row ${unlocked?"unlocked":"locked"} ${claimed?"claimed":""}"><div class="event-reward-point"><small>POINTS</small><strong>${r.points.toLocaleString()}</strong></div><div class="event-reward-icon ${r.card?"card-reward":r.character?"character-reward":""}">${r.card?'<img src="assets/event1.png" alt="">':r.character?'<img src="assets/kohane.png" alt="">':'✦'}</div><div class="event-reward-copy"><small>${r.card?"EVENT CARD · ★★★★★★":r.character?"EVENT CHARACTER · ★★★★★★":"MILESTONE REWARD"}</small><strong>${r.title}</strong><span>${r.card?"SHINING MOMENT · EVENT LIMITED CARD":r.character?"KOHANE · EVENT CHARACTER":r.title==="EVENT GRAND REWARD"?"GEMS ×2,500 · GOLD ×100,000 · TICKET ×100":`×${r.amount}`}</span></div><button class="event-claim-button" data-event-reward="${i}" ${!unlocked||claimed?"disabled":""}>${claimed?"CLAIMED":unlocked?"IN MAILBOX":"LOCKED"}</button></article>`}).join("")}
+function renderEventShop(){const user=getCurrentUser(),list=$("eventShopList");if(!user||!list)return;ensureEventData(user);list.innerHTML=EVENT_SHOP.map(item=>{const bought=Number(user.eventShopPurchases[item.id]||0),left=Math.max(0,item.limit-bought);return `<article class="event-shop-item"><div><small>EVENT SHOP</small><strong>${item.title}</strong><span>${item.cost.toLocaleString()} EVENT PT · ${left} LEFT</span></div><button data-event-shop="${item.id}" ${left<=0?"disabled":""}>EXCHANGE</button></article>`}).join("");list.querySelectorAll('[data-event-shop]').forEach(b=>b.onclick=()=>buyEventShop(b.dataset.eventShop))}
+function buyEventShop(id){const user=getCurrentUser(),item=EVENT_SHOP.find(x=>x.id===id);if(!user||!item)return;ensureEventData(user);const bought=Number(user.eventShopPurchases[id]||0);if(bought>=item.limit){showLobbyToast("EVENT SHOP","Purchase limit reached.");return}if(Number(user.eventPoints||0)<item.cost){showLobbyToast("EVENT SHOP","Not enough Event Points.");return}user.eventPoints-=item.cost;user.eventShopPurchases[id]=bought+1;if(item.currency==="gems")user.gems=Number(user.gems||0)+item.amount;else if(item.currency==="coins")user.coins=Number(user.coins||0)+item.amount;else if(item.currency==="tickets")user.tickets=Number(user.tickets||0)+item.amount;else user.eventCardMemory=Number(user.eventCardMemory||0)+item.amount;updateUser(user);renderEventPage()}
+function renderEventPage(){
+    const user=getCurrentUser();
+    if(!user) return;
+    ensureEventData(user);
+    syncEventMilestoneMail(user);
+    const points=Number(user.eventPoints||0);
+    const energy=Number(user.eventEnergy||0);
+    const level=getEventLevel(points);
 
-        showLobbyToast(
-            "EVENT",
-            "Event details are coming soon."
-        );
+    const set=(id,value)=>{const el=$(id);if(el)el.textContent=value;};
+    set("eventPlayerId", user.username || "PLAYER");
+    set("eventLevel", level);
+    set("eventLevelHero", level);
+    set("eventGems", Number(user.gems||0).toLocaleString("en-US"));
+    set("eventCoins", Number(user.coins||0).toLocaleString("en-US"));
+    set("eventEnergy", energy.toLocaleString("en-US"));
+    set("eventPointsLabel", `${points.toLocaleString("en-US")} / ${EVENT_MAX_POINTS.toLocaleString("en-US")}`);
 
-    }
-);
+    const bar=$("eventProgressBar");
+    if(bar) bar.style.width=`${Math.min(100,(points/EVENT_MAX_POINTS)*100)}%`;
+
+    renderEventRewards();
+    renderEventShop();
+    renderEventMailbox();
+}
+
+function openEventScreen(){const user=getCurrentUser();if(!user)return;ensureEventData(user);try{stopLobbyMusic();}catch(_){}updateUser(user);renderEventPage();showScreen("eventScreen");const a=$("eventLobbyAudio");if(a){a.currentTime=0;a.volume=.32;a.play().catch(()=>{})}}
+function closeEventModal(id){const e=$(id);if(e){e.classList.add("hidden");e.setAttribute("aria-hidden","true")}}
+function openEventModal(id){const e=$(id);if(e){e.classList.remove("hidden");e.setAttribute("aria-hidden","false")}}
+function openEventPlay(){const a=$("eventLobbyAudio");if(a){a.pause();a.currentTime=0}window.location.href="event-play.html"}
+function initEventSystem(){
+    const bind=(id,event,handler)=>{const el=$(id);if(el){el.addEventListener(event,handler);return true}return false};
+    bind("eventButton","click",openEventScreen);
+    bind("eventBack","click",()=>{const a=$("eventLobbyAudio");if(a){a.pause();a.currentTime=0}showScreen("lobbyScreen")});
+    bind("eventRewardsButton","click",()=>{renderEventRewards();openEventModal("eventRewardsPanel")});
+    bind("eventShopButton","click",()=>{renderEventShop();openEventModal("eventShopPanel")});
+    bind("closeEventRewards","click",()=>closeEventModal("eventRewardsPanel"));
+    bind("closeEventShop","click",()=>closeEventModal("eventShopPanel"));
+    bind("eventRewardsPanel","click",e=>{if(e.target.id==="eventRewardsPanel")closeEventModal("eventRewardsPanel")});
+    bind("eventShopPanel","click",e=>{if(e.target.id==="eventShopPanel")closeEventModal("eventShopPanel")});
+    bind("eventGachaButton","click",openAkitoBanner);
+    bind("eventPlayButton","click",openEventPlay);
+    bind("eventMailboxButton","click",()=>{$("eventMailboxOverlay")?.classList.remove("hidden");renderEventMailbox()});
+    bind("closeEventMailbox","click",()=>$("eventMailboxOverlay")?.classList.add("hidden"));
+    bind("eventMailboxOverlay","click",e=>{if(e.target===$("eventMailboxOverlay"))$("eventMailboxOverlay").classList.add("hidden")});
+}
+if(document.readyState === "loading") document.addEventListener("DOMContentLoaded",initEventSystem,{once:true});
+else initEventSystem();
 
 
 /* =========================================================
@@ -3522,7 +3899,10 @@ const CHARACTER_MAX_RANK = 5;
 const CHARACTER_MAX_LEVEL_R1 = 60;
 const CHARACTER_LEVEL_STEP_PER_RANK = 5;
 const CHARACTER_INFO = {
-    lumina: { base: 13400, perLevel: 245, main: "VOCAL", skillName: "RADIANT VOICE", skill: "Boosts performance score during Skills." }
+    lumina: { base: 13400, perLevel: 245, main: "VOCAL", skillName: "RADIANT VOICE", skill: "Boosts performance score during Skills." },
+    akito: { base: 19450, perLevel: 510, main: "ACT", skillName: "REWARD AMPLIFIER", skill: "After completing a stage, increases the amount of stage rewards by 35%.", rewardMultiplier: 1.35 },
+    kohane: { base: 21034, perLevel: 410, main: "RAP", skillName: "SHINING REWARD", skill: "After completing a stage, increases the amount of stage rewards by 45%.", rewardMultiplier: 1.45 },
+    miku: { base: 9879, perLevel: 654, main: "VOCAL", skillName: "COLORFUL VOICE", skill: "Event: +15% score multiplier." }
 };
 
 function getCharacterProgress(character) {
@@ -3565,6 +3945,8 @@ function closeCharacterInfo() {
 }
 
 function renderCharacterInfo(character) {
+    if (character?.id === "akito" && !character.image) character.image = "assets/akito.png";
+    if (character?.id === "kohane" && !character.image) character.image = "assets/kohane.png";
     const p = getCharacterProgress(character);
     const d = CHARACTER_INFO[character.id] || {};
     const max = getCharacterMaxLevel(p.rank);
@@ -3581,8 +3963,16 @@ function renderCharacterInfo(character) {
         ? (p.rank < CHARACTER_MAX_RANK ? "RANK UP REQUIRED" : "MAX LEVEL")
         : `● ${cost.toLocaleString()} GOLD`;
     $("characterInfoArt").innerHTML = character.image ? `<img src="${character.image}" alt="${character.name}">` : `<span>✦</span>`;
+    const mainType = d.main || "VOCAL";
     $("characterInfoVocal").textContent = getCharacterStat(character).toLocaleString();
-    $("characterInfoMainType").textContent = d.main || "VOCAL";
+    $("characterInfoStatLabel").textContent = mainType;
+    $("characterInfoMainType").textContent = mainType;
+    const infoStat = $("characterInfoStatLabel")?.closest(".character-info-stat-single");
+    const infoMainType = $("characterInfoMainType");
+    infoStat?.classList.toggle("vocal-stat", mainType === "VOCAL");
+    infoStat?.classList.toggle("act-stat", mainType === "ACT");
+    infoMainType?.classList.toggle("vocal-type", mainType === "VOCAL");
+    infoMainType?.classList.toggle("act-type", mainType === "ACT");
     $("characterInfoSkillName").textContent = d.skillName || "SKILL";
     $("characterInfoSkillDescription").textContent = d.skill || "—";
 }
@@ -3667,6 +4057,7 @@ function renderMyCharacters() {
     }
 
     owned.forEach((character, index) => {
+        if (character.id === "akito" && !character.image) character.image = "assets/akito.png";
         const progress = getCharacterProgress(character);
         const rarity = Number(character.rarity || 6);
         const maxLevel = getCharacterMaxLevel(progress.rank);
@@ -3686,7 +4077,7 @@ function renderMyCharacters() {
                 ${character.image ? `<img src="${character.image}" alt="${character.name}">` : `<div class="my-card-fallback">✦</div>`}
             </div>
             <div class="my-card-info my-character-info-card">
-                <div class="my-character-level-line"><span>LV. ${progress.level} / ${maxLevel}</span><strong>${currentStat.toLocaleString()} VOCAL</strong></div>
+                <div class="my-character-level-line"><span>LV. ${progress.level} / ${maxLevel}</span><strong class="character-main-stat ${character.main === "ACT" ? "act-stat-text" : "vocal-stat-text"}">${currentStat.toLocaleString()} ${character.main || "VOCAL"}</strong></div>
                 <div class="my-card-name">${character.name}</div>
                 <div class="my-character-skill-line">${character.skillName || "SKILL"}</div>
                 <div class="my-character-action-row">
@@ -3761,7 +4152,7 @@ const GACHA_ITEMS = [
     {
         name: "JUNK",
         image: null,
-        rate: 76.7,
+        rate: 60.4,
         rarity: 1,
         type: "junk"
     }
@@ -3773,29 +4164,9 @@ const GACHA_ITEMS = [
 ========================================================= */
 
 const GACHA_CHARACTERS = [
-
-    {
-        id: "lumina",
-
-        name: "LUMINA",
-
-        image:
-            "assets/lumina.png",
-
-        type:
-            "character",
-
-        rarity:
-            6,
-
-        /*
-            Tỉ lệ thấp hơn
-            item featured.
-        */
-        rate:
-            0.33333
-    }
-
+    { id:"lumina", name:"LUMINA", image:"assets/lumina.png", type:"character", rarity:6, rate:0.33333, banner:"character", main:"VOCAL", base:13400, perLevel:245 },
+    { id:"akito", name:"AKITO", image:"assets/akito.png", type:"character", rarity:6, rate:0.33333, banner:"akito", main:"ACT", base:19450, perLevel:510, rewardMultiplier:1.35 },
+    { id:"miku", name:"HATSUNE MIKU", image:"assets/miku.png", type:"character", rarity:5, rate:5, banner:"both", main:"VOCAL", base:9879, perLevel:654 }
 ];
 /* =========================================================
    GACHA PITY / HISTORY / MY CARD DATA
@@ -3835,6 +4206,9 @@ if (!Array.isArray(user.myCharacters)) {
 
     if (typeof user.characterPity !== "number" || user.characterPity < 0) {
         user.characterPity = 0;
+    }
+    if (typeof user.akitoPity !== "number" || user.akitoPity < 0) {
+        user.akitoPity = 0;
     }
     if (!user.characterProgress || typeof user.characterProgress !== "object") user.characterProgress = {};
 
@@ -4117,6 +4491,8 @@ const closeGachaResult =
 
 const characterSingleRoll = document.getElementById("characterSingleRoll");
 const characterTenRoll = document.getElementById("characterTenRoll");
+const akitoSingleRoll = document.getElementById("akitoSingleRoll");
+const akitoTenRoll = document.getElementById("akitoTenRoll");
 
 
 let gachaBusy = false;
@@ -4333,6 +4709,8 @@ function updateCharacterPityDisplay(user) {
     initGachaData(user);
     const el = document.getElementById("characterPityCount");
     if (el) el.textContent = String(user.characterPity || 0);
+    const akitoEl = document.getElementById("akitoPityCount");
+    if (akitoEl) akitoEl.textContent = String(user.akitoPity || 0);
 }
 
 /* =========================================================
@@ -4652,73 +5030,32 @@ function showGachaResult(
 
 function doCharacterGacha(amount) {
     if (gachaBusy) return;
-
-    const user = getCurrentUser();
-    if (!user) {
-        showGachaToast("LOGIN REQUIRED", "Vui lòng đăng nhập trước khi roll.");
-        return;
-    }
-
+    const user=getCurrentUser();
+    if(!user){showGachaToast("LOGIN REQUIRED","Vui lòng đăng nhập trước khi roll.");return;}
     initGachaData(user);
-    const cost = amount === 1 ? GACHA_COST_SINGLE : GACHA_COST_TEN;
-    const gems = Number(user.gems || 0);
-    if (gems < cost) {
-        showGachaToast("NOT ENOUGH GEMS", `Bạn cần ${cost} gems để roll.`);
-        return;
-    }
-
-    const character = GACHA_CHARACTERS[0];
-    if (!character) return;
-
-    user.gems = gems - cost;
-    gachaBusy = true;
-    if (singleRoll) singleRoll.disabled = true;
-    if (tenRoll) tenRoll.disabled = true;
-    if (characterSingleRoll) characterSingleRoll.disabled = true;
-    if (characterTenRoll) characterTenRoll.disabled = true;
-
-    const results = [];
-
-    for (let i = 0; i < amount; i++) {
-        user.characterPity = Number(user.characterPity || 0) + 1;
-        const guaranteed = user.characterPity >= 100;
-        const won = guaranteed || (Math.random() * 100 < Number(character.rate || 0));
-
-        if (won) {
-            results.push({ ...character });
-            user.characterPity = 0;
-        } else {
-            results.push({
-                id: `character-miss-${Date.now()}-${i}`,
-                name: "NO CHARACTER",
-                image: null,
-                rarity: 1,
-                type: "character-miss"
-            });
+    const cost=amount===1?GACHA_COST_SINGLE:GACHA_COST_TEN;
+    if(Number(user.gems||0)<cost){showGachaToast("NOT ENOUGH GEMS",`Bạn cần ${cost} gems để roll.`);return;}
+    const banner=activeGachaBanner==="akito"?"akito":"character";
+    const featured=GACHA_CHARACTERS.find(x=>x.banner===banner);
+    if(!featured)return;
+    user.gems=Number(user.gems||0)-cost;gachaBusy=true;
+    [singleRoll,tenRoll,characterSingleRoll,characterTenRoll,akitoSingleRoll,akitoTenRoll].forEach(b=>{if(b)b.disabled=true});
+    const pityKey=banner==="akito"?"akitoPity":"characterPity";const pityLimit=banner==="akito"?120:100;const results=[];
+    for(let i=0;i<amount;i++){
+        user[pityKey]=Number(user[pityKey]||0)+1;
+        let item=null;
+        if(user[pityKey]>=pityLimit){item={...featured};user[pityKey]=0}
+        else if(Math.random()*100<5){item={...GACHA_CHARACTERS.find(x=>x.id==="miku")}}
+        else if(Math.random()*100<Number(featured.rate||0)){item={...featured};user[pityKey]=0}
+        else item={id:`character-miss-${Date.now()}-${i}`,name:"NO CHARACTER",image:null,rarity:1,type:"character-miss"};
+        results.push(item);
+        if(item.type==="character"){
+            if(!Array.isArray(user.myCharacters))user.myCharacters=[];if(!user.myCharacters.includes(item.id))user.myCharacters.push(item.id);
+            user.characterProgress=user.characterProgress||{};if(!user.characterProgress[item.id])user.characterProgress[item.id]={rank:1,level:1};else user.characterProgress[item.id].rank=Math.min(5,Number(user.characterProgress[item.id].rank||1)+1);
+            user.selectedCharacterId=item.id;
         }
     }
-
-    const wonCharacter = results.find(item => item.type === "character");
-    if (wonCharacter) {
-        if (!Array.isArray(user.myCharacters)) user.myCharacters = [];
-        if (!user.myCharacters.includes(wonCharacter.id)) {
-            user.myCharacters.push(wonCharacter.id);
-            if (!user.characterProgress) user.characterProgress = {};
-            user.characterProgress[wonCharacter.id] = { rank: 1, level: 1 };
-        } else {
-            const progress = user.characterProgress?.[wonCharacter.id] || { rank: 1, level: 1 };
-            progress.rank = Math.min(CHARACTER_MAX_RANK, Number(progress.rank || 1) + 1);
-            user.characterProgress[wonCharacter.id] = progress;
-        }
-        user.selectedCharacterId = wonCharacter.id;
-        selectedCharacterId = wonCharacter.id;
-    }
-
-    updateUser(user);
-    renderMyCharacters();
-    updateGachaGemCount(user);
-    updateCharacterPityDisplay(user);
-    showGachaResult(results);
+    updateUser(user);renderMyCharacters();updateGachaGemCount(user);updateCharacterPityDisplay(user);showGachaResult(results);
 }
 
 function doGacha(
@@ -4729,241 +5066,78 @@ function doGacha(
         return;
     }
 
-
-    const user =
-        getCurrentUser();
-
-
+    const user = getCurrentUser();
     if (!user) {
-
-        showGachaToast(
-            "LOGIN REQUIRED",
-            "Vui lòng đăng nhập trước khi roll."
-        );
-
+        showGachaToast("LOGIN REQUIRED", "Vui lòng đăng nhập trước khi roll.");
         return;
     }
 
+    initGachaData(user);
 
-    /* =========================
-       INIT PITY
-    ========================= */
+    const cost = amount === 1 ? GACHA_COST_SINGLE : GACHA_COST_TEN;
+    const currentGems = Number(user.gems ?? 0);
 
-    if (
-        typeof user.gachaPity !== "number"
-    ) {
-
-        user.gachaPity = 0;
-    }
-
-
-    /* =========================
-       COST
-    ========================= */
-
-    const cost =
-        amount === 1
-            ? GACHA_COST_SINGLE
-            : GACHA_COST_TEN;
-
-
-    const currentGems =
-        Number(
-            user.gems ?? 0
-        );
-
-
-    /* =========================
-       NOT ENOUGH GEMS
-    ========================= */
-
-    if (
-        currentGems < cost
-    ) {
-
-        showGachaToast(
-            "NOT ENOUGH GEMS",
-            `Bạn cần ${cost} gems để roll.`
-        );
-
+    if (currentGems < cost) {
+        showGachaToast("NOT ENOUGH GEMS", `Bạn cần ${cost} gems để roll.`);
         return;
     }
 
+    const pityBefore = Number(user.gachaPity || 0);
+    user.gems = currentGems - cost;
+    gachaBusy = true;
 
-    /* =========================
-       DEDUCT GEMS
-    ========================= */
+    if (singleRoll) singleRoll.disabled = true;
+    if (tenRoll) tenRoll.disabled = true;
+    if (characterSingleRoll) characterSingleRoll.disabled = true;
+    if (characterTenRoll) characterTenRoll.disabled = true;
 
-    user.gems =
-        currentGems - cost;
+    const results = [];
+    let sixStarCount = 0;
 
+    /*
+       CARD GACHA ONLY:
+       tuyệt đối không gọi tryRollCharacter() ở đây.
+       Character có banner/pity riêng.
+    */
+    for (let i = 0; i < amount; i++) {
+        const item = getRandomGachaItem();
+        results.push({ ...item });
 
-    /* =========================
-       LOCK BUTTONS
-    ========================= */
+        // Mỗi pull, kể cả 10-roll, tăng đúng 1 pity.
+        user.gachaPity = Number(user.gachaPity || 0) + 1;
 
-    gachaBusy =
-        true;
-
-    singleRoll.disabled =
-        true;
-
-    tenRoll.disabled =
-        true;
-
-
-    /* =========================
-       RESULTS
-    ========================= */
-
-    const results =
-        [];
-
-    let sixStarCount =
-        0;
-
-
-    /* =========================
-       ROLL EACH PULL
-    ========================= */
-
-    for (
-        let i = 0;
-        i < amount;
-        i++
-    ) {
-
-        /* Roll character first. If no character drops, roll a normal gacha item. */
-        const item =
-            tryRollCharacter() ||
-            getRandomGachaItem();
-
-
-        results.push(
-            item
-        );
-
-
-        /*
-            Mỗi pull tăng Pity 1.
-        */
-        user.gachaPity =
-            Number(
-                user.gachaPity ?? 0
-            ) + 1;
-
-
-        /*
-            Ra 6★ thì reset Pity.
-        */
-        if (
-            Number(
-                item.rarity ?? 0
-            ) >= 6
-        ) {
-
-            user.gachaPity =
-                0;
-
+        // Card 6★ reset pity ngay tại pull vừa ra 6★.
+        if (Number(item.rarity || 0) >= 6) {
+            user.gachaPity = 0;
             sixStarCount++;
         }
 
-
-        /*
-            Cập nhật Pity trên màn hình.
-        */
-        updateGachaPityDisplay(
-            user
-        );
+        updateGachaPityDisplay(user);
     }
 
+    const pityAfter = Number(user.gachaPity || 0);
 
-    /* =========================
-       SAVE USER
-    ========================= */
+    // Lưu lịch sử sau toàn bộ 1-roll/10-roll, tránh mất pity sau reload.
+    saveGachaHistory(user, pityBefore, pityAfter, amount, sixStarCount);
 
-    updateUser(
-        user
-    );
+    // Lưu card; character không thể lọt vào đây nữa.
+    const cardResult = saveGachaCards(user, results);
 
+    // Một lần sync cuối cùng có cả pity + history + cards.
+    updateUser(user);
+    updateGachaGemCount(user);
+    updateGachaPityDisplay(user);
 
-    /* =========================
-       UPDATE GEMS
-    ========================= */
-
-    updateGachaGemCount(
-        user
-    );
-
-
-/* =========================
-   MY CARD
-   RANK + DUPLICATE SYSTEM
-========================= */
-
-const cardResult =
-    saveGachaCards(
-        user,
-        results
-    );
-
-/* Save rolled characters into My Character. */
-results
-    .filter(item => item.type === "character")
-    .forEach(item => {
-        saveCharacter(item.id);
-    });
-
-
-/*
-    Save user after
-    card processing.
-*/
-updateUser(
-    user
-);
-
-
-/*
-    Update gem display again
-    because duplicate Rank 5
-    can give 320 Gems.
-*/
-updateGachaGemCount(
-    user
-);
-
-
-/*
-    Optional duplicate message.
-*/
-if (
-    cardResult &&
-    cardResult.duplicateGems > 0
-) {
-
-    setTimeout(
-        () => {
-
+    if (cardResult && cardResult.duplicateGems > 0) {
+        setTimeout(() => {
             showGachaToast(
                 "DUPLICATE CARD",
                 `MAX RANK DUPLICATE → +${cardResult.duplicateGems} GEMS`
             );
+        }, 800);
+    }
 
-        },
-        800
-    );
-
-}
-
-
-    /* =========================
-       SHOW RESULT
-    ========================= */
-
-    showGachaResult(
-        results
-    );
+    showGachaResult(results);
 }
 
 
@@ -4989,6 +5163,13 @@ tenRoll?.addEventListener("click", () => {
 
 characterTenRoll?.addEventListener("click", () => {
     doCharacterGacha(10);
+});
+
+$("dailyAttendanceMini")?.addEventListener("click", () => openDailyAttendancePopup());
+$("dailyAttendanceClaim")?.addEventListener("click", claimDailyAttendance);
+$("dailyAttendanceClose")?.addEventListener("click", closeDailyAttendance);
+$("dailyAttendanceOverlay")?.addEventListener("click", (event) => {
+    if (event.target === $("dailyAttendanceOverlay")) closeDailyAttendance();
 });
 
 
@@ -5027,6 +5208,8 @@ closeGachaResult.addEventListener(
 
         if (characterSingleRoll) characterSingleRoll.disabled = false;
         if (characterTenRoll) characterTenRoll.disabled = false;
+        if (akitoSingleRoll) akitoSingleRoll.disabled = false;
+        if (akitoTenRoll) akitoTenRoll.disabled = false;
 
     }
 );
@@ -5068,8 +5251,10 @@ function setGachaBanner(name) {
     activeGachaBanner = name;
     $("currentBannerButton")?.classList.toggle("active", name === "items");
     $("characterBannerButton")?.classList.toggle("active", name === "character");
+    $("akitoBannerButton")?.classList.toggle("active", name === "akito");
     $("itemGachaContent")?.classList.toggle("hidden", name !== "items");
     $("characterGachaContent")?.classList.toggle("hidden", name !== "character");
+    $("akitoGachaContent")?.classList.toggle("hidden", name !== "akito");
     updateGachaPityDisplay(getCurrentUser());
     updateCharacterPityDisplay(getCurrentUser());
 }
@@ -5079,7 +5264,16 @@ function openCharacterBanner() {
     setGachaBanner("character");
 }
 
+function openAkitoBanner() {
+    showScreen("gachaScreen");
+    setGachaBanner("akito");
+}
+
 $("characterBannerButton")?.addEventListener("click", openCharacterBanner);
+$("akitoBannerButton")?.addEventListener("click", openAkitoBanner);
+
+$("akitoSingleRoll")?.addEventListener("click", () => doCharacterGacha(1));
+$("akitoTenRoll")?.addEventListener("click", () => doCharacterGacha(10));
 
 /* =========================================================
    GACHA BANNER
@@ -5696,12 +5890,10 @@ coinPacks.forEach(
                 .get("return");
 
         if (returnPage === "nowplay") {
-
-            setupLobby(currentUser);
-            renderNowPlay();
-            showScreen("nowPlayScreen");
-
-            return;
+            setupLobby(currentUser); renderNowPlay(); showScreen("nowPlayScreen"); return;
+        }
+        if (returnPage === "event") {
+            setupLobby(currentUser); openEventScreen(); return;
         }
     }
 
@@ -5974,12 +6166,20 @@ async function sendFriendMessage(text) {
     }
 }
 function initFriendSystem() {
-    $("friendsButton")?.addEventListener('click', async () => {
-        if (!getCurrentUser()) return;
-        await renderFriends();
-        if ($("friendSearchInput")) $("friendSearchInput").value = '';
-        if ($("friendSearchResults")) $("friendSearchResults").innerHTML = '<div class="friends-empty">Nhập ID Name để tìm người chơi.</div>';
+    $("friendsButton")?.addEventListener('click', async (event) => {
+        event.preventDefault();
+        // Open the Friends screen first. A Supabase/RPC failure must not make the
+        // button appear dead or redirect the player away from the lobby.
         showScreen('friendsScreen');
+        if ($("friendSearchInput")) $("friendSearchInput").value = '';
+        if ($("friendSearchResults")) $("friendSearchResults").innerHTML = '<div class="friends-empty">Đang tải dữ liệu bạn bè...</div>';
+        try {
+            if (getCurrentUser()) await renderFriends();
+            else if ($("friendsList")) $("friendsList").innerHTML = '<div class="friends-empty">Chưa có phiên đăng nhập. Hãy đăng nhập lại.</div>';
+        } catch (error) {
+            console.error("Friends screen load failed:", error);
+            if ($("friendsList")) $("friendsList").innerHTML = `<div class="friends-empty">Không thể tải danh sách bạn bè.<br>${escapeFriendHtml(error?.message || "Supabase error")}</div>`;
+        }
     });
 
     $("friendsBack")?.addEventListener('click', () => showScreen('lobbyScreen'));

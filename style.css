@@ -954,6 +954,10 @@ button {
 }
 
 .event-banner button {
+    position: relative;
+    z-index: 20;
+    pointer-events: auto;
+    cursor: pointer;
     margin-left: auto;
 
     padding: 9px 18px;
@@ -2546,7 +2550,9 @@ button {
     }
 
     .event-banner button {
-        display: none;
+        display: block;
+        flex: 0 0 auto;
+        padding: 9px 14px;
     }
 
     /* =========================
@@ -8678,3 +8684,455 @@ body {
   .friend-request-item { flex-wrap:wrap; }
   .friend-request-actions { width:100%; margin-left:56px; }
 }
+
+
+.daily-attendance-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 5000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    background: rgba(38, 20, 31, .52);
+    backdrop-filter: blur(9px);
+}
+
+.daily-attendance-overlay.hidden { display: none !important; }
+.daily-attendance-overlay,
+.daily-attendance-overlay * {
+    pointer-events: auto;
+}
+
+.daily-attendance-close,
+.daily-attendance-claim {
+    position: relative;
+    z-index: 2;
+}
+
+
+.daily-attendance-modal {
+    position: relative;
+    width: min(920px, 96vw);
+    max-height: 94vh;
+    overflow: auto;
+    padding: 28px;
+    border: 1px solid #f2dce7;
+    border-radius: 28px;
+    background: linear-gradient(145deg, #ffffff, #fff7fb);
+    box-shadow: 0 30px 100px rgba(64, 27, 47, .28);
+}
+
+.daily-attendance-close {
+    position: absolute;
+    top: 16px;
+    right: 17px;
+    width: 38px;
+    height: 38px;
+    border: 1px solid #eadbe3;
+    border-radius: 50%;
+    background: #fff;
+    color: #9b8c94;
+    font-size: 25px;
+    line-height: 1;
+    cursor: pointer;
+}
+
+.daily-attendance-close:hover { color: var(--pink); border-color: #ffb7d1; }
+
+.daily-attendance-header { text-align: center; padding: 4px 48px 18px; }
+.daily-attendance-kicker {
+    display: block;
+    color: var(--pink);
+    font-size: 10px;
+    font-weight: 900;
+    letter-spacing: 3px;
+}
+.daily-attendance-header h2 {
+    margin: 7px 0 4px;
+    font-size: clamp(24px, 4vw, 36px);
+    font-weight: 900;
+    letter-spacing: 1px;
+}
+.daily-attendance-header p { color: var(--muted); font-weight: 800; text-transform: capitalize; }
+
+.daily-attendance-legend {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px 18px;
+    margin-bottom: 14px;
+    color: #8f7e87;
+    font-size: 8px;
+    font-weight: 900;
+    letter-spacing: 1px;
+}
+.daily-attendance-legend span { display: inline-flex; align-items: center; gap: 6px; }
+.legend-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; border: 1px solid #e4d7dd; }
+.legend-dot.claimed { background: #ffd3e4; }
+.legend-dot.today { background: #ff5f9e; }
+.legend-dot.pass { background: #ddd7da; }
+.legend-dot.future { background: #fff; }
+
+.daily-attendance-weekdays,
+.daily-attendance-grid {
+    display: grid;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    gap: 7px;
+}
+.daily-attendance-weekdays {
+    margin-bottom: 7px;
+    color: #a18f98;
+    font-size: 8px;
+    font-weight: 900;
+    letter-spacing: 1px;
+    text-align: center;
+}
+
+.daily-attendance-day {
+    min-height: 92px;
+    padding: 8px 6px 7px;
+    border: 1px solid #eee2e8;
+    border-radius: 13px;
+    background: #fff;
+    text-align: center;
+    transition: transform .16s ease, box-shadow .16s ease;
+}
+.daily-attendance-day.empty { visibility: hidden; border: 0; background: transparent; }
+.daily-attendance-day.claimed { background: #fff0f6; border-color: #ffc8dd; }
+.daily-attendance-day.today { background: #fff; border: 2px solid var(--pink); box-shadow: 0 8px 25px rgba(255,95,158,.16); }
+.daily-attendance-day.pass { opacity: .58; background: #f7f5f6; }
+.daily-attendance-day.future { opacity: .66; }
+.daily-attendance-day:hover:not(.empty) { transform: translateY(-2px); box-shadow: 0 8px 22px rgba(80, 30, 52, .08); }
+.daily-attendance-day-number { font-size: 17px; font-weight: 900; }
+.daily-attendance-reward {
+    min-height: 29px;
+    margin-top: 5px;
+    color: #6e5963;
+    font-size: 9px;
+    line-height: 1.25;
+    font-weight: 900;
+}
+.daily-attendance-state {
+    margin-top: 5px;
+    color: #a18f98;
+    font-size: 7px;
+    font-weight: 900;
+    letter-spacing: 1px;
+}
+.daily-attendance-day.claimed .daily-attendance-state { color: #ed397e; }
+.daily-attendance-day.today .daily-attendance-state { color: var(--pink); }
+.daily-attendance-day.pass .daily-attendance-state { color: #999; }
+
+.daily-attendance-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin-top: 18px;
+    padding-top: 17px;
+    border-top: 1px solid #f0e3e9;
+}
+.daily-attendance-footer p {
+    flex: 1;
+    color: #8b7a83;
+    font-size: 11px;
+    font-weight: 800;
+    line-height: 1.45;
+}
+.daily-attendance-claim {
+    min-width: 220px;
+    padding: 13px 18px;
+    border: 0;
+    border-radius: 12px;
+    background: var(--pink);
+    color: #fff;
+    font-size: 10px;
+    font-weight: 900;
+    letter-spacing: 1px;
+    box-shadow: 0 9px 24px rgba(255,95,158,.22);
+}
+.daily-attendance-claim:hover:not(:disabled) { background: var(--pink-dark); transform: translateY(-1px); }
+.daily-attendance-claim:disabled { opacity: .48; cursor: not-allowed; box-shadow: none; }
+
+@media (max-width: 700px) {
+    .daily-attendance-modal { padding: 20px 12px 14px; border-radius: 20px; }
+    .daily-attendance-header { padding-left: 35px; padding-right: 35px; }
+    .daily-attendance-grid, .daily-attendance-weekdays { gap: 4px; }
+    .daily-attendance-day { min-height: 72px; padding: 5px 3px; border-radius: 9px; }
+    .daily-attendance-day-number { font-size: 14px; }
+    .daily-attendance-reward { font-size: 7px; min-height: 23px; }
+    .daily-attendance-state { font-size: 6px; }
+    .daily-attendance-footer { flex-direction: column; align-items: stretch; }
+    .daily-attendance-claim { width: 100%; }
+}
+
+
+/* =========================================================
+   DAILY ATTENDANCE MINI CARD — LOBBY
+========================================================= */
+.daily-attendance-mini {
+    width: min(360px, 90%);
+    margin: 16px auto 0;
+    padding: 11px 13px;
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    border: 1px solid #ffd1e1;
+    border-radius: 15px;
+    background: rgba(255, 255, 255, .94);
+    color: var(--text);
+    box-shadow: 0 9px 25px rgba(219, 78, 130, .10);
+    text-align: left;
+    transition: transform .16s ease, box-shadow .16s ease, border-color .16s ease;
+}
+
+.daily-attendance-mini:hover {
+    transform: translateY(-2px);
+    border-color: #ffabc9;
+    box-shadow: 0 12px 30px rgba(219, 78, 130, .16);
+}
+
+.daily-attendance-mini.claimed {
+    background: #fff7fb;
+    border-color: #ffc9dd;
+}
+
+.daily-attendance-mini-icon {
+    width: 34px;
+    height: 34px;
+    flex: 0 0 34px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 11px;
+    background: var(--pink);
+    color: #fff;
+    font-size: 15px;
+    font-weight: 900;
+}
+
+.daily-attendance-mini.claimed .daily-attendance-mini-icon {
+    background: #ffd3e4;
+    color: #ed397e;
+}
+
+.daily-attendance-mini-info {
+    min-width: 0;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.daily-attendance-mini-info small {
+    color: #ad99a3;
+    font-size: 7px;
+    font-weight: 900;
+    letter-spacing: 1.5px;
+}
+
+.daily-attendance-mini-info strong {
+    margin-top: 2px;
+    color: #4b3a43;
+    font-size: 10px;
+    font-weight: 900;
+    letter-spacing: .4px;
+}
+
+.daily-attendance-mini-info span {
+    margin-top: 2px;
+    overflow: hidden;
+    color: var(--pink-dark);
+    font-size: 8px;
+    font-weight: 900;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.daily-attendance-mini.claimed .daily-attendance-mini-info span {
+    color: #a18f98;
+}
+
+.daily-attendance-mini-arrow {
+    flex: 0 0 auto;
+    color: var(--pink);
+    font-size: 24px;
+    font-weight: 700;
+    line-height: 1;
+}
+
+@media (max-width: 600px) {
+    .daily-attendance-mini {
+        width: min(330px, 92%);
+        margin-top: 12px;
+    }
+}
+
+/* =========================================================
+   DAILY ATTENDANCE — COMPACT + LOWER IN LOBBY
+========================================================= */
+.daily-attendance-mini.compact {
+    width: min(300px, 88%);
+    margin-top: 42px;
+    padding: 8px 10px;
+    gap: 9px;
+    border-radius: 13px;
+    transform: translateY(18px);
+}
+.daily-attendance-mini.compact:hover { transform: translateY(14px); }
+.daily-attendance-mini.compact .daily-attendance-mini-icon { width: 29px; height: 29px; flex-basis: 29px; font-size: 13px; border-radius: 9px; }
+.daily-attendance-mini.compact .daily-attendance-mini-info strong { font-size: 9px; }
+.daily-attendance-mini.compact .daily-attendance-mini-info span { font-size: 7px; }
+.daily-attendance-mini.compact .daily-attendance-mini-arrow { font-size: 20px; }
+
+/* =========================================================
+   AKITO LIMITED EVENT BANNER
+========================================================= */
+.event-limited-label { background: #f2e9ff; color: #7650b9; }
+.akito-event-gacha { border-color: #e7d9f7; background: linear-gradient(145deg, rgba(255,255,255,.94), rgba(250,246,255,.94)); }
+.akito-banner-feature { border-color: #e5d8f3; background: linear-gradient(135deg,#fff,#faf6ff); }
+.akito-banner-art { background: radial-gradient(circle at 50% 38%, #efe4ff 0, #faf7ff 52%, #fff 100%); }
+.akito-art-placeholder { width: 78%; height: 82%; border: 1px solid #dcc9ef; border-radius: 28px; display:flex; flex-direction:column; align-items:center; justify-content:center; background:linear-gradient(160deg,#fff,#f1e7ff); box-shadow:0 20px 50px rgba(118,80,185,.12); color:#7650b9; text-align:center; }
+.akito-art-placeholder span { font-size:8px; letter-spacing:2px; font-weight:900; }
+.akito-art-placeholder strong { margin-top:7px; font-size:44px; letter-spacing:2px; }
+.akito-art-placeholder small { margin-top:8px; font-size:9px; font-weight:900; letter-spacing:1.5px; color:#a68cc6; }
+.akito-banner-feature .character-banner-stars { color:#9b72d0; }
+.akito-stat-highlight { margin:15px 0; padding:13px 15px; border:1px solid #e4d5f2; border-radius:14px; background:#fbf8ff; }
+.akito-stat-highlight small,.akito-stat-highlight span { display:block; color:#9a83ae; font-size:8px; font-weight:900; letter-spacing:1.4px; }
+.akito-stat-highlight strong { display:block; margin:5px 0 3px; color:#7650b9; font-size:20px; }
+.akito-stat-highlight strong em { font-style:normal; font-size:9px; color:#aa95bd; }
+.akito-skill-banner { margin-top:14px; padding:15px 17px; border:1px solid #e3d4f1; border-radius:15px; background:#fbf8ff; }
+.akito-skill-banner span { display:block; color:#9a83ae; font-size:8px; font-weight:900; letter-spacing:1.5px; }
+.akito-skill-banner strong { display:block; margin-top:4px; color:#7650b9; font-size:13px; letter-spacing:.5px; }
+.akito-skill-banner p { margin-top:5px; color:#74667e; font-size:10px; line-height:1.5; }
+.akito-skill-banner p b { color:#7650b9; font-size:12px; }
+.akito-pity-box { border-color:#e4d7f1; }
+.banner-select#akitoBannerButton .banner-number { color:#7650b9; background:#f2e9ff; }
+.banner-select#akitoBannerButton.active { border-color:#b993dc; background:#faf5ff; }
+.banner-select#akitoBannerButton b { color:#7650b9; }
+@media (max-width: 700px) {
+    .daily-attendance-mini.compact { width:min(280px,90%); margin-top:25px; transform:translateY(10px); }
+    .daily-attendance-mini.compact:hover { transform:translateY(7px); }
+    .akito-art-placeholder strong { font-size:32px; }
+}
+
+/* =========================================================
+   FINAL CHARACTER COLOR + EVENT IMAGE OVERRIDES
+========================================================= */
+/* LUMINA = VOCAL / RED */
+.character-info-stat-single.vocal-stat {
+    border-color: #f3c4d1;
+    background: #fff5f8;
+}
+.character-info-stat-single.vocal-stat span,
+.character-info-stat-single.vocal-stat strong,
+.card-info-skill-heading strong.vocal-type,
+.vocal-stat-text {
+    color: #d94767;
+}
+.card-info-skill-heading strong.vocal-type { color: #d94767; }
+
+/* AKITO = ACT / GOLD */
+.character-info-stat-single.act-stat {
+    border-color: #efd79c;
+    background: #fff9e9;
+}
+.character-info-stat-single.act-stat span,
+.character-info-stat-single.act-stat strong,
+.card-info-skill-heading strong.act-type,
+.act-stat-text {
+    color: #c78e12;
+}
+.card-info-skill-heading strong.act-type { color: #c78e12; }
+
+/* Use the real Akito asset exactly like Lumina's banner art. */
+.akito-banner-art img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+/* =========================================================
+   DAILY ATTENDANCE — SMALL ROUND BUTTON ONLY
+========================================================= */
+.daily-attendance-mini.compact {
+    width: 46px;
+    height: 46px;
+    min-width: 46px;
+    min-height: 46px;
+    margin: 46px auto 0;
+    padding: 0;
+    gap: 0;
+    border-radius: 50%;
+    border: 2px solid #ffd1e1;
+    background: rgba(255,255,255,.96);
+    box-shadow: 0 8px 22px rgba(219,78,130,.14);
+    transform: translateY(18px);
+    justify-content: center;
+}
+.daily-attendance-mini.compact:hover {
+    transform: translateY(15px) scale(1.05);
+}
+.daily-attendance-mini.compact .daily-attendance-mini-icon {
+    width: 30px;
+    height: 30px;
+    flex: 0 0 30px;
+    border-radius: 50%;
+    font-size: 13px;
+}
+.daily-attendance-mini.compact .daily-attendance-mini-info,
+.daily-attendance-mini.compact .daily-attendance-mini-arrow {
+    display: none;
+}
+
+@media (max-width: 700px) {
+    .daily-attendance-mini.compact {
+        width: 42px;
+        height: 42px;
+        min-width: 42px;
+        min-height: 42px;
+        margin-top: 30px;
+        transform: translateY(10px);
+    }
+    .daily-attendance-mini.compact:hover {
+        transform: translateY(8px) scale(1.05);
+    }
+    .daily-attendance-mini.compact .daily-attendance-mini-icon {
+        width: 27px;
+        height: 27px;
+        flex-basis: 27px;
+    }
+}
+
+/* =========================================================
+   SHINE WITHOUT END — EVENT SCREEN
+========================================================= */
+.event-screen{background:linear-gradient(145deg,#fff8fb,#f9f4ff);overflow:auto;}
+.event-topbar{min-height:78px;display:grid;grid-template-columns:100px 1fr auto;align-items:center;gap:20px;padding:12px 28px;border-bottom:1px solid #eadce4;background:rgba(255,255,255,.9);backdrop-filter:blur(14px);position:sticky;top:0;z-index:20;}
+.event-brand{display:flex;align-items:center;gap:12px}.event-brand span{font-size:9px;letter-spacing:3px;font-weight:900;color:#b99aa9}.event-brand strong{font-size:22px;letter-spacing:4px;color:#2d2028}
+.event-player-resources{display:flex;align-items:center;gap:10px}.event-player-resources>div{min-width:80px;padding:8px 12px;border:1px solid #eadde5;border-radius:11px;background:#fff}.event-player-resources small{display:block;font-size:6px;letter-spacing:1.5px;color:#a995a0;font-weight:900}.event-player-resources b{display:block;margin-top:3px;font-size:11px;color:#3b2c34}
+.event-main{width:min(1240px,94%);margin:24px auto 60px}.event-hero-card{display:grid;grid-template-columns:1fr 1.05fr;gap:24px;min-height:430px;padding:30px;border:1px solid #eadce7;border-radius:28px;background:linear-gradient(135deg,rgba(255,255,255,.96),rgba(255,248,252,.96));box-shadow:0 24px 70px rgba(86,47,70,.08);overflow:hidden}.event-hero-copy{display:flex;flex-direction:column;justify-content:center;padding:8px 10px}.event-kicker{font-size:8px;letter-spacing:2.5px;color:#c77a9a;font-weight:900}.event-hero-copy h1{margin:12px 0 10px;font-size:clamp(36px,5vw,68px);line-height:.92;letter-spacing:2px;color:#2e2028}.event-hero-copy p{max-width:520px;color:#85737d;font-size:12px;line-height:1.6}.event-progress-wrap{margin-top:34px}.event-progress-meta{display:flex;justify-content:space-between;align-items:center;font-size:8px;letter-spacing:1.5px;color:#9b8490;font-weight:900}.event-progress-meta strong{color:#4d3842}.event-progress-track{height:14px;margin-top:9px;padding:3px;border:1px solid #ead9e2;border-radius:999px;background:#fff}.event-progress-track i{display:block;width:0;height:100%;border-radius:999px;background:linear-gradient(90deg,#e978a6,#9d79d7);transition:width .25s ease}.event-level-note{margin-top:8px;text-align:right;font-size:7px;color:#aa969f;letter-spacing:1px}.event-level-note b{color:#5d4652}
+.event-feature-visual{display:flex;align-items:center;justify-content:center;gap:18px;min-width:0}.event-character-square,.event-limited-card{position:relative;overflow:hidden;border:1px solid #ead8e3;background:#fff;box-shadow:0 18px 45px rgba(82,48,68,.12)}.event-character-square{width:min(300px,45%);aspect-ratio:1/1;border-radius:24px}.event-character-square img{width:100%;height:100%;object-fit:contain;display:block}.event-character-caption{position:absolute;left:10px;right:10px;bottom:10px;padding:10px 12px;border-radius:13px;background:rgba(255,255,255,.9);backdrop-filter:blur(8px);border:1px solid #eadce4}.event-character-caption small,.event-limited-card small{display:block;font-size:6px;letter-spacing:1.5px;color:#9b8590;font-weight:900}.event-character-caption strong{display:block;margin-top:3px;font-size:20px;letter-spacing:1px;color:#35252d}.event-character-caption b{display:block;margin-top:2px;font-size:8px;color:#c56f91;letter-spacing:1px}.event-limited-card{width:min(220px,34%);aspect-ratio:2/3;border-radius:19px}.event-limited-card img{width:100%;height:100%;object-fit:cover;display:block}.event-limited-card>div{position:absolute;left:7px;right:7px;bottom:7px;padding:9px;border-radius:11px;background:rgba(255,255,255,.92);border:1px solid #eadce4}.event-limited-card strong{display:block;margin-top:3px;font-size:11px;letter-spacing:.5px;color:#35252d}.event-limited-card em{display:block;margin-top:3px;font-size:5px;font-style:normal;letter-spacing:1px;color:#b26f8a;font-weight:900}.six-star{position:absolute;top:10px;left:11px;z-index:4;padding:5px 8px;border-radius:999px;background:rgba(255,255,255,.9);color:#c89a25;font-size:8px;letter-spacing:1px;box-shadow:0 5px 14px rgba(70,45,20,.12)}
+.event-action-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:16px}.event-action-card{display:flex;align-items:center;gap:12px;text-align:left;min-height:86px;padding:15px;border:1px solid #e8dce4;border-radius:17px;background:#fff;cursor:pointer;transition:.2s;box-shadow:0 10px 30px rgba(80,50,70,.05)}.event-action-card:hover{transform:translateY(-3px);border-color:#d7b9c9}.event-action-card>span{width:38px;height:38px;display:grid;place-items:center;border-radius:12px;background:#fff3f7;color:#c66d91;font-size:17px}.event-action-card div{flex:1}.event-action-card small{display:block;font-size:6px;letter-spacing:1.4px;color:#a38e98;font-weight:900}.event-action-card strong{display:block;margin-top:3px;font-size:13px;letter-spacing:1px;color:#34262e}.event-action-card em{display:block;margin-top:4px;font-size:7px;font-style:normal;color:#a28d97}.event-action-card>b{font-size:20px;color:#bca7b0}.event-play-card{grid-column:span 3;min-height:112px;background:linear-gradient(135deg,#30232b,#543846);border-color:#4b3540}.event-play-card>span{background:rgba(255,255,255,.12);color:#fff}.event-play-card small,.event-play-card em{color:#d8c7cf}.event-play-card strong,.event-play-card>b{color:#fff;font-size:18px}
+.event-panel{margin-top:16px;padding:22px;border:1px solid #e7dce4;border-radius:20px;background:#fff;box-shadow:0 16px 45px rgba(70,45,60,.07)}.event-panel-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}.event-panel-head small{font-size:6px;letter-spacing:1.5px;color:#a28c97;font-weight:900}.event-panel-head h2{margin:3px 0 0;font-size:22px;letter-spacing:1px;color:#35262e}.event-panel-head button{border:0;background:transparent;font-size:24px;color:#a78f99;cursor:pointer}.event-rewards-list{display:grid;gap:8px}.event-reward-row{display:grid;grid-template-columns:110px 58px 1fr 90px;align-items:center;gap:12px;padding:10px;border:1px solid #eee3e8;border-radius:14px}.event-reward-row.locked{opacity:.58}.event-reward-row.claimed{background:#faf7f9}.event-reward-point small,.event-reward-copy small{display:block;font-size:6px;letter-spacing:1.2px;color:#a28d97;font-weight:900}.event-reward-point strong{font-size:13px;color:#4a3540}.event-reward-icon{width:50px;height:50px;display:grid;place-items:center;border-radius:12px;background:#fff4f8;color:#c87394;font-size:20px;overflow:hidden}.event-reward-icon.card-reward img{width:100%;height:100%;object-fit:cover}.event-reward-copy strong{display:block;margin-top:3px;font-size:11px;color:#35262e}.event-reward-copy span{display:block;margin-top:3px;font-size:7px;color:#a18b95}.event-claim-button,.event-shop-item button{border:1px solid #e4cfd9;border-radius:10px;background:#fff5f8;color:#bb6487;padding:9px 8px;font-size:7px;font-weight:900;letter-spacing:1px;cursor:pointer}.event-claim-button:disabled{cursor:default;opacity:.45}.event-shop-list{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.event-shop-item{display:flex;align-items:center;gap:12px;justify-content:space-between;padding:15px;border:1px solid #eee2e8;border-radius:14px}.event-shop-item div{flex:1}.event-shop-item small{display:block;font-size:6px;letter-spacing:1.2px;color:#a28d97;font-weight:900}.event-shop-item strong{display:block;margin-top:4px;font-size:11px;color:#392a32}.event-shop-item span{display:block;margin-top:4px;font-size:7px;color:#a18b95}
+@media(max-width:850px){.event-topbar{grid-template-columns:70px 1fr;}.event-player-resources{grid-column:1/-1;overflow:auto}.event-hero-card{grid-template-columns:1fr}.event-feature-visual{min-height:330px}.event-action-grid{grid-template-columns:1fr 1fr}.event-play-card{grid-column:span 2}.event-shop-list{grid-template-columns:1fr}}
+@media(max-width:600px){.event-main{width:96%;}.event-feature-visual{gap:8px}.event-character-square{width:50%}.event-limited-card{width:38%}.event-reward-row{grid-template-columns:70px 48px 1fr 65px}.event-reward-point strong{font-size:10px}.event-hero-copy h1{font-size:38px}.event-action-grid{grid-template-columns:1fr}.event-play-card{grid-column:auto}}
+
+
+/* EVENT MAILBOX */
+.event-mailbox-button{width:min(430px,92vw);margin:12px auto 0;display:flex;align-items:center;gap:12px;padding:12px 16px;border:1px solid #f0d9e3;border-radius:16px;background:#fff;box-shadow:0 8px 22px rgba(80,35,55,.07);cursor:pointer;text-align:left}
+.event-mailbox-icon{width:38px;height:38px;border-radius:12px;display:grid;place-items:center;background:#fff0f6;color:#ff5f9e;font-size:20px}.event-mailbox-info{flex:1}.event-mailbox-info small{display:block;font-size:8px;letter-spacing:1.5px;color:#aa93a0;font-weight:900}.event-mailbox-info strong{display:block;font-size:13px;color:#34252c}.event-mailbox-badge{min-width:24px;height:24px;padding:0 7px;border-radius:999px;background:#ff5f9e;color:#fff;display:grid;place-items:center;font-size:10px}.event-mailbox-badge:empty{display:none}.event-mailbox-arrow{font-size:22px;color:#b99eaa}
+.event-mailbox-overlay{position:fixed;inset:0;background:rgba(45,20,34,.35);display:grid;place-items:center;z-index:1000;padding:20px}.event-mailbox-overlay.hidden{display:none}.event-mailbox-modal{width:min(720px,94vw);max-height:82vh;overflow:auto;background:#fff;border-radius:24px;padding:24px;box-shadow:0 25px 70px rgba(40,15,28,.2);position:relative}.event-mailbox-close{position:absolute;right:16px;top:14px;border:0;background:#f7edf2;border-radius:12px;width:36px;height:36px;font-size:22px;cursor:pointer}.event-mailbox-head small{font-size:9px;letter-spacing:2px;color:#a58d99;font-weight:900}.event-mailbox-head h2{margin:5px 0;font-size:25px}.event-mailbox-head p{margin:0 0 18px;color:#8e7b85;font-size:12px}.event-mailbox-list{display:grid;gap:10px}.event-mail-row{display:grid;grid-template-columns:90px 1fr auto;gap:14px;align-items:center;border:1px solid #f1e0e7;border-radius:16px;padding:12px;background:#fffafb}.event-mail-row.claimed{opacity:.55}.event-mail-points{font-weight:900;color:#ff5f9e;font-size:13px}.event-mail-copy small{display:block;font-size:8px;color:#aa93a0;letter-spacing:1px;font-weight:900}.event-mail-copy strong{display:block;font-size:13px;margin-top:3px}.event-mail-claim{border:0;border-radius:11px;padding:9px 12px;background:#ff5f9e;color:#fff;font-weight:900;font-size:10px;cursor:pointer}.event-mail-claim:disabled{background:#ddd3d8;color:#8d8187;cursor:default}
+
+/* EVENT MODALS — rewards/shop stay inside a true popup */
+.event-modal-overlay{position:fixed;inset:0;z-index:1500;display:flex;align-items:center;justify-content:center;padding:22px;background:rgba(35,20,28,.42);backdrop-filter:blur(8px)}
+.event-modal-overlay.hidden{display:none!important}
+.event-modal-card{width:min(760px,94vw);max-height:min(86vh,780px);overflow:auto;padding:22px;border:1px solid #f0e1e8;border-radius:24px;background:#fff;box-shadow:0 28px 90px rgba(50,20,35,.25)}
+.event-modal-card .event-panel-head{position:sticky;top:0;z-index:2;margin:-22px -22px 14px;padding:18px 22px;background:rgba(255,255,255,.96);backdrop-filter:blur(8px)}
+.event-modal-card .event-rewards-list,.event-modal-card .event-shop-list{padding-bottom:4px}
+.event-action-card{cursor:pointer}
+.event-limited-card{width:clamp(110px,16vw,170px);aspect-ratio:1/1;display:flex!important;flex-direction:column!important;justify-content:center!important;align-items:center!important;overflow:hidden}
+.event-limited-card img{width:72%;height:72%;object-fit:cover}
+.event-limited-card>div{width:100%;padding:4px 6px;text-align:center}
+#eventLobbyAudio{display:none}

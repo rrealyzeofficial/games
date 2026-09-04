@@ -70,6 +70,7 @@ begin
       'gachaHistory', '[]'::jsonb,
       'myCards', '[]'::jsonb,
       'myCharacters', '[]'::jsonb,
+      'characterProgress', '{}'::jsonb,
       'selectedCharacterId', 'mystery'
     )
   );
@@ -200,6 +201,7 @@ grant select, update on public.profiles to authenticated;
 grant select on public.friend_requests, public.friendships, public.messages to authenticated;
 
 drop policy if exists profiles_self on public.profiles;
+drop policy if exists profiles_update_self on public.profiles;
 create policy profiles_self on public.profiles for select to authenticated using (id = auth.uid());
 create policy profiles_update_self on public.profiles for update to authenticated using (id = auth.uid()) with check (id = auth.uid());
 

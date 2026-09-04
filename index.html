@@ -671,6 +671,28 @@
 
         </div>
 
+        <!-- DAILY ATTENDANCE MINI CARD -->
+        <button id="dailyAttendanceMini" class="daily-attendance-mini compact" type="button">
+            <span class="daily-attendance-mini-icon">✓</span>
+            <span class="daily-attendance-mini-info">
+                <small>DAILY CHECK-IN</small>
+                <strong id="dailyAttendanceMiniTitle">ĐIỂM DANH HÔM NAY</strong>
+                <span id="dailyAttendanceMiniReward">ĐANG TẢI...</span>
+            </span>
+            <span class="daily-attendance-mini-arrow">›</span>
+        </button>
+
+        <!-- EVENT MAILBOX -->
+        <button id="eventMailboxButton" class="event-mailbox-button" type="button">
+            <span class="event-mailbox-icon">✉</span>
+            <span class="event-mailbox-info">
+                <small>EVENT MAIL</small>
+                <strong>HÒM THƯ</strong>
+            </span>
+            <b id="eventMailboxBadge" class="event-mailbox-badge">0</b>
+            <span class="event-mailbox-arrow">›</span>
+        </button>
+
 
         <!-- CHARACTER -->
 
@@ -784,11 +806,11 @@
             <div class="event-info">
 
                 <strong>
-                    THE JOYFUL BEGINNING
+                    SHINE WITHOUT END
                 </strong>
 
                 <span>
-                    Welcome to REALYZE!!
+                    Climb the event score · Earn the exclusive card
                 </span>
 
             </div>
@@ -813,6 +835,82 @@
 
 
 
+
+
+<!-- =========================================================
+     EVENT — SHINE WITHOUT END
+========================================================= -->
+<section id="eventScreen" class="game-screen event-screen hidden">
+    <header class="event-topbar">
+        <button id="eventBack" class="play-back-button" type="button"><span>‹</span><small>BACK</small></button>
+        <div class="event-brand"><span>REALYZE!!</span><strong>EVENT</strong></div>
+        <div class="event-player-resources">
+            <div><small>ID</small><b id="eventPlayerId">PLAYER</b></div>
+            <div><small>EVENT LV.</small><b id="eventLevel">1</b></div>
+            <div><small>GEMS</small><b id="eventGems">0</b></div>
+            <div><small>GOLD</small><b id="eventCoins">0</b></div>
+            <div><small>ENERGY</small><b id="eventEnergy">100</b></div>
+        </div>
+    </header>
+
+    <main class="event-main">
+        <section class="event-hero-card">
+            <div class="event-hero-copy">
+                <span class="event-kicker">LIMITED EVENT · SEASON 01</span>
+                <h1>SHINE WITHOUT END</h1>
+                <p>Keep playing, climb the event score, and unlock an exclusive event card.</p>
+                <div class="event-progress-wrap">
+                    <div class="event-progress-meta"><span>EVENT POINTS</span><strong id="eventPointsLabel">0 / 1,000,000</strong></div>
+                    <div class="event-progress-track"><i id="eventProgressBar"></i></div>
+                    <div class="event-level-note">EVENT LEVEL <b id="eventLevelHero">1</b></div>
+                </div>
+            </div>
+
+            <div class="event-feature-visual">
+                <div class="event-character-square">
+                    <span class="six-star">★ ★ ★ ★ ★ ★</span>
+                    <img src="assets/kohane.png" alt="Kohane" onerror="this.style.display='none';">
+                    <div class="event-character-caption"><small>EVENT CHARACTER</small><strong>KOHANE</strong><b>RAP · 21,034</b></div>
+                </div>
+                <div class="event-limited-card">
+                    <span class="six-star">★ ★ ★ ★ ★ ★</span>
+                    <img src="assets/event1.png" alt="SHINING MOMENT" onerror="this.style.display='none';">
+                    <div><small>EVENT LIMITED CARD</small><strong>SHINING MOMENT</strong><em>UNLOCK FROM EVENT SCORE</em></div>
+                </div>
+            </div>
+        </section>
+
+        <section class="event-action-grid">
+            <button id="eventRewardsButton" class="event-action-card" type="button"><span>♛</span><div><small>EVENT TRACK</small><strong>REWARDS</strong><em>View milestone rewards</em></div><b>›</b></button>
+            <button id="eventShopButton" class="event-action-card" type="button"><span>◇</span><div><small>EXCHANGE</small><strong>EVENT SHOP</strong><em>Spend Event Points</em></div><b>›</b></button>
+            <button id="eventGachaButton" class="event-action-card" type="button"><span>✦</span><div><small>LIMITED</small><strong>GACHA</strong><em>AKITO Limited Banner</em></div><b>›</b></button>
+            <button id="eventPlayButton" class="event-action-card event-play-card" type="button"><span>▶</span><div><small>SHINE WITHOUT END</small><strong>PLAY EVENT</strong><em>Team · Matchmaking · Battle</em></div><b>›</b></button>
+        </section>
+
+        <div id="eventRewardsPanel" class="event-modal-overlay hidden" aria-hidden="true">
+            <section class="event-modal-card" role="dialog" aria-modal="true" aria-labelledby="eventRewardsTitle">
+                <div class="event-panel-head"><div><small>MILESTONE TRACK</small><h2 id="eventRewardsTitle">EVENT REWARDS</h2></div><button id="closeEventRewards" type="button">×</button></div>
+                <div id="eventRewardsList" class="event-rewards-list"></div>
+            </section>
+        </div>
+
+        <div id="eventShopPanel" class="event-modal-overlay hidden" aria-hidden="true">
+            <section class="event-modal-card" role="dialog" aria-modal="true" aria-labelledby="eventShopTitle">
+                <div class="event-panel-head"><div><small>EVENT POINT EXCHANGE</small><h2 id="eventShopTitle">EVENT SHOP</h2></div><button id="closeEventShop" type="button">×</button></div>
+                <div id="eventShopList" class="event-shop-list"></div>
+            </section>
+        </div>
+    </main>
+<audio id="eventLobbyAudio" src="assets/bg.mp3" loop preload="auto"></audio>
+</section>
+
+<div id="eventMailboxOverlay" class="event-mailbox-overlay hidden" aria-hidden="true">
+    <div class="event-mailbox-modal" role="dialog" aria-modal="true">
+        <button id="closeEventMailbox" class="event-mailbox-close" type="button">×</button>
+        <div class="event-mailbox-head"><small>REWARDS DELIVERY</small><h2>EVENT MAILBOX</h2><p>Event milestone rewards are delivered here automatically.</p></div>
+        <div id="eventMailboxList" class="event-mailbox-list"></div>
+    </div>
+</div>
 
 <!-- =========================================================
      NOW PLAY
@@ -1620,6 +1718,26 @@
             </button>
 
 
+            <button
+                id="akitoBannerButton"
+                class="banner-select"
+                type="button"
+            >
+
+                <span class="banner-number">
+                    04
+                </span>
+
+                <span>
+                    AKITO
+                    <small>LIMITED EVENT BANNER</small>
+                </span>
+
+                <b>LIMITED EVENT</b>
+
+            </button>
+
+
             <div class="banner-note">
                 More banners<br>
                 coming soon.
@@ -1818,7 +1936,7 @@
 
     <div>
         <span>OTHER ITEMS</span>
-        <b>76.7%</b>
+        <b>60.4%</b>
     </div>
 
 </div>
@@ -1959,6 +2077,65 @@
     </div>
 
     <p class="gacha-disclaimer">Rate: 0.33333% per pull. Pity resets only when LUMINA is obtained.</p>
+
+</section>
+
+<!-- =====================================================
+     AKITO LIMITED EVENT GACHA
+===================================================== -->
+<section id="akitoGachaContent" class="gacha-content character-gacha-content akito-event-gacha hidden">
+
+    <div class="gacha-banner-header">
+        <div>
+            <span class="limited-label event-limited-label">LIMITED EVENT BANNER</span>
+            <h2>AKITO <em>ACT RISING</em></h2>
+            <p>Recruit the limited character AKITO.</p>
+        </div>
+        <div class="rate-box character-rate-box">
+            <strong>★ CHARACTER RATE</strong>
+            <span>0.33333%</span>
+        </div>
+    </div>
+
+    <div class="character-banner-feature akito-banner-feature">
+        <div class="character-banner-art akito-banner-art">
+            <img src="assets/akito.png" alt="AKITO" onerror="this.style.display='none';">
+        </div>
+        <div class="character-banner-info">
+            <span>LIMITED EVENT CHARACTER</span>
+            <h3>AKITO</h3>
+            <div class="character-banner-stars">★★★★★★</div>
+            <p>A limited event character featured exclusively in the ACT RISING event banner.</p>
+            <div class="character-pity-copy">
+                <strong>MAX PITY — 120 PULLS</strong>
+                <span>Guaranteed AKITO on the 120th pull. Can appear early.</span>
+            </div>
+        </div>
+    </div>
+
+    <section class="gacha-history-box character-pity-box akito-pity-box">
+        <div class="gacha-history-header">
+            <div>
+                <span>LIMITED EVENT GACHA STATUS</span>
+                <h3>PITY <strong id="akitoPityCount">0</strong> / 120</h3>
+            </div>
+            <span class="gacha-history-note">SINCE AKITO</span>
+        </div>
+    </section>
+
+    <div class="roll-area">
+        <button id="akitoSingleRoll" class="roll-button" type="button">
+            <span>1 ROLL</span>
+            <strong>◆ 160</strong>
+        </button>
+        <button id="akitoTenRoll" class="roll-button ten" type="button">
+            <span>10 ROLLS</span>
+            <strong>◆ 1600</strong>
+            <small>10x ATTEMPTS</small>
+        </button>
+    </div>
+
+    <p class="gacha-disclaimer">Rate: 0.33333% per pull. This pity is separate from LUMINA's banner pity.</p>
 
 </section>
 
@@ -2370,7 +2547,7 @@
       </div>
       <div class="card-info-level-bar"><div id="characterInfoLevelFill"></div></div>
     </div>
-    <div class="character-info-stat-single"><span>VOCAL</span><strong id="characterInfoVocal">13,400</strong></div>
+    <div class="character-info-stat-single"><span id="characterInfoStatLabel">VOCAL</span><strong id="characterInfoVocal">13,400</strong></div>
     <div class="card-info-main-skill">
       <div class="card-info-skill-heading"><span>MAIN SKILL / ATTRIBUTE</span><strong id="characterInfoMainType">VOCAL</strong></div>
       <div class="card-info-skill-body"><strong id="characterInfoSkillName">RADIANT VOICE</strong><p id="characterInfoSkillDescription">Boosts performance score during Skills.</p></div>
@@ -2420,6 +2597,36 @@
             </div>
         </div>
 
+    </div>
+</div>
+
+<div id="dailyAttendanceOverlay" class="daily-attendance-overlay hidden" aria-hidden="true">
+    <div class="daily-attendance-modal" role="dialog" aria-modal="true" aria-labelledby="dailyAttendanceTitle">
+        <button id="dailyAttendanceClose" class="daily-attendance-close" type="button" aria-label="Close" onclick="closeDailyAttendance()">×</button>
+
+        <div class="daily-attendance-header">
+            <span class="daily-attendance-kicker">DAILY LOGIN REWARD</span>
+            <h2 id="dailyAttendanceTitle">CHECK-IN CALENDAR</h2>
+            <p id="dailyAttendanceMonth">Tháng này</p>
+        </div>
+
+        <div class="daily-attendance-legend">
+            <span><i class="legend-dot claimed"></i> ĐÃ NHẬN</span>
+            <span><i class="legend-dot today"></i> HÔM NAY</span>
+            <span><i class="legend-dot pass"></i> PASS</span>
+            <span><i class="legend-dot future"></i> CHƯA TỚI</span>
+        </div>
+
+        <div class="daily-attendance-weekdays">
+            <span>T2</span><span>T3</span><span>T4</span><span>T5</span><span>T6</span><span>T7</span><span>CN</span>
+        </div>
+
+        <div id="dailyAttendanceGrid" class="daily-attendance-grid"></div>
+
+        <div class="daily-attendance-footer">
+            <p id="dailyAttendanceStatus">ĐANG TẢI LỊCH ĐIỂM DANH...</p>
+            <button id="dailyAttendanceClaim" class="daily-attendance-claim" type="button" disabled onclick="claimDailyAttendance()">LOADING...</button>
+        </div>
     </div>
 </div>
 </body>

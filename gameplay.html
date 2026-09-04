@@ -1,68 +1,218 @@
-<!DOCTYPE html>
-<html lang="vi">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
-<title>REALYZE!! — Gameplay</title>
-<link rel="stylesheet" href="gameplay.css">
-</head>
-<body>
-<section id="game" class="game">
-  <header class="topbar">
-    <button id="backBtn" class="back">← BACK</button>
-    <div class="song-info">
-      <small>REALYZE!!</small>
-      <strong id="songName">VIRTUAL TO LIVE</strong>
-      <span id="difficulty">EASY</span>
+<!DOCTYPE html><html lang="vi"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>REALYZE!! — Rhythm Gameplay</title><link rel="stylesheet" href="style(2).css"></head><body><section
+    id="gameplayScreen"
+    class="game-screen gameplay-screen"
+>
+
+    <button id="gameplayBackButton" class="gameplay-back-button" type="button"><span>‹</span><small>BACK</small></button>
+
+    <!-- TOP HUD -->
+    <header class="gameplay-topbar">
+
+        <div class="gameplay-song-info">
+            <span>REALYZE!!</span>
+
+            <strong id="gameplaySongName">
+                VIRTUAL TO LIVE
+            </strong>
+
+            <small id="gameplayDifficulty">
+                EASY
+            </small>
+        </div>
+
+        <div class="gameplay-score-box">
+            <small>SCORE</small>
+
+            <strong id="gameplayScore">
+                0
+            </strong>
+        </div>
+
+    </header>
+
+
+    <!-- SCORE BAR -->
+    <div class="gameplay-score-bar">
+        <div
+            id="gameplayScoreFill"
+            class="gameplay-score-fill"
+        ></div>
     </div>
-    <div class="score-box"><small>SCORE</small><strong id="score">0</strong></div>
-  </header>
 
-  <div class="score-track"><div id="scoreFill"></div></div>
-  <div id="combo" class="combo"><strong id="comboNumber">0</strong><span>COMBO</span></div>
-  <div id="judgement" class="judgement"></div>
 
-  <main class="stage">
-    <div id="laneArea" class="lane-area">
-      <div class="lanes"><i></i><i></i><i></i><i></i></div>
-      <div class="hit-line"><i></i><i></i><i></i><i></i></div>
+    <!-- COMBO -->
+    <div
+        id="gameplayCombo"
+        class="gameplay-combo"
+    >
+        <strong id="gameplayComboNumber">
+            0
+        </strong>
+
+        <span>COMBO</span>
     </div>
-  </main>
 
-  <div class="keys">
-    <button data-lane="0" data-key="d">D</button>
-    <button data-lane="1" data-key="f">F</button>
-    <button data-lane="2" data-key="j">J</button>
-    <button data-lane="3" data-key="k">K</button>
-  </div>
 
-  <button id="skillBtn" class="skill-btn" type="button">
-    <span class="skill-title">SKILL</span>
-    <strong id="skillTimer">READY</strong>
-  </button>
+    <!-- JUDGEMENT -->
+    <div
+        id="gameplayJudgement"
+        class="gameplay-judgement"
+    ></div>
 
-  <div id="ready" class="ready">GET READY</div>
 
-  <!-- RESULT -->
-  <section id="result" class="result hidden">
-    <div class="result-card">
-      <small class="result-label">SONG COMPLETE</small>
-      <h1 id="resultTitle">VIRTUAL TO LIVE</h1>
-      <div class="result-score" id="resultScore">0</div>
-      <div class="result-rank" id="resultRank">C</div>
+    <!-- RHYTHM AREA -->
+    <main class="gameplay-main">
 
-      <div class="result-stats">
-        <div><span>PERFECT</span><strong id="resultPerfect">0</strong></div>
-        <div><span>GREAT</span><strong id="resultGreat">0</strong></div>
-        <div><span>OKAY</span><strong id="resultOkay">0</strong></div>
-        <div><span>MISS</span><strong id="resultMiss">0</strong></div>
-        <div><span>MAX COMBO</span><strong id="resultMaxCombo">0</strong></div>
-      </div>
+        <div
+            id="gameplayLaneArea"
+            class="gameplay-lane-area"
+        >
 
-      <button id="resultBackBtn" class="result-back" type="button">BACK TO SONG SELECT</button>
+            <!-- Falling notes are created by JS -->
+
+            <div
+                id="gameplayHitLine"
+                class="gameplay-hit-line"
+            ></div>
+
+            <div
+                class="gameplay-lanes"
+            >
+
+                <button
+                    id="laneButton0"
+                    class="gameplay-lane-button"
+                    data-lane="0"
+                    type="button"
+                >
+                    <span></span>
+                </button>
+
+                <button
+                    id="laneButton1"
+                    class="gameplay-lane-button"
+                    data-lane="1"
+                    type="button"
+                >
+                    <span></span>
+                </button>
+
+                <button
+                    id="laneButton2"
+                    class="gameplay-lane-button"
+                    data-lane="2"
+                    type="button"
+                >
+                    <span></span>
+                </button>
+
+                <button
+                    id="laneButton3"
+                    class="gameplay-lane-button"
+                    data-lane="3"
+                    type="button"
+                >
+                    <span></span>
+                </button>
+
+            </div>
+
+        </div>
+
+
+        <!-- SKILL -->
+        <button
+            id="gameplaySkillButton"
+            class="gameplay-skill-button"
+            type="button"
+            disabled
+        >
+
+            <span class="gameplay-skill-icon">
+                ✦
+            </span>
+
+            <span class="gameplay-skill-text">
+                SKILL
+            </span>
+
+            <small id="gameplaySkillTimer">
+                30
+            </small>
+
+        </button>
+
+    </main>
+
+
+    <!-- RESULT -->
+    <div
+        id="gameplayResult"
+        class="gameplay-result hidden"
+    >
+
+        <div class="gameplay-result-panel">
+
+            <span>RESULT</span>
+
+            <h2 id="gameplayResultTitle">
+                COMPLETE
+            </h2>
+
+            <strong
+                id="gameplayResultScore"
+            >
+                0
+            </strong>
+
+            <div
+                id="gameplayResultRank"
+                class="gameplay-result-rank"
+            >
+                D
+            </div>
+
+            <div class="gameplay-result-stats">
+
+                <div>
+                    <strong id="resultPerfect">
+                        0
+                    </strong>
+                    <span>PERFECT</span>
+                </div>
+
+                <div>
+                    <strong id="resultGreat">
+                        0
+                    </strong>
+                    <span>GREAT</span>
+                </div>
+
+                <div>
+                    <strong id="resultOkay">
+                        0
+                    </strong>
+                    <span>OKAY</span>
+                </div>
+
+                <div>
+                    <strong id="resultMiss">
+                        0
+                    </strong>
+                    <span>MISS</span>
+                </div>
+
+            </div>
+
+            <button
+                id="gameplayResultBack"
+                type="button"
+            >
+                BACK TO NOW PLAY
+            </button>
+
+        </div>
+
     </div>
-  </section>
-</section>
-<script src="gameplay.js"></script>
-</body>
-</html>
+
+</section><script src="gameplay.js"></script></body></html>
