@@ -3,54 +3,92 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#fffafd">
 <title>REALYZE!! — Gameplay</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;700;800;900&family=Quicksand:wght@600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="gameplay.css">
 </head>
 <body>
 <section id="game" class="game">
-  <header class="topbar">
-    <button id="backBtn" class="back">← BACK</button>
-    <div class="song-info">
-      <small>REALYZE!!</small>
-      <strong id="songName">VIRTUAL TO LIVE</strong>
-      <span id="difficulty">EASY</span>
+
+  <header class="battle-hud">
+    <div class="score-rank-wrap">
+      <div class="rank-track">
+        <span>D</span><span>C</span><span>B</span><span>A</span><span>S</span>
+        <div id="rankFill" class="rank-fill"></div>
+      </div>
+      <strong id="score">0</strong>
+      <small>SCORE</small>
     </div>
-    <div class="score-box"><small>SCORE</small><strong id="score">0</strong></div>
+
+    <button id="pauseBtn" class="pause-btn" type="button" aria-label="Pause">
+      <span></span><span></span>
+    </button>
+
+    <div class="hp-wrap">
+      <div class="hp-pill">
+        <div id="hpFill" class="hp-fill"></div>
+        <strong id="hpText">2000 / 2000</strong>
+      </div>
+      <small>PERFORMANCE HP</small>
+    </div>
   </header>
 
-  <div class="score-track"><div id="scoreFill"></div></div>
-  <div id="combo" class="combo"><strong id="comboNumber">0</strong><span>COMBO</span></div>
-  <div id="judgement" class="judgement"></div>
+  <div class="song-badge">
+    <small>REALYZE!!</small>
+    <strong id="songName">VIRTUAL TO LIVE</strong>
+    <span id="difficulty">EASY</span>
+  </div>
 
   <main class="stage">
     <div id="laneArea" class="lane-area">
-      <div class="lanes"><i></i><i></i><i></i><i></i></div>
-      <div class="hit-line"><i></i><i></i><i></i><i></i></div>
+      <div class="lane-guides"><i></i><i></i><i></i><i></i></div>
+      <div class="hit-zone"></div>
+
+      <div id="combo" class="combo">
+        <strong id="comboNumber">0</strong>
+        <span>COMBO</span>
+      </div>
+      <div id="judgement" class="judgement"></div>
+
+      <div id="characterTargets" class="character-targets"></div>
     </div>
   </main>
 
-  <div class="keys">
-    <button data-lane="0" data-key="d">D</button>
-    <button data-lane="1" data-key="f">F</button>
-    <button data-lane="2" data-key="j">J</button>
-    <button data-lane="3" data-key="k">K</button>
-  </div>
-
-  <button id="skillBtn" class="skill-btn" type="button">
-    <span class="skill-title">SKILL</span>
-    <strong id="skillTimer">READY</strong>
-  </button>
+  <aside id="skillFeed" class="skill-feed"></aside>
 
   <div id="ready" class="ready">GET READY</div>
 
-  <!-- RESULT -->
+  <section id="mobileStartOverlay" class="mobile-start-overlay">
+    <div class="mobile-start-card">
+      <small>REALYZE!! · MOBILE RHYTHM</small>
+      <h2>TAP TO START</h2>
+      <p>Landscape + fullscreen gives the lowest input delay and the largest play area.</p>
+      <button id="mobileStartBtn" type="button">START PERFORMANCE</button>
+      <span id="fullscreenHint">If fullscreen is blocked, the game will still fit the visible browser area.</span>
+    </div>
+  </section>
+
+  <section id="pauseOverlay" class="pause-overlay hidden">
+    <div class="pause-card">
+      <small>REALYZE!! PERFORMANCE</small>
+      <h2>PAUSED</h2>
+      <button id="resumeBtn" type="button">RESUME</button>
+      <button id="quitBtn" type="button" class="soft">BACK TO SONG SELECT</button>
+    </div>
+  </section>
+
   <section id="result" class="result hidden">
     <div class="result-card">
-      <small class="result-label">SONG COMPLETE</small>
+      <small>SONG COMPLETE</small>
       <h1 id="resultTitle">VIRTUAL TO LIVE</h1>
-      <div class="result-score" id="resultScore">0</div>
-      <div class="result-rank" id="resultRank">C</div>
-
+      <div id="resultScore" class="result-score">0</div>
+      <div id="resultRank" class="result-rank">C</div>
       <div class="result-stats">
         <div><span>PERFECT</span><strong id="resultPerfect">0</strong></div>
         <div><span>GREAT</span><strong id="resultGreat">0</strong></div>
@@ -58,10 +96,26 @@
         <div><span>MISS</span><strong id="resultMiss">0</strong></div>
         <div><span>MAX COMBO</span><strong id="resultMaxCombo">0</strong></div>
       </div>
+      <div class="result-player-xp">
+        <div class="result-player-xp-head">
+          <span>PLAYER RANK <b id="resultPlayerRank">1</b></span>
+          <strong id="resultXpGain">+0 XP</strong>
+        </div>
+        <div class="result-player-xp-track"><i id="resultPlayerXpFill"></i></div>
+        <small id="resultPlayerXpText">0 / 850 XP</small>
+        <em id="resultRankUpText"></em>
+      </div>
 
-      <button id="resultBackBtn" class="result-back" type="button">BACK TO SONG SELECT</button>
+      <div id="resultRewardSummary" class="result-reward-summary">
+        <small>STAGE REWARDS</small>
+        <strong id="resultRewardTotal">NO NEW REWARD</strong>
+        <div id="resultRewardItems"></div>
+      </div>
+      <div id="resultSkillSummary" class="result-skill-summary"></div>
+      <button id="resultBackBtn" type="button">BACK TO SONG SELECT</button>
     </div>
   </section>
+
 </section>
 <script src="gameplay.js"></script>
 </body>

@@ -9341,3 +9341,435 @@ body {
     .lobby-character-button .lobby-music-text{display:none}
     .lobby-character-list{grid-template-columns:1fr}
 }
+
+
+/* =========================================================
+   REALYZE!! — 4 CHARACTER + 4 CARD TEAM SELECT
+========================================================= */
+.team-character-slots{
+    display:grid;
+    grid-template-columns:repeat(4,minmax(0,1fr));
+    gap:13px;
+}
+.team-character-slot{
+    position:relative;
+    min-height:210px;
+    padding:12px;
+    border:1.5px dashed #efcdda;
+    border-radius:17px;
+    background:#fffafd;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    text-align:center;
+    transition:.2s ease;
+}
+.team-character-slot:hover{
+    border-color:var(--pink);
+    background:#fff5f9;
+    transform:translateY(-2px);
+}
+.team-character-slot.selected{
+    border-style:solid;
+    border-color:#f2b8cd;
+    background:#fff;
+    box-shadow:0 8px 22px rgba(219,78,130,.10);
+}
+.team-character-slot-number{
+    position:absolute;
+    top:9px;
+    left:10px;
+    color:#c2aab4;
+    font-size:8px;
+    font-weight:900;
+    letter-spacing:1px;
+}
+.team-character-slot-art{
+    width:96px;
+    height:108px;
+    margin:13px 0 7px;
+    display:flex;
+    align-items:flex-end;
+    justify-content:center;
+    overflow:hidden;
+    border-radius:18px;
+    background:linear-gradient(180deg,#fff0f6,#fffafd);
+}
+.team-character-slot-art img{
+    width:100%;
+    height:100%;
+    object-fit:contain;
+    object-position:center bottom;
+}
+.team-character-slot-art span{
+    color:var(--pink-dark);
+    font-size:26px;
+    font-weight:900;
+}
+.team-character-slot strong{
+    max-width:100%;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+    font-size:11px;
+    font-weight:900;
+}
+.team-character-slot small{
+    margin-top:3px;
+    color:#e0aa38;
+    font-size:9px;
+    letter-spacing:1px;
+}
+.team-character-slot em{
+    margin-top:4px;
+    color:#8f7b85;
+    font-size:8px;
+    font-style:normal;
+    font-weight:900;
+}
+.team-character-slot b{
+    margin-top:3px;
+    color:#b39da7;
+    font-size:8px;
+}
+.team-pair-hint{
+    margin:12px 2px 0;
+    color:#a28f99;
+    font-size:9px;
+    font-weight:800;
+}
+.team-card-pair{
+    margin-top:6px;
+    padding:4px 7px;
+    max-width:100%;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+    border-radius:99px;
+    background:#fff0f6;
+    color:#ed397e;
+    font-size:7px;
+    font-weight:900;
+    letter-spacing:.5px;
+}
+.available-character.disabled,
+.available-team-card.disabled{
+    opacity:.42;
+    cursor:not-allowed;
+}
+@media(max-width:800px){
+    .team-character-slots{grid-template-columns:repeat(4,minmax(120px,1fr));overflow-x:auto;padding-bottom:4px}
+    .team-character-slot{min-height:175px}
+    .team-character-slot-art{width:78px;height:88px}
+}
+
+
+/* =========================================================
+   RAP = WATER BLUE + EVENT SKILLS
+========================================================= */
+.character-info-stat-single.rap-stat{
+  border-color:#a9ddf5;
+  background:#f1fbff;
+}
+.character-info-stat-single.rap-stat span,
+.character-info-stat-single.rap-stat strong,
+.card-info-skill-heading strong.rap-type,
+.rap-stat-text{
+  color:#269bd3 !important;
+}
+.character-event-skill-box{
+  margin-top:12px;
+  border:1px solid #eadbe2;
+  border-radius:16px;
+  overflow:hidden;
+  background:#fff;
+}
+.character-event-skill-toggle{
+  width:100%;
+  min-height:52px;
+  border:0;
+  padding:10px 14px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  text-align:left;
+  background:#fff8fb;
+  color:#47363e;
+  cursor:pointer;
+}
+.character-event-skill-toggle span{display:flex;flex-direction:column;gap:2px}
+.character-event-skill-toggle small{font-size:7px;font-weight:900;letter-spacing:1.4px;color:#ba9ba9}
+.character-event-skill-toggle strong{font-size:10px;letter-spacing:.5px}
+.character-event-skill-toggle b{font-size:18px;color:var(--pink-dark);transition:.18s}
+.character-event-skill-toggle.open b{transform:rotate(45deg)}
+.character-event-skill-panel{padding:5px 12px 12px;background:#fff}
+.character-event-skill-panel.hidden{display:none}
+.event-skill-mini{
+  display:grid;
+  grid-template-columns:28px 1fr;
+  gap:9px;
+  padding:10px 0;
+  border-top:1px solid #f1e7eb;
+}
+.event-skill-mini:first-child{border-top:0}
+.event-skill-mini>span{
+  width:26px;height:26px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  background:#fff0f6;color:var(--pink-dark);
+  font-size:9px;font-weight:900;
+}
+.event-skill-mini strong{display:block;font-size:9px;margin-bottom:3px}
+.event-skill-mini p{margin:0;color:#8d7882;font-size:8px;line-height:1.45}
+
+/* Song reward button / best score */
+.song-select-right{gap:7px}
+.song-record-mini{
+  display:flex;
+  flex-direction:column;
+  align-items:flex-end;
+  gap:4px;
+}
+.song-best-mini{font-size:7px;font-weight:900;color:#9e8792;white-space:nowrap}
+.song-best-mini b{color:#3e3037}
+.song-reward-button{
+  border:1px solid #efcad9;
+  border-radius:8px;
+  padding:5px 8px;
+  background:#fff7fa;
+  color:var(--pink-dark);
+  font-size:7px;
+  font-weight:900;
+  letter-spacing:.6px;
+  cursor:pointer;
+  position:relative;
+  z-index:5;
+}
+.song-reward-button:hover{background:#ffeaf2}
+
+/* Rhythm reward checker */
+.rhythm-reward-overlay{
+  position:fixed;inset:0;z-index:12000;
+  display:flex;align-items:center;justify-content:center;
+  padding:18px;
+  background:rgba(43,29,36,.45);
+}
+.rhythm-reward-overlay.hidden{display:none}
+.rhythm-reward-modal{
+  position:relative;
+  width:min(720px,94vw);
+  max-height:min(760px,88vh);
+  overflow:auto;
+  border-radius:22px;
+  padding:22px;
+  background:#fff;
+  box-shadow:0 24px 80px rgba(62,32,45,.22);
+}
+.rhythm-reward-close{
+  position:absolute;right:14px;top:12px;
+  width:34px;height:34px;border:0;border-radius:50%;
+  background:#fff0f6;color:#c84f7d;font-size:20px;cursor:pointer;
+}
+.rhythm-reward-head small{font-size:7px;font-weight:900;letter-spacing:1.6px;color:#b39aa5}
+.rhythm-reward-head h2{margin:5px 42px 8px 0;font-size:23px}
+.rhythm-best-score{
+  display:inline-flex;gap:8px;align-items:center;
+  padding:7px 10px;border-radius:10px;background:#fff4f8;
+  color:#a38693;font-size:8px;font-weight:900;
+}
+.rhythm-best-score strong{font-size:13px;color:var(--pink-dark)}
+.rhythm-reward-list{display:grid;gap:14px;margin-top:17px}
+.rhythm-reward-group{
+  border:1px solid #eee0e6;border-radius:16px;padding:13px;
+}
+.rhythm-reward-group>strong{font-size:10px;letter-spacing:1px}
+.rhythm-reward-row{
+  margin-top:8px;padding:9px 10px;border-radius:11px;
+  display:grid;grid-template-columns:minmax(90px,.8fr) 1fr auto;
+  align-items:center;gap:10px;background:#faf7f9;
+}
+.rhythm-reward-row.unlocked{background:#f5fff8}
+.rhythm-reward-row.claimed{opacity:.72}
+.rhythm-reward-row span{font-size:8px;font-weight:900}
+.rhythm-reward-row small{font-size:8px;color:#917d86}
+.rhythm-reward-row b{
+  font-size:7px;padding:5px 7px;border-radius:8px;
+  background:#eee5e9;color:#8d7a83;
+}
+.rhythm-reward-row.claimed b{background:#e7f8ed;color:#338957}
+.rhythm-reward-row.unclaimed b{background:#fff0f3;color:#c76c84}
+
+@media(max-width:700px){
+  .rhythm-reward-modal{padding:17px;max-height:90dvh}
+  .rhythm-reward-row{grid-template-columns:80px 1fr auto;gap:6px}
+  .song-best-mini{display:none}
+}
+
+
+/* =========================================================
+   PLAYER RANK EXP
+========================================================= */
+.player-rank-xp-mini{
+    width:118px;
+    margin-top:5px;
+}
+.player-rank-xp-track{
+    width:100%;
+    height:5px;
+    overflow:hidden;
+    border-radius:999px;
+    background:#f0dfe7;
+}
+.player-rank-xp-track i{
+    display:block;
+    width:0%;
+    height:100%;
+    border-radius:inherit;
+    background:linear-gradient(90deg,#ff5f9e,#ff9fc4);
+    transition:width .35s ease;
+}
+.player-rank-xp-mini small{
+    display:block;
+    margin-top:3px;
+    color:#a58c98;
+    font-size:6px;
+    line-height:1;
+    font-weight:900;
+    letter-spacing:.45px;
+}
+.now-play-rank-xp{width:130px}
+
+/* =========================================================
+   MOBILE APP SHELL V2
+   Avoid browser-page scaling/bounce. Each screen owns its scroll.
+========================================================= */
+@media (max-width:900px) and (orientation:landscape){
+    html{
+        width:100%;
+        height:100%;
+        min-height:100%;
+        overflow:hidden !important;
+        overscroll-behavior:none;
+        touch-action:manipulation;
+    }
+    body{
+        position:fixed;
+        inset:0;
+        width:100%;
+        height:var(--mobile-app-height,100dvh) !important;
+        min-height:0 !important;
+        overflow:hidden !important;
+        overscroll-behavior:none;
+        -webkit-text-size-adjust:100%;
+        text-size-adjust:100%;
+    }
+
+    .screen,
+    .game-screen{
+        position:absolute;
+        inset:0;
+        width:100%;
+        height:var(--mobile-app-height,100dvh) !important;
+        min-height:0 !important;
+        max-height:var(--mobile-app-height,100dvh);
+        overflow-x:hidden !important;
+        overflow-y:auto !important;
+        overscroll-behavior-y:contain;
+        -webkit-overflow-scrolling:touch;
+        scrollbar-width:none;
+    }
+    .screen::-webkit-scrollbar,
+    .game-screen::-webkit-scrollbar{display:none}
+
+    /* Prevent iOS from zooming the page when focusing inputs. */
+    input, textarea, select{
+        font-size:16px !important;
+        touch-action:manipulation;
+    }
+
+    button,
+    [role="button"],
+    .song-select-item,
+    .my-character-card,
+    .team-character-slot,
+    .team-card-slot{
+        touch-action:manipulation;
+        -webkit-tap-highlight-color:transparent;
+    }
+
+    /* Remove hover-scale effects that feel sticky on touch screens. */
+    button:hover,
+    .song-select-item:hover,
+    .my-character-card:hover,
+    .team-character-slot:hover,
+    .team-card-slot:hover{
+        transform:none !important;
+    }
+
+    /* Sticky headers keep BACK/resources reachable without page-scale tricks. */
+    .play-topbar,
+    .team-select-topbar,
+    .card-topbar,
+    .friends-topbar,
+    .gacha-topbar,
+    .event-topbar{
+        position:sticky !important;
+        top:0;
+        z-index:700;
+        padding-top:max(8px,env(safe-area-inset-top));
+        padding-left:max(12px,env(safe-area-inset-left));
+        padding-right:max(12px,env(safe-area-inset-right));
+    }
+
+    /* Larger minimum tap targets. */
+    .play-back,
+    .team-select-back,
+    .card-back,
+    .friends-back,
+    .gacha-back,
+    .event-back,
+    .song-reward-button{
+        min-width:44px;
+        min-height:36px;
+    }
+
+    .player-rank-xp-mini{width:104px}
+    .player-rank-xp-mini small{font-size:5.5px}
+
+    .friend-chat-modal{
+        width:min(620px,96vw);
+        height:min(440px,92dvh);
+    }
+    .friend-chat-form input{font-size:16px !important}
+
+    /* Compact long selection pages so less vertical swiping is required. */
+    .now-play-main,
+    .team-select-main,
+    .card-main,
+    .friends-main{
+        padding-top:16px !important;
+        padding-bottom:max(18px,env(safe-area-inset-bottom)) !important;
+    }
+}
+
+/* Very short landscape phones / browser chrome visible */
+@media (max-width:900px) and (orientation:landscape) and (max-height:460px){
+    .play-topbar,
+    .team-select-topbar,
+    .card-topbar,
+    .friends-topbar,
+    .gacha-topbar,
+    .event-topbar{
+        min-height:48px !important;
+        padding-top:5px !important;
+        padding-bottom:5px !important;
+    }
+    .player-rank-xp-mini{margin-top:2px}
+    .player-rank-xp-mini small{display:none}
+    .now-play-main,
+    .team-select-main,
+    .card-main,
+    .friends-main{
+        padding-top:10px !important;
+    }
+}

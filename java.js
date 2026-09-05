@@ -121,7 +121,7 @@ async function apiRequest(path, options = {}) {
     if (path === "/api/user" && method === "PUT") {
         await getDbSession();
         const incoming = body.user || {};
-        const allowed = ['gems','coins','tickets','rank','gachaPity','characterPity','akitoPity','gachaHistory','myCards','myCharacters','characterProgress','selectedCharacterId','lobbyCharacterId','eventPoints','eventEnergy','eventEnergyUpdatedAt','eventClaimedRewards','eventShopPurchases','eventMailbox','eventTeam','eventCardMemory','eventMusic'];
+        const allowed = ['gems','coins','tickets','rank','rankXp','gachaPity','characterPity','akitoPity','shotaPity','gachaHistory','myCards','myCharacters','characterProgress','selectedCharacterId','lobbyCharacterId','eventPoints','eventEnergy','eventEnergyUpdatedAt','eventClaimedRewards','eventShopPurchases','eventMailbox','eventTeam','eventCardMemory','eventMusic','rhythmProgress'];
         const session = await getDbSession();
         if (!session?.user?.id) throw new Error("Unauthorized");
 
@@ -1196,6 +1196,41 @@ function stopGameplayAudio() {
    LOBBY SETUP
 ========================================================= */
 
+
+const PLAYER_MAX_RANK = 60;
+
+function getPlayerRankXpNeed(rank){
+    const r = Math.max(1, Math.min(PLAYER_MAX_RANK, Number(rank) || 1));
+    if (r >= PLAYER_MAX_RANK) return 0;
+    // Long-term progression: early ranks move reasonably, later ranks require
+    // noticeably more play. Total Rank 1 -> 60 is about 572k EXP.
+    return Math.round(750 + 100 * r + 5 * r * r);
+}
+
+function updatePlayerRankXpUI(user){
+    if (!user) return;
+    const rank = Math.max(1, Math.min(PLAYER_MAX_RANK, Number(user.rank) || 1));
+    const xp = Math.max(0, Number(user.rankXp) || 0);
+    const need = getPlayerRankXpNeed(rank);
+    const percent = rank >= PLAYER_MAX_RANK ? 100 : Math.max(0, Math.min(100, xp / Math.max(1, need) * 100));
+    const text = rank >= PLAYER_MAX_RANK ? "MAX RANK" : `${Math.floor(xp).toLocaleString()} / ${need.toLocaleString()} XP`;
+
+    $("playerRankXpFill")?.style.setProperty("width", `${percent}%`);
+    if ($("playerRankXpText")) $("playerRankXpText").textContent = text;
+    $("nowPlayRankXpFill")?.style.setProperty("width", `${percent}%`);
+    if ($("nowPlayRankXpText")) $("nowPlayRankXpText").textContent = text;
+}
+
+function syncMobileAppViewport(){
+    if (window.innerWidth > 900) return;
+    const h = window.visualViewport?.height || window.innerHeight || document.documentElement.clientHeight;
+    document.documentElement.style.setProperty("--mobile-app-height", `${Math.round(h)}px`);
+}
+syncMobileAppViewport();
+window.addEventListener("resize", syncMobileAppViewport, {passive:true});
+window.visualViewport?.addEventListener("resize", syncMobileAppViewport, {passive:true});
+window.visualViewport?.addEventListener("scroll", syncMobileAppViewport, {passive:true});
+
 function setupLobby(user) {
 
     if (!user) return;
@@ -1213,7 +1248,9 @@ function setupLobby(user) {
 
     $("playerRank")
         .textContent =
-        user.rank || 1;
+        Math.min(PLAYER_MAX_RANK, Number(user.rank) || 1);
+
+    updatePlayerRankXpUI(user);
 
 
     $("gemCount")
@@ -1497,6 +1534,111 @@ $("storyButton").addEventListener(
    NOW PLAY
 ========================================================= */
 
+
+const RHYTHM_REWARD_CONFIG = {
+    rank: [
+        { id:"D", label:"RANK D", coins:500, gems:0 },
+        { id:"C", label:"RANK C", coins:800, gems:10 },
+        { id:"B", label:"RANK B", coins:1200, gems:20 },
+        { id:"A", label:"RANK A", coins:1800, gems:30 },
+        { id:"S", label:"RANK S", coins:2500, gems:50 }
+    ],
+    combo: [
+        { id:"20", label:"20% MAX COMBO", ratio:.20, coins:400, gems:0 },
+        { id:"40", label:"40% MAX COMBO", ratio:.40, coins:600, gems:5 },
+        { id:"60", label:"60% MAX COMBO", ratio:.60, coins:900, gems:10 },
+        { id:"80", label:"80% MAX COMBO", ratio:.80, coins:1300, gems:15 },
+        { id:"100", label:"FULL COMBO", ratio:1, coins:2000, gems:25 }
+    ],
+    clear: [
+        { id:"1", label:"CLEAR 1 LẦN", count:1, coins:500, gems:10 },
+        { id:"5", label:"CLEAR 5 LẦN", count:5, coins:1500, gems:20 },
+        { id:"10", label:"CLEAR 10 LẦN", count:10, coins:3000, gems:35 },
+        { id:"15", label:"CLEAR 15 LẦN", count:15, coins:4500, gems:50 },
+        { id:"20", label:"CLEAR 20 LẦN", count:20, coins:7000, gems:80 }
+    ]
+};
+function ensureRhythmProgress(user){
+    if (!user) return {};
+    if (!user.rhythmProgress || typeof user.rhythmProgress !== "object") user.rhythmProgress = {};
+    return user.rhythmProgress;
+}
+function getSongRhythmProgress(user, songId){
+    const all = ensureRhythmProgress(user);
+    if (!all[songId] || typeof all[songId] !== "object") {
+        all[songId] = { bestScore:0, bestRank:"", bestCombo:0, clearCount:0, totalNotes:0, claimed:{rank:[],combo:[],clear:[]} };
+    }
+    const p = all[songId];
+    if (!p.claimed || typeof p.claimed !== "object") p.claimed={rank:[],combo:[],clear:[]};
+    ["rank","combo","clear"].forEach(k=>{ if(!Array.isArray(p.claimed[k])) p.claimed[k]=[]; });
+    return p;
+}
+function mergePendingRhythmProgress(user){
+    if (!user) return false;
+    let pending = null;
+    try { pending = JSON.parse(localStorage.getItem("realyze_rhythm_pending") || "null"); } catch(_){}
+    if (!pending || !pending.songId) return false;
+    const p = getSongRhythmProgress(user, pending.songId);
+    p.bestScore = Math.max(Number(p.bestScore||0), Number(pending.bestScore||0));
+    p.bestCombo = Math.max(Number(p.bestCombo||0), Number(pending.bestCombo||0));
+    p.clearCount = Math.max(Number(p.clearCount||0), Number(pending.clearCount||0));
+    p.totalNotes = Math.max(Number(p.totalNotes||0), Number(pending.totalNotes||0));
+    if (pending.bestRank) p.bestRank = pending.bestRank;
+    ["rank","combo","clear"].forEach(k=>{
+        const incoming = pending.claimed?.[k] || [];
+        p.claimed[k] = Array.from(new Set([...(p.claimed[k]||[]), ...incoming]));
+    });
+    user.coins = Math.max(Number(user.coins||0), Number(pending.coinsAfter||0));
+    user.gems = Math.max(Number(user.gems||0), Number(pending.gemsAfter||0));
+    if (Number.isFinite(Number(pending.playerRank))) user.rank = Math.max(Number(user.rank||1), Math.min(PLAYER_MAX_RANK, Number(pending.playerRank)));
+    if (Number(user.rank||1) >= Number(pending.playerRank||1) && Number.isFinite(Number(pending.playerRankXp))) {
+        user.rankXp = Math.max(0, Number(pending.playerRankXp));
+    }
+    localStorage.removeItem("realyze_rhythm_pending");
+    return true;
+}
+function rewardText(item){
+    const parts=[];
+    if(item.coins) parts.push(`● ${Number(item.coins).toLocaleString()} GOLD`);
+    if(item.gems) parts.push(`◆ ${Number(item.gems).toLocaleString()} GEMS`);
+    return parts.join(" · ");
+}
+function openRhythmRewardPanel(songIndex){
+    const user=getCurrentUser();
+    const song=NOW_PLAY_SONGS[songIndex];
+    if(!user||!song)return;
+    const p=getSongRhythmProgress(user,song.id);
+    $("rhythmRewardSongName").textContent=song.name;
+    $("rhythmRewardBestScore").textContent=Number(p.bestScore||0).toLocaleString();
+    const rankOrder=["D","C","B","A","S"];
+    const bestRankIndex=rankOrder.indexOf(p.bestRank||"");
+    const groups=[
+      ["SCORE RANK", RHYTHM_REWARD_CONFIG.rank, item => bestRankIndex>=rankOrder.indexOf(item.id), "rank"],
+      ["MAX COMBO", RHYTHM_REWARD_CONFIG.combo, item => Number(p.totalNotes||0)>0 && Number(p.bestCombo||0)>=Math.ceil(Number(p.totalNotes)*item.ratio), "combo"],
+      ["CLEAR COUNT", RHYTHM_REWARD_CONFIG.clear, item => Number(p.clearCount||0)>=item.count, "clear"]
+    ];
+    $("rhythmRewardList").innerHTML=groups.map(([title,items,isUnlocked,key])=>`
+      <section class="rhythm-reward-group">
+        <strong>${title}</strong>
+        ${items.map(item=>{
+          const claimed=(p.claimed[key]||[]).includes(item.id);
+          const unlocked=isUnlocked(item);
+          return `<div class="rhythm-reward-row ${claimed?"claimed":unlocked?"unlocked":"unclaimed"}">
+            <span>${item.label}</span><small>${rewardText(item)}</small>
+            <b>${claimed?"ĐÃ NHẬN":unlocked?"SẴN SÀNG":"CHƯA ĐẠT"}</b>
+          </div>`;
+        }).join("")}
+      </section>`).join("");
+    $("rhythmRewardOverlay")?.classList.remove("hidden");
+    $("rhythmRewardOverlay")?.setAttribute("aria-hidden","false");
+}
+function closeRhythmRewardPanel(){
+    $("rhythmRewardOverlay")?.classList.add("hidden");
+    $("rhythmRewardOverlay")?.setAttribute("aria-hidden","true");
+}
+$("rhythmRewardClose")?.addEventListener("click",closeRhythmRewardPanel);
+$("rhythmRewardOverlay")?.addEventListener("click",e=>{if(e.target===$("rhythmRewardOverlay"))closeRhythmRewardPanel();});
+
 const NOW_PLAY_SONGS = [
     {
         id: "track-01",
@@ -1596,6 +1738,7 @@ function updateNowPlayPlayer() {
     if (!user) return;
 
     initGachaData(user);
+    if (mergePendingRhythmProgress(user)) updateUser(user);
 
     const username =
         user.username || "PLAYER";
@@ -1607,7 +1750,8 @@ function updateNowPlayPlayer() {
         username;
 
     $("nowPlayRank").textContent =
-        rank;
+        Math.min(PLAYER_MAX_RANK, rank);
+    updatePlayerRankXpUI(user);
 
     $("nowPlayGemCount").textContent =
         Number(user.gems || 0).toLocaleString();
@@ -1688,8 +1832,10 @@ function renderNowPlaySongList() {
                 </div>
 
                 <div class="song-select-right">
-                    <div class="song-select-stars">
-                        ${stars}
+                    <div class="song-record-mini">
+                      <div class="song-select-stars">${stars}</div>
+                      <span class="song-best-mini">BEST <b>${Number(getSongRhythmProgress(getCurrentUser(), song.id).bestScore || 0).toLocaleString()}</b></span>
+                      <button type="button" class="song-reward-button" data-song-reward="${index}">REWARDS</button>
                     </div>
                     <span class="song-select-arrow">›</span>
                 </div>
@@ -1708,6 +1854,12 @@ button.addEventListener(
         renderNowPlay();
     }
 );
+
+            button.querySelector(".song-reward-button")?.addEventListener("click", event => {
+                event.preventDefault();
+                event.stopPropagation();
+                openRhythmRewardPanel(index);
+            });
 
             list.appendChild(button);
 
@@ -1908,6 +2060,7 @@ $("playEventButton").addEventListener(
 ========================================================= */
 
 const TEAM_CARD_LIMIT = 4;
+const TEAM_CHARACTER_LIMIT = 4;
 
 
 /* =========================================================
@@ -1937,8 +2090,7 @@ const CHARACTERS = [
         skillName: "RADIANT VOICE",
         skill: "Boosts performance score during Skills.",
         number: "001"
-    }
-,
+    },
     {
         id: "akito",
         name: "AKITO",
@@ -1998,19 +2150,51 @@ const CHARACTERS = [
         skill: "After completing a stage, increases the amount of rewards received by 35%.",
         rewardMultiplier: 1.35,
         number: "005"
+    },
+    {
+        id: "shota",
+        name: "SHOTA",
+        description: "Beginning — a limited 6★ VOCAL performer who protects the whole team from misses.",
+        image: "assets/shota.png",
+        default: false,
+        rarity: 6,
+        rate: 0.33333,
+        main: "VOCAL",
+        stat: { base: 19780, perLevel: 550 },
+        skillName: "PERFECT GUARD",
+        skill: "Entire team cannot MISS for 7 seconds.",
+        skillType: "teamNoMiss",
+        skillDuration: 7,
+        number: "006"
+    },
+    {
+        id: "rui",
+        name: "RUI KAMISHIRO",
+        description: "A 5★ ACT performer who turns every stage into a chain of theatrical effects.",
+        image: "assets/rui.png",
+        default: false,
+        rarity: 5,
+        rate: 5,
+        main: "ACT",
+        stat: { base: 13479, perLevel: 490 },
+        skillName: "SHOWTIME TRICK",
+        skill: "For 8 seconds, each PERFECT / GREAT has a 20% chance to add 1 TRICK stack. The next note gains +5% score per stack, up to 3 stacks (+15%), then the stacks reset.",
+        skillType: "trickStack",
+        skillDuration: 8,
+        number: "007"
     }
 ];
 
 
+/*
+  selectedCharacterId vẫn giữ để dùng cho My Character / lobby.
+  Gameplay mới dùng riêng selectedTeamCharacters gồm 4 slot.
+*/
 let selectedCharacterId = "mystery";
+let selectedTeamCharacters = [null, null, null, null];
+let selectedTeamCharacterSlot = 0;
 
-let selectedTeamCards = [
-    null,
-    null,
-    null,
-    null
-];
-
+let selectedTeamCards = [null, null, null, null];
 let selectedTeamCardSlot = 0;
 
 
@@ -2019,94 +2203,85 @@ let selectedTeamCardSlot = 0;
 ========================================================= */
 
 function openTeamSelect() {
-
     renderTeamSelect();
-
-    showScreen(
-        "teamSelectScreen"
-    );
-
+    showScreen("teamSelectScreen");
 }
 
 
 /* =========================================================
-   CHARACTER
+   4 CHARACTER TEAM
 ========================================================= */
 
 function getSelectedCharacter() {
+    const first = selectedTeamCharacters.find(Boolean);
+    if (first) return first;
 
     const user = getCurrentUser();
     if (user) {
         initGachaData(user);
-        selectedCharacterId = user.selectedCharacterId || "mystery";
+        const saved = CHARACTERS.find(c => c.id === user.selectedCharacterId);
+        if (saved && isCharacterOwned(saved.id)) return saved;
     }
-
-    const character =
-        CHARACTERS.find(
-            character => character.id === selectedCharacterId
-        );
-
-    if (character && isCharacterOwned(character.id)) {
-        return character;
-    }
-
-    selectedCharacterId = "mystery";
-    return CHARACTERS.find(character => character.id === "mystery") || CHARACTERS[0];
-
+    return CHARACTERS.find(c => c.id === "mystery") || CHARACTERS[0];
 }
 
+function getSelectedTeamCharacterCount() {
+    return selectedTeamCharacters.filter(Boolean).length;
+}
 
 function renderSelectedCharacter() {
-
-    const character = getSelectedCharacter();
-
-    const name = $("selectedCharacterName");
-    const visual = $("selectedCharacterVisual");
-    const rarity = $("selectedCharacterRarity");
-    const rank = $("selectedCharacterRank");
-    const level = $("selectedCharacterLevel");
-
-    const isRealCharacter = character && character.id !== "mystery";
-    const progress = isRealCharacter
-        ? getCharacterProgress(character)
-        : { rank: 1, level: 1 };
-
-    const maxLevel = isRealCharacter
-        ? getCharacterMaxLevel(progress.rank)
-        : 60;
-
-    const stat = isRealCharacter
-        ? getCharacterStat(character)
-        : 0;
-
-    const data = isRealCharacter
-        ? (CHARACTER_INFO[character.id] || {})
-        : {};
-
-    if (name) name.textContent = character.name;
-    if (rarity) rarity.textContent = isRealCharacter ? getCardStars(Number(character.rarity || 6)) : "★";
-    if (rank) rank.textContent = isRealCharacter ? `RANK ${progress.rank}` : "DEFAULT";
-    if (level) {
-        level.textContent = isRealCharacter ? `LV. ${progress.level} / ${maxLevel}` : "DEFAULT";
-    }
-
-    if (!visual) return;
-
-    if (character.id === "akito" && !character.image) character.image = "assets/akito.png";
-        if (character.id === "kohane" && !character.image) character.image = "assets/kohane.png";
-    if (character.image) {
-        visual.className =
-            "character-preview-visual character-owned-visual";
-        visual.innerHTML = `
-            <img src="${character.image}" alt="${character.name}">
-        `;
-    } else {
-        visual.className =
-            "character-preview-visual mystery-character";
-        visual.innerHTML = `<span>?</span>`;
-    }
+    // Compatibility hook used elsewhere in the lobby.
+    // The team screen itself renders all four character slots.
+    renderTeamCharacterSlots();
 }
 
+function renderTeamCharacterSlots() {
+    const container = $("teamCharacterSlots");
+    if (!container) return;
+    container.innerHTML = "";
+
+    for (let i = 0; i < TEAM_CHARACTER_LIMIT; i++) {
+        const character = selectedTeamCharacters[i];
+        const slot = document.createElement("button");
+        slot.type = "button";
+        slot.className = `team-character-slot ${character ? "selected" : "empty"}`;
+
+        if (character) {
+            const progress = getCharacterProgress(character);
+            const data = CHARACTER_INFO[character.id] || {};
+            const stat = getCharacterStat(character);
+            slot.innerHTML = `
+                <span class="team-character-slot-number">SLOT ${String(i + 1).padStart(2, "0")}</span>
+                <div class="team-character-slot-art">
+                    ${character.image ? `<img src="${character.image}" alt="${character.name}">` : `<span>?</span>`}
+                </div>
+                <strong>${character.name}</strong>
+                <small>${getCardStars(Number(character.rarity || 1))}</small>
+                <em>${data.main || character.main || "—"} · ${Number(stat || 0).toLocaleString()} BP</em>
+                <b>LV.${progress.level} · RANK ${progress.rank}</b>
+            `;
+        } else {
+            slot.innerHTML = `
+                <span class="team-character-slot-number">SLOT ${String(i + 1).padStart(2, "0")}</span>
+                <div class="team-character-slot-art"><span>+</span></div>
+                <strong>CHOOSE CHARACTER</strong>
+                <small>EMPTY</small>
+                <em>LANE ${i + 1}</em>
+            `;
+        }
+
+        slot.addEventListener("click", () => {
+            selectedTeamCharacterSlot = i;
+            renderAvailableCharacters();
+            $("characterSelectOverlay")?.classList.remove("hidden");
+        });
+
+        container.appendChild(slot);
+    }
+
+    const count = getSelectedTeamCharacterCount();
+    if ($("teamCharacterCount")) $("teamCharacterCount").textContent = `${count} / ${TEAM_CHARACTER_LIMIT}`;
+}
 
 function renderAvailableCharacters() {
     const container = $("availableCharacters");
@@ -2123,25 +2298,29 @@ function renderAvailableCharacters() {
     container.innerHTML = "";
 
     if (!owned.length) {
-        container.innerHTML = `
-            <div class="available-character-empty">
-                NO CHARACTERS OWNED YET
-            </div>`;
+        container.innerHTML = `<div class="available-character-empty">NO CHARACTERS OWNED YET</div>`;
         return;
     }
 
     owned.forEach(character => {
+        const usedElsewhere = selectedTeamCharacters.some(
+            (selected, idx) => selected && selected.id === character.id && idx !== selectedTeamCharacterSlot
+        );
+
         const button = document.createElement("button");
         button.type = "button";
-        button.className = "available-character my-card";
-        button.dataset.rarity = Number(character.rarity ?? 6);
-        if (character.id === user.selectedCharacterId) button.classList.add("active", "character-selected");
+        button.className = `available-character my-card ${usedElsewhere ? "disabled" : ""}`;
+        button.disabled = usedElsewhere;
+        button.dataset.rarity = Number(character.rarity ?? 1);
 
+        const progress = getCharacterProgress(character);
+        const info = CHARACTER_INFO[character.id] || {};
         button.innerHTML = `
+            ${usedElsewhere ? `<span class="card-used-badge">USED</span>` : ""}
             <div class="my-card-top">
-                <span class="my-card-rarity">${getCardStars(Number(character.rarity ?? 6))}</span>
-                <span class="my-card-rank">CHARACTER</span>
-                <span class="my-card-type">LIMITED</span>
+                <span class="my-card-rarity">${getCardStars(Number(character.rarity ?? 1))}</span>
+                <span class="my-card-rank">RANK ${progress.rank}</span>
+                <span class="my-card-type">${info.main || character.main || "CHARACTER"}</span>
             </div>
             <div class="my-card-image my-character-image">
                 ${character.image
@@ -2150,79 +2329,36 @@ function renderAvailableCharacters() {
             </div>
             <div class="my-card-info">
                 <div class="my-card-name">${character.name}</div>
-                <div class="my-card-obtained">${character.id === user.selectedCharacterId ? "CURRENT CHARACTER" : "OWNED"}</div>
-            </div>`;
+                <div class="my-card-obtained">LV.${progress.level} · ${Number(getCharacterStat(character) || 0).toLocaleString()} BP</div>
+            </div>
+        `;
 
         button.addEventListener("click", () => {
-            selectedCharacterId = character.id;
-            user.selectedCharacterId = character.id;
-            updateUser(user);
-            renderSelectedCharacter();
-            renderAvailableCharacters();
-            renderMyCharacters();
+            selectedTeamCharacters[selectedTeamCharacterSlot] = character;
             $("characterSelectOverlay")?.classList.add("hidden");
+            renderTeamSelect();
         });
 
         container.appendChild(button);
     });
 }
 
+
 /* =========================================================
    TEAM RENDER
 ========================================================= */
 
 function renderTeamSelect() {
-
-    const user = getCurrentUser();
-    if (user) {
-        initGachaData(user);
-        const saved = user.selectedCharacterId;
-        if (saved && isCharacterOwned(saved)) {
-            selectedCharacterId = saved;
-        } else {
-            selectedCharacterId = "mystery";
-        }
-    }
-
-    const song =
-        NOW_PLAY_SONGS[
-            selectedNowPlaySong
-        ];
-
+    const song = NOW_PLAY_SONGS[selectedNowPlaySong];
 
     if (song) {
-
-        const songName =
-            $("teamSongName");
-
-        const difficulty =
-            $("teamSongDifficulty");
-
-
-        if (songName) {
-
-            songName.textContent =
-                song.name;
-
-        }
-
-
-        if (difficulty) {
-
-            difficulty.textContent =
-                selectedNowPlayDifficulty;
-
-        }
-
+        if ($("teamSongName")) $("teamSongName").textContent = song.name;
+        if ($("teamSongDifficulty")) $("teamSongDifficulty").textContent = selectedNowPlayDifficulty;
     }
 
-
-    renderSelectedCharacter();
-
+    renderTeamCharacterSlots();
     renderTeamCardSlots();
-
     updateTeamReadyState();
-
 }
 
 
@@ -2234,7 +2370,9 @@ function getOwnedTeamCards() {
     const user = getCurrentUser();
     if (!user) return [];
     initGachaData(user);
-    return Array.isArray(user.myCards) ? user.myCards.filter(card => Number(card.rarity || 0) >= 4) : [];
+    return Array.isArray(user.myCards)
+        ? user.myCards.filter(card => Number(card.rarity || 0) >= 4)
+        : [];
 }
 
 function getSelectedTeamCardCount() {
@@ -2248,6 +2386,7 @@ function renderTeamCardSlots() {
 
     for (let i = 0; i < TEAM_CARD_LIMIT; i++) {
         const card = selectedTeamCards[i];
+        const pairedCharacter = selectedTeamCharacters[i];
         const slot = document.createElement("button");
         slot.type = "button";
         slot.className = `team-card-slot ${card ? "selected" : "empty"}`;
@@ -2256,11 +2395,13 @@ function renderTeamCardSlots() {
             <div class="team-card-slot-art">${card.image ? `<img src="${card.image}" alt="${card.name}">` : `<span>✦</span>`}</div>
             <div class="team-card-slot-name">${card.name}</div>
             <div class="team-card-slot-rank">RANK ${Number(card.rank || 1)} · LV.${Number(card.level || 1)}</div>
+            <div class="team-card-pair">${pairedCharacter ? `PAIR · ${pairedCharacter.name}` : "PAIR · NO CHARACTER"}</div>
         ` : `
             <span class="team-card-slot-number">SLOT ${String(i + 1).padStart(2,"0")}</span>
             <div class="team-card-slot-art"><span>+</span></div>
             <div class="team-card-slot-name">CHOOSE CARD</div>
             <div class="team-card-slot-rank">EMPTY</div>
+            <div class="team-card-pair">${pairedCharacter ? `PAIR · ${pairedCharacter.name}` : "PAIR · NO CHARACTER"}</div>
         `;
         slot.addEventListener("click", () => {
             selectedTeamCardSlot = i;
@@ -2283,7 +2424,9 @@ function renderAvailableTeamCards() {
     }
 
     cards.forEach(card => {
-        const usedElsewhere = selectedTeamCards.some((selected, idx) => selected && selected.id === card.id && idx !== selectedTeamCardSlot);
+        const usedElsewhere = selectedTeamCards.some(
+            (selected, idx) => selected && selected.id === card.id && idx !== selectedTeamCardSlot
+        );
         const button = document.createElement("button");
         button.type = "button";
         button.className = `available-team-card ${usedElsewhere ? "disabled" : ""}`;
@@ -2304,162 +2447,97 @@ function renderAvailableTeamCards() {
 }
 
 function updateTeamReadyState() {
-    const count = getSelectedTeamCardCount();
-    const countEl = $("teamCardCount");
-    const progress = $("teamSelectionProgress");
-    const message = $("teamSelectionMessage");
-    const ready = $("teamReadyText");
-    const start = $("startTeamPlayButton");
+    const cardCount = getSelectedTeamCardCount();
+    const charCount = getSelectedTeamCharacterCount();
+    const totalReady = cardCount + charCount;
+    const totalRequired = TEAM_CARD_LIMIT + TEAM_CHARACTER_LIMIT;
+    const readyNow = cardCount === TEAM_CARD_LIMIT && charCount === TEAM_CHARACTER_LIMIT;
 
-    if (countEl) countEl.textContent = `${count} / ${TEAM_CARD_LIMIT}`;
-    if (progress) progress.style.width = `${count / TEAM_CARD_LIMIT * 100}%`;
-    if (ready) ready.textContent = count === TEAM_CARD_LIMIT ? "READY" : "NOT READY";
-    if (message) message.textContent = count === TEAM_CARD_LIMIT ? "TEAM READY — START YOUR PERFORMANCE" : `SELECT ${TEAM_CARD_LIMIT - count} MORE CARD${TEAM_CARD_LIMIT - count === 1 ? "" : "S"}`;
-    if (start) start.disabled = count !== TEAM_CARD_LIMIT;
+    if ($("teamCardCount")) $("teamCardCount").textContent = `${cardCount} / ${TEAM_CARD_LIMIT}`;
+    if ($("teamCharacterCount")) $("teamCharacterCount").textContent = `${charCount} / ${TEAM_CHARACTER_LIMIT}`;
+    if ($("teamSelectionProgress")) $("teamSelectionProgress").style.width = `${totalReady / totalRequired * 100}%`;
+    if ($("teamReadyText")) $("teamReadyText").textContent = readyNow ? "READY" : "NOT READY";
+
+    if ($("teamSelectionMessage")) {
+        if (readyNow) {
+            $("teamSelectionMessage").textContent = "TEAM READY — 4 CHARACTERS + 4 CARDS";
+        } else {
+            $("teamSelectionMessage").textContent =
+                `SELECT ${TEAM_CHARACTER_LIMIT - charCount} CHARACTER(S) + ${TEAM_CARD_LIMIT - cardCount} CARD(S)`;
+        }
+    }
+
+    if ($("startTeamPlayButton")) $("startTeamPlayButton").disabled = !readyNow;
 }
 
-/* =========================================================
-   CHARACTER BUTTON
-========================================================= */
-
-$("changeCharacterButton")
-    .addEventListener(
-        "click",
-        (event) => {
-            event.stopPropagation();
-
-            renderAvailableCharacters();
-
-            $("characterSelectOverlay")
-                .classList
-                .remove("hidden");
-        }
-    );
-
-
-$("closeCharacterSelect")
-    .addEventListener(
-        "click",
-        () => {
-
-            $("characterSelectOverlay")
-                .classList
-                .add("hidden");
-
-        }
-    );
-
 
 /* =========================================================
-   CARD POPUP CLOSE
+   POPUP CLOSE
 ========================================================= */
 
-$("closeCardSelect")
-    .addEventListener(
-        "click",
-        () => {
+$("closeCharacterSelect")?.addEventListener("click", () => {
+    $("characterSelectOverlay")?.classList.add("hidden");
+});
 
-            $("cardSelectOverlay")
-                .classList
-                .add("hidden");
-
-        }
-    );
+$("closeCardSelect")?.addEventListener("click", () => {
+    $("cardSelectOverlay")?.classList.add("hidden");
+});
 
 
 /* =========================================================
    TEAM BACK
 ========================================================= */
 
-$("teamSelectBack")
-    .addEventListener(
-        "click",
-        () => {
-
-            $("cardSelectOverlay")
-                .classList
-                .add("hidden");
-
-            $("characterSelectOverlay")
-                .classList
-                .add("hidden");
-
-            showScreen(
-                "nowPlayScreen"
-            );
-
-        }
-    );
+$("teamSelectBack")?.addEventListener("click", () => {
+    $("cardSelectOverlay")?.classList.add("hidden");
+    $("characterSelectOverlay")?.classList.add("hidden");
+    showScreen("nowPlayScreen");
+});
 
 
 /* =========================================================
    NOW PLAY → TEAM SELECT
 ========================================================= */
 
-$("nowPlayButton")
-    .addEventListener(
-        "click",
-        () => {
-
-            const song =
-                NOW_PLAY_SONGS[
-                    selectedNowPlaySong
-                ];
-
-
-            if (!song) {
-                return;
-            }
-
-
-            openTeamSelect();
-
-        }
-    );
+$("nowPlayButton")?.addEventListener("click", () => {
+    const song = NOW_PLAY_SONGS[selectedNowPlaySong];
+    if (!song) return;
+    openTeamSelect();
+});
 
 
 /* =========================================================
    START GAME
 ========================================================= */
 
-$("startTeamPlayButton")
-    .addEventListener(
-        "click",
-        () => {
+$("startTeamPlayButton")?.addEventListener("click", () => {
+    const cardCount = getSelectedTeamCardCount();
+    const charCount = getSelectedTeamCharacterCount();
 
-            const count =
-                getSelectedTeamCardCount();
+    if (cardCount !== TEAM_CARD_LIMIT || charCount !== TEAM_CHARACTER_LIMIT) return;
 
+    const characterIds = selectedTeamCharacters.map(character => character.id);
+    const cardIds = selectedTeamCards.map(card => card.id);
 
-            if (
-                count !==
-                TEAM_CARD_LIMIT
-            ) {
+    // Save a snapshot too, so gameplay still knows the chosen team if query strings are edited/trimmed.
+    try {
+        localStorage.setItem("realyze_gameplay_team", JSON.stringify({
+            characters: characterIds,
+            cards: cardIds,
+            song: selectedNowPlaySong,
+            difficulty: selectedNowPlayDifficulty
+        }));
+    } catch (_) {}
 
-                return;
+    const gameplayUrl =
+        `gameplay.html?song=${encodeURIComponent(selectedNowPlaySong)}` +
+        `&difficulty=${encodeURIComponent(selectedNowPlayDifficulty)}` +
+        `&characters=${encodeURIComponent(JSON.stringify(characterIds))}` +
+        `&cards=${encodeURIComponent(JSON.stringify(cardIds))}`;
 
-            }
+    window.location.href = gameplayUrl;
+});
 
-
-            /*
-                Đến đây chắc chắn:
-
-                - Có character
-                - Có đúng 4 card
-                - Không có card trùng
-            */
-
-
-            const selectedCharacter =
-                getSelectedCharacter();
-
-            const cardIds = selectedTeamCards.filter(Boolean).map(card => card.id);
-            const gameplayUrl =
-                `gameplay.html?song=${encodeURIComponent(selectedNowPlaySong)}&difficulty=${encodeURIComponent(selectedNowPlayDifficulty)}&character=${encodeURIComponent(selectedCharacter.id)}&cards=${encodeURIComponent(JSON.stringify(cardIds))}`;
-
-            window.location.href = gameplayUrl;
-        }
-    );
 
  /* =========================================================
    RHYTHM GAMEPLAY
@@ -4064,8 +4142,63 @@ const CHARACTER_INFO = {
     akito: { base: 19450, perLevel: 510, main: "ACT", skillName: "REWARD AMPLIFIER", skill: "After completing a stage, increases the amount of stage rewards by 35%.", rewardMultiplier: 1.35 },
     kohane: { base: 21034, perLevel: 410, main: "RAP", skillName: "SHINING REWARD", skill: "After completing a stage, increases the amount of stage rewards by 45%.", rewardMultiplier: 1.45 },
     miku: { base: 9879, perLevel: 654, main: "VOCAL", skillName: "COLORFUL VOICE", skill: "Event: +15% score multiplier." },
-    miku6: { base: 21250, perLevel: 620, main: "RAP", skillName: "RADIANT REWARD", skill: "After completing a stage, increases the amount of rewards received by 35%.", rewardMultiplier: 1.35 }
+    miku6: { base: 21250, perLevel: 620, main: "RAP", skillName: "RADIANT REWARD", skill: "After completing a stage, increases the amount of rewards received by 35%.", rewardMultiplier: 1.35 },
+    shota: { base: 19780, perLevel: 550, main: "VOCAL", skillName: "PERFECT GUARD", skill: "Entire team cannot MISS for 7 seconds.", skillType: "teamNoMiss", skillDuration: 7 },
+    rui: { base: 13479, perLevel: 490, main: "ACT", skillName: "SHOWTIME TRICK", skill: "For 8 seconds, each PERFECT / GREAT has a 20% chance to add 1 TRICK stack. The next note gains +5% score per stack, up to 3 stacks (+15%), then the stacks reset.", skillType: "trickStack", skillDuration: 8 }
 };
+
+
+const CHARACTER_EVENT_SKILLS_VI = {
+    lumina: [
+        ["RADIANT VOICE", "+2.250 điểm VOCAL."],
+        ["BRIGHT CHANCE", "+3.200 VOCAL; có 25% cơ hội tăng thêm 30% điểm của lượt này."],
+        ["VOCAL BREAK", "+1.250 VOCAL và giảm 1.100 VOCAL của đối thủ."]
+    ],
+    akito: [
+        ["BURN ACT", "+2.780 điểm ACT."],
+        ["TURN THE TABLE", "Akito lấy 2 lượt đồng minh kế tiếp; ở lượt hành động kế tiếp của Akito, sức mạnh được tăng 200%."],
+        ["CROSS BOOST", "Đồng minh khác hệ với Akito được +15% ở lần hành động kế tiếp."]
+    ],
+    kohane: [
+        ["RAP SHINE", "+1.800 điểm RAP."],
+        ["BLESSING", "Toàn đội được +55% ở lượt kế tiếp."],
+        ["DIVINE TURN", "Đội của bạn được quyền ưu tiên hành động ở lượt kế tiếp."]
+    ],
+    miku: [
+        ["MIKU VOICE", "+1.730 điểm VOCAL."],
+        ["NEXT STAGE", "2 lượt hành động đồng minh kế tiếp được +30%."],
+        ["COLORFUL VOICE", "+2.000 VOCAL; lần hành động kế tiếp của Miku được +15%."]
+    ],
+    miku6: [
+        ["RADIANT RAP", "+2.780 điểm RAP."],
+        ["SPOTLIGHT CALL", "Chọn 1 đồng minh để hành động ngay sau Miku."],
+        ["RADIANT PARADE", "Đưa 2 đồng minh còn lại lên hành động trước lượt của đối thủ."]
+    ],
+    shota: [
+        ["PERFECT HARMONY", "+2.650 điểm VOCAL."],
+        ["NO WRONG NOTE", "Chặn 2 hiệu ứng giảm điểm tiếp theo do đối thủ gây ra."],
+        ["ENCORE PROTECTION", "Chọn 1 đồng minh hành động ngay; hành động đó được +25%."]
+    ],
+    rui: [
+        ["CURTAIN CALL", "+1.950 ACT và MARK đối thủ 2 lượt; debuff giảm điểm kế tiếp mạnh thêm 25%."],
+        ["DIRECTOR'S TRICK", "Chọn VOCAL / RAP / ACT để JAM; đối thủ nhận -20% điểm hệ đó trong 2 hành động tính điểm."],
+        ["GRAND FINALE", "Đặt bom trễ; sau 2 hành động của đối thủ: giảm 1.500 điểm ở hệ cao nhất của họ và Rui nhận +1.500 ACT."]
+    ]
+};
+
+function renderCharacterEventSkills(character){
+    const panel = $("characterEventSkillPanel");
+    if (!panel) return;
+    const skills = CHARACTER_EVENT_SKILLS_VI[character?.id] || [];
+    panel.innerHTML = skills.length
+        ? skills.map((skill, i) => `
+            <div class="event-skill-mini">
+              <span>${i + 1}</span>
+              <div><strong>${skill[0]}</strong><p>${skill[1]}</p></div>
+            </div>`).join("")
+        : `<div class="event-skill-mini"><span>—</span><div><strong>CHƯA CÓ KỸ NĂNG EVENT</strong><p>Nhân vật này hiện chưa có bộ kỹ năng cho Event Gameplay.</p></div></div>`;
+}
+
 
 function getCharacterProgress(character) {
     const user = getCurrentUser();
@@ -4132,11 +4265,17 @@ function renderCharacterInfo(character) {
     const infoStat = $("characterInfoStatLabel")?.closest(".character-info-stat-single");
     const infoMainType = $("characterInfoMainType");
     infoStat?.classList.toggle("vocal-stat", mainType === "VOCAL");
+    infoStat?.classList.toggle("rap-stat", mainType === "RAP");
     infoStat?.classList.toggle("act-stat", mainType === "ACT");
     infoMainType?.classList.toggle("vocal-type", mainType === "VOCAL");
+    infoMainType?.classList.toggle("rap-type", mainType === "RAP");
     infoMainType?.classList.toggle("act-type", mainType === "ACT");
     $("characterInfoSkillName").textContent = d.skillName || "SKILL";
     $("characterInfoSkillDescription").textContent = d.skill || "—";
+    renderCharacterEventSkills(character);
+    $("characterEventSkillPanel")?.classList.add("hidden");
+    $("characterEventSkillToggle")?.classList.remove("open");
+    $("characterEventSkillToggle")?.setAttribute("aria-expanded", "false");
 }
 
 function upgradeCharacterLevel() {
@@ -4169,6 +4308,15 @@ function upgradeCharacterLevel() {
 
 $("characterInfoBack")?.addEventListener("click", closeCharacterInfo);
 $("characterInfoUpgrade")?.addEventListener("click", upgradeCharacterLevel);
+$("characterEventSkillToggle")?.addEventListener("click", () => {
+    const panel = $("characterEventSkillPanel");
+    const toggle = $("characterEventSkillToggle");
+    if (!panel || !toggle) return;
+    const opening = panel.classList.contains("hidden");
+    panel.classList.toggle("hidden", !opening);
+    toggle.classList.toggle("open", opening);
+    toggle.setAttribute("aria-expanded", opening ? "true" : "false");
+});
 $("characterInfoOverlay")?.addEventListener("click", event => {
     if (event.target === $("characterInfoOverlay")) closeCharacterInfo();
 });
@@ -4243,7 +4391,7 @@ function renderMyCharacters() {
                 ${character.image ? `<img src="${character.image}" alt="${character.name}">` : `<div class="my-card-fallback">✦</div>`}
             </div>
             <div class="my-card-info my-character-info-card">
-                <div class="my-character-level-line"><span>LV. ${progress.level} / ${maxLevel}</span><strong class="character-main-stat ${character.main === "ACT" ? "act-stat-text" : "vocal-stat-text"}">${currentStat.toLocaleString()} ${character.main || "VOCAL"}</strong></div>
+                <div class="my-character-level-line"><span>LV. ${progress.level} / ${maxLevel}</span><strong class="character-main-stat ${character.main === "ACT" ? "act-stat-text" : character.main === "RAP" ? "rap-stat-text" : "vocal-stat-text"}">${currentStat.toLocaleString()} ${character.main || "VOCAL"}</strong></div>
                 <div class="my-card-name">${character.name}</div>
                 <div class="my-character-skill-line">${character.skillName || "SKILL"}</div>
                 <div class="my-character-action-row">
@@ -4330,10 +4478,14 @@ const GACHA_ITEMS = [
 ========================================================= */
 
 const GACHA_CHARACTERS = [
+    // 6★ LIMITED BEGINNING SHOTA.
+    { id:"shota", name:"SHOTA", image:"assets/shota.png", type:"character", rarity:6, rate:0.33333, banner:"shota", main:"VOCAL", base:19780, perLevel:550, skillType:"teamNoMiss", skillDuration:7 },
     // 6★ LIMITED RADIANT BRIDE MIKU — separate ID from the original 5★ Miku.
     { id:"miku6", name:"HATSUNE MIKU", image:"assets/miku1.png", type:"character", rarity:6, rate:0.33333, banner:"character", main:"RAP", base:21250, perLevel:620, rewardMultiplier:1.35 },
     // Original 5★ Miku. Appears as an off-feature character and never resets 6★ pity.
     { id:"miku", name:"HATSUNE MIKU", image:"assets/miku.png", type:"character", rarity:5, rate:5, banner:"both", main:"VOCAL", base:9879, perLevel:654 },
+    // Permanent 5★ Rui — available in every CHARACTER banner, never in Card Gacha, and never resets 6★ pity.
+    { id:"rui", name:"RUI KAMISHIRO", image:"assets/rui.png", type:"character", rarity:5, rate:5, banner:"all-character", main:"ACT", base:13479, perLevel:490, skillType:"trickStack", skillDuration:8 },
     { id:"akito", name:"AKITO", image:"assets/akito.png", type:"character", rarity:6, rate:0.33333, banner:"akito", main:"ACT", base:19450, perLevel:510, rewardMultiplier:1.35 }
 ];
 /* =========================================================
@@ -4377,6 +4529,9 @@ if (!Array.isArray(user.myCharacters)) {
     }
     if (typeof user.akitoPity !== "number" || user.akitoPity < 0) {
         user.akitoPity = 0;
+    }
+    if (typeof user.shotaPity !== "number" || user.shotaPity < 0) {
+        user.shotaPity = 0;
     }
     if (!user.characterProgress || typeof user.characterProgress !== "object") user.characterProgress = {};
 
@@ -4661,6 +4816,8 @@ const characterSingleRoll = document.getElementById("characterSingleRoll");
 const characterTenRoll = document.getElementById("characterTenRoll");
 const akitoSingleRoll = document.getElementById("akitoSingleRoll");
 const akitoTenRoll = document.getElementById("akitoTenRoll");
+const shotaSingleRoll = document.getElementById("shotaSingleRoll");
+const shotaTenRoll = document.getElementById("shotaTenRoll");
 
 
 let gachaBusy = false;
@@ -4879,6 +5036,8 @@ function updateCharacterPityDisplay(user) {
     if (el) el.textContent = String(user.characterPity || 0);
     const akitoEl = document.getElementById("akitoPityCount");
     if (akitoEl) akitoEl.textContent = String(user.akitoPity || 0);
+    const shotaEl = document.getElementById("shotaPityCount");
+    if (shotaEl) shotaEl.textContent = String(user.shotaPity || 0);
 }
 
 /* =========================================================
@@ -5203,27 +5362,57 @@ function doCharacterGacha(amount) {
     initGachaData(user);
     const cost=amount===1?GACHA_COST_SINGLE:GACHA_COST_TEN;
     if(Number(user.gems||0)<cost){showGachaToast("NOT ENOUGH GEMS",`Bạn cần ${cost} gems để roll.`);return;}
-    const banner=activeGachaBanner==="akito"?"akito":"character";
+
+    const banner = activeGachaBanner==="akito" ? "akito"
+        : activeGachaBanner==="shota" ? "shota"
+        : "character";
     const featured=GACHA_CHARACTERS.find(x=>x.banner===banner);
     if(!featured)return;
+
     user.gems=Number(user.gems||0)-cost;gachaBusy=true;
-    [singleRoll,tenRoll,characterSingleRoll,characterTenRoll,akitoSingleRoll,akitoTenRoll].forEach(b=>{if(b)b.disabled=true});
-    const pityKey=banner==="akito"?"akitoPity":"characterPity";const pityLimit=banner==="akito"?120:100;const results=[];
+    [singleRoll,tenRoll,characterSingleRoll,characterTenRoll,akitoSingleRoll,akitoTenRoll,shotaSingleRoll,shotaTenRoll]
+        .forEach(b=>{if(b)b.disabled=true});
+
+    const pityKey = banner==="akito" ? "akitoPity" : banner==="shota" ? "shotaPity" : "characterPity";
+    const pityLimit = banner==="akito" ? 120 : 100;
+    const results=[];
+
     for(let i=0;i<amount;i++){
         user[pityKey]=Number(user[pityKey]||0)+1;
         let item=null;
-        if(user[pityKey]>=pityLimit){item={...featured};user[pityKey]=0}
-        else if(Math.random()*100<5){item={...GACHA_CHARACTERS.find(x=>x.id==="miku")}}
-        else if(Math.random()*100<Number(featured.rate||0)){item={...featured};user[pityKey]=0}
-        else item={id:`character-miss-${Date.now()}-${i}`,name:"NO CHARACTER",image:null,rarity:1,type:"character-miss"};
+        if(user[pityKey]>=pityLimit){
+            item={...featured};
+            user[pityKey]=0;
+        } else {
+            const offFiveRoll = Math.random()*100;
+            if(offFiveRoll < 5){
+                item={...GACHA_CHARACTERS.find(x=>x.id==="miku")};
+            } else if(offFiveRoll < 10){
+                item={...GACHA_CHARACTERS.find(x=>x.id==="rui")};
+            }
+        }
+        if(!item && Math.random()*100<Number(featured.rate||0)){
+            item={...featured};
+            user[pityKey]=0;
+        }
+        if(!item){
+            item={id:`character-miss-${Date.now()}-${i}`,name:"NO CHARACTER",image:null,rarity:1,type:"character-miss"};
+        }
         results.push(item);
         if(item.type==="character"){
-            if(!Array.isArray(user.myCharacters))user.myCharacters=[];if(!user.myCharacters.includes(item.id))user.myCharacters.push(item.id);
-            user.characterProgress=user.characterProgress||{};if(!user.characterProgress[item.id])user.characterProgress[item.id]={rank:1,level:1};else user.characterProgress[item.id].rank=Math.min(5,Number(user.characterProgress[item.id].rank||1)+1);
+            if(!Array.isArray(user.myCharacters))user.myCharacters=[];
+            if(!user.myCharacters.includes(item.id))user.myCharacters.push(item.id);
+            user.characterProgress=user.characterProgress||{};
+            if(!user.characterProgress[item.id])user.characterProgress[item.id]={rank:1,level:1};
+            else user.characterProgress[item.id].rank=Math.min(5,Number(user.characterProgress[item.id].rank||1)+1);
             user.selectedCharacterId=item.id;
         }
     }
-    updateUser(user);renderMyCharacters();updateGachaGemCount(user);updateCharacterPityDisplay(user);showGachaResult(results);
+    updateUser(user);
+    renderMyCharacters();
+    updateGachaGemCount(user);
+    updateCharacterPityDisplay(user);
+    showGachaResult(results);
 }
 
 function doGacha(
@@ -5258,6 +5447,10 @@ function doGacha(
     if (tenRoll) tenRoll.disabled = true;
     if (characterSingleRoll) characterSingleRoll.disabled = true;
     if (characterTenRoll) characterTenRoll.disabled = true;
+    if (akitoSingleRoll) akitoSingleRoll.disabled = true;
+    if (akitoTenRoll) akitoTenRoll.disabled = true;
+    if (shotaSingleRoll) shotaSingleRoll.disabled = true;
+    if (shotaTenRoll) shotaTenRoll.disabled = true;
 
     const results = [];
     let sixStarCount = 0;
@@ -5378,6 +5571,8 @@ closeGachaResult.addEventListener(
         if (characterTenRoll) characterTenRoll.disabled = false;
         if (akitoSingleRoll) akitoSingleRoll.disabled = false;
         if (akitoTenRoll) akitoTenRoll.disabled = false;
+        if (shotaSingleRoll) shotaSingleRoll.disabled = false;
+        if (shotaTenRoll) shotaTenRoll.disabled = false;
 
     }
 );
@@ -5417,14 +5612,21 @@ let activeGachaBanner = "items";
 
 function setGachaBanner(name) {
     activeGachaBanner = name;
+    $("shotaBannerButton")?.classList.toggle("active", name === "shota");
     $("currentBannerButton")?.classList.toggle("active", name === "items");
     $("characterBannerButton")?.classList.toggle("active", name === "character");
     $("akitoBannerButton")?.classList.toggle("active", name === "akito");
+    $("shotaGachaContent")?.classList.toggle("hidden", name !== "shota");
     $("itemGachaContent")?.classList.toggle("hidden", name !== "items");
     $("characterGachaContent")?.classList.toggle("hidden", name !== "character");
     $("akitoGachaContent")?.classList.toggle("hidden", name !== "akito");
     updateGachaPityDisplay(getCurrentUser());
     updateCharacterPityDisplay(getCurrentUser());
+}
+
+function openShotaBanner() {
+    showScreen("gachaScreen");
+    setGachaBanner("shota");
 }
 
 function openCharacterBanner() {
@@ -5437,9 +5639,12 @@ function openAkitoBanner() {
     setGachaBanner("akito");
 }
 
+$("shotaBannerButton")?.addEventListener("click", openShotaBanner);
 $("characterBannerButton")?.addEventListener("click", openCharacterBanner);
 $("akitoBannerButton")?.addEventListener("click", openAkitoBanner);
 
+$("shotaSingleRoll")?.addEventListener("click", () => doCharacterGacha(1));
+$("shotaTenRoll")?.addEventListener("click", () => doCharacterGacha(10));
 $("akitoSingleRoll")?.addEventListener("click", () => doCharacterGacha(1));
 $("akitoTenRoll")?.addEventListener("click", () => doCharacterGacha(10));
 
@@ -6304,35 +6509,49 @@ async function openFriendChat(n){const u=await syncMe();if(!u||(u.friends||[]).i
 function closeFriendChat(){activeFriendChatUser=null;activeFriendChatMessages=[];$("friendChatOverlay")?.classList.add('hidden');$("friendChatOverlay")?.setAttribute('aria-hidden','true');}
 function renderFriendChatMessages(){const u=getCurrentUser(),box=$("friendChatMessages");if(!u||!box)return;box.innerHTML=activeFriendChatMessages.length?activeFriendChatMessages.map(m=>`<div class="friend-chat-message ${m.from===u.username?'mine':'theirs'}"><span>${escapeFriendHtml(m.text)}</span></div>`).join(''):'<div class="friend-chat-empty">Chưa có tin nhắn. Hãy bắt đầu cuộc trò chuyện!</div>';box.scrollTop=box.scrollHeight;}
 async function sendFriendMessage(text) {
-    if (!text || !text.trim()) return;
-    
-    // Giả sử targetUsername là người bạn đang chat cùng
-    const currentChatTarget = window.currentChatTarget; 
+    const messageText = String(text || "").trim();
+    const targetUsername = String(activeFriendChatUser || "").trim();
+
+    if (!messageText) return false;
+
+    if (!targetUsername) {
+        throw new Error("Không xác định được người đang chat. Hãy đóng chat và mở lại.");
+    }
+
+    const data = await apiRequest("/api/friends/chat", {
+        method: "POST",
+        body: JSON.stringify({
+            username: targetUsername,
+            text: messageText
+        })
+    });
+
+    const me = getCurrentUser();
+    activeFriendChatMessages.push({
+        from: me?.username || "",
+        text: messageText,
+        time: Date.now()
+    });
+    renderFriendChatMessages();
 
     try {
-        const res = await apiRequest("/api/friends/chat", {
-            method: "POST",
-            body: JSON.stringify({
-                username: currentChatTarget,
-                text: text.trim()
-            })
-        });
-        
-        // Gửi thành công -> Tải lại danh sách tin nhắn
-        if (typeof loadFriendChat === 'function') {
-            loadFriendChat(currentChatTarget);
+        const fresh = await apiRequest('/api/friends/chat?username=' + encodeURIComponent(targetUsername));
+        if (activeFriendChatUser === targetUsername) {
+            activeFriendChatMessages = fresh.messages || [];
+            renderFriendChatMessages();
         }
-    } catch (err) {
-        console.error("Lỗi gửi tin nhắn:", err);
-        // HIỂN THỊ THÔNG BÁO LỖI THAY VÌ ĐỂ APP TỰ VĂNG RA LOGIN
-        alert("Gửi tin nhắn thất bại: " + err.message);
+    } catch (refreshError) {
+        console.warn("CHAT REFRESH FAILED:", refreshError);
     }
+
+    return data?.ok !== false;
 }
 function initFriendSystem() {
+    if (window.__realyzeFriendSystemReady) return;
+    window.__realyzeFriendSystemReady = true;
+
     $("friendsButton")?.addEventListener('click', async (event) => {
         event.preventDefault();
-        // Open the Friends screen first. A Supabase/RPC failure must not make the
-        // button appear dead or redirect the player away from the lobby.
         showScreen('friendsScreen');
         if ($("friendSearchInput")) $("friendSearchInput").value = '';
         if ($("friendSearchResults")) $("friendSearchResults").innerHTML = '<div class="friends-empty">Đang tải dữ liệu bạn bè...</div>';
@@ -6347,6 +6566,7 @@ function initFriendSystem() {
 
     $("friendsBack")?.addEventListener('click', () => showScreen('lobbyScreen'));
     $("friendSearchButton")?.addEventListener('click', searchFriends);
+
     $("friendSearchInput")?.addEventListener('keydown', e => {
         if (e.key === 'Enter') {
             e.preventDefault();
@@ -6356,30 +6576,49 @@ function initFriendSystem() {
 
     $("friendChatClose")?.addEventListener('click', closeFriendChat);
 
-    // XỬ LÝ GỬI TIN NHẮN AN TOÀN (CHỐNG RELOAD TRANG & CHỐNG LỖI AUTH)
-    const handleSend = async (e) => {
-        if (e) e.preventDefault(); // Chặn triệt để Reload trang
-        const i = $("friendChatInput");
-        if (i && i.value.trim()) {
-            const messageText = i.value.trim();
-            i.value = ''; // Xóa input ngay để trải nghiệm mượt hơn
-            try {
-                await sendFriendMessage(messageText);
-            } catch (err) {
-                console.error("Lỗi gửi tin nhắn:", err);
-                alert("Không thể gửi tin nhắn: " + (err.message || "Lỗi kết nối"));
-            }
+    const form = $("friendChatForm");
+    const input = $("friendChatInput");
+    const sendButton = form?.querySelector('button[type="submit"]');
+
+    const handleSend = async (event) => {
+        event?.preventDefault();
+        event?.stopPropagation();
+
+        if (!input || !input.value.trim()) return false;
+
+        if (!activeFriendChatUser) {
+            showLobbyToast('CHAT', 'Không xác định được người đang chat.');
+            return false;
         }
+
+        const messageText = input.value.trim();
+        const oldValue = input.value;
+
+        input.value = '';
+        input.disabled = true;
+        if (sendButton) sendButton.disabled = true;
+
+        try {
+            await sendFriendMessage(messageText);
+        } catch (err) {
+            console.error("CHAT SEND FAILED:", err);
+            input.value = oldValue;
+            showLobbyToast('CHAT', err?.message || 'Không thể gửi tin nhắn.');
+        } finally {
+            input.disabled = false;
+            if (sendButton) sendButton.disabled = false;
+            input.focus();
+        }
+
+        return false;
     };
 
-    $("friendChatSend")?.addEventListener('click', handleSend);
+    // IMPORTANT: the actual SEND button is inside <form id="friendChatForm">.
+    // Handling submit prevents the browser from reloading index.html.
+    form?.addEventListener('submit', handleSend);
 
-    $("friendChatInput")?.addEventListener('keydown', e => {
-        if (e.key === 'Enter') {
-            e.preventDefault(); // Chặn Enter submit form
-            handleSend(e);
-        }
-    });
+    // Compatibility for any older HTML version with this optional id.
+    $("friendChatSend")?.addEventListener('click', handleSend);
 }
 
 document.addEventListener('DOMContentLoaded', initFriendSystem, { once: true });

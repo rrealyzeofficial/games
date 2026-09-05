@@ -1,124 +1,437 @@
 *{box-sizing:border-box}
-html,body{margin:0;width:100%;height:100%;overflow:hidden;font-family:Arial,Helvetica,sans-serif;background:#fff;color:#222}
+:root{
+  --pink:#ff5f9e;
+  --pink-dark:#ed397e;
+  --pink-soft:#fff1f7;
+  --pink-pale:#fff8fb;
+  --gold:#f4bf45;
+  --gold-dark:#c98e12;
+  --ink:#352b32;
+  --muted:#a18d97;
+  --line:#f1dce6;
+}
+html,body{
+  margin:0;
+  width:100%;
+  height:100%;
+  min-height:100%;
+  overflow:hidden;
+  font-family:Nunito,Arial,sans-serif;
+  background:#fffafd;
+  color:var(--ink);
+  touch-action:none;
+  overscroll-behavior:none;
+  -webkit-user-select:none;
+  user-select:none;
+  -webkit-touch-callout:none;
+}
+html{position:fixed;inset:0}
+body{position:fixed;inset:0}
 button{font:inherit}
-.game{width:100%;height:100vh;background:#fff;position:relative;overflow:hidden}
-.topbar{height:70px;border-bottom:1px solid #eee;display:flex;align-items:center;justify-content:space-between;padding:0 22px;position:relative;z-index:10;background:#fff}
-.back{border:1px solid #ddd;background:#fff;border-radius:8px;padding:9px 14px;font-size:11px;font-weight:900;cursor:pointer}
-.song-info{position:absolute;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:3px;white-space:nowrap}
-.song-info small{font-size:8px;letter-spacing:2px;font-weight:900;color:#ff5f9e}.song-info strong{font-size:15px}.song-info span{font-size:8px;letter-spacing:1px;color:#999;font-weight:900}
-.score-box{text-align:right}.score-box small{display:block;color:#999;font-size:8px;letter-spacing:1px;font-weight:900}.score-box strong{font-size:21px;color:#ff5f9e}
-.score-track{height:4px;background:#eee;position:absolute;top:70px;left:0;width:100%;z-index:11}.score-track div{height:100%;width:0;background:#ff5f9e;transition:width .12s}
-.stage{height:calc(100vh - 70px);display:flex;justify-content:center;position:relative}
-.lane-area{position:relative;width:min(680px,90vw);height:calc(100vh - 120px);margin-top:30px;border-left:1px solid #eee;border-right:1px solid #eee;overflow:hidden;background:#fff}
-.lanes{position:absolute;inset:0;display:grid;grid-template-columns:repeat(4,1fr);z-index:1}.lanes i{border-right:1px solid #f0f0f0}.lanes i:last-child{border-right:0}
-.hit-line{position:absolute;left:0;right:0;bottom:82px;height:5px;display:grid;grid-template-columns:repeat(4,1fr);gap:4px;z-index:5}.hit-line i{background:#ff5f9e;border-radius:99px;box-shadow:0 0 12px rgba(255,95,158,.25)}
-.note{position:absolute;top:0;width:calc(25% - 12px);height:28px;border-radius:8px;background:#ff5f9e;box-shadow:0 5px 16px rgba(255,95,158,.22);z-index:4;transform:translate(-50%,0);pointer-events:none}.note::after{content:"";position:absolute;inset:4px;border-radius:5px;background:rgba(255,255,255,.2)}
-.note.hold{height:var(--hold-height,100px);transform:translate(-50%,0)}
-.note.hit{animation:hit .16s ease forwards}@keyframes hit{to{opacity:0;transform:translate(-50%,0) scale(1.25)}}
-.combo{position:absolute;top:100px;left:50%;transform:translateX(-50%);z-index:8;text-align:center;pointer-events:none}.combo strong{display:block;font-size:38px;line-height:1}.combo span{font-size:8px;letter-spacing:2px;font-weight:900;color:#ff5f9e}
-.judgement{position:absolute;top:162px;left:50%;transform:translateX(-50%);z-index:9;min-width:100px;text-align:center;font-size:17px;font-weight:900;color:#ff5f9e;pointer-events:none}.judgement.pop{animation:pop .2s ease}@keyframes pop{from{opacity:0;transform:translate(-50%,8px) scale(.8)}to{opacity:1;transform:translate(-50%,0) scale(1)}}
-.keys{position:absolute;bottom:17px;left:50%;transform:translateX(-50%);display:grid;grid-template-columns:repeat(4,54px);gap:10px;z-index:12}.keys button{height:32px;border:1px solid #ddd;background:#fff;border-radius:8px;color:#999;font-size:11px;font-weight:900}.keys button.active{border-color:#ff5f9e;background:#fff1f7;color:#ff5f9e;transform:translateY(-2px)}
-.ready{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:20;font-weight:900;font-size:20px;letter-spacing:3px;color:#ff5f9e;opacity:0;pointer-events:none}.ready.show{animation:ready 1.2s ease}@keyframes ready{0%{opacity:0;transform:translate(-50%,-50%) scale(.8)}25%,75%{opacity:1}100%{opacity:0;transform:translate(-50%,-50%) scale(1.05)}}
-@media(max-width:700px){.topbar{height:62px;padding:0 10px}.score-track{top:62px}.stage{height:calc(100vh - 62px)}.lane-area{width:96vw;height:calc(100vh - 105px);margin-top:25px}.song-info strong{font-size:12px;max-width:150px;overflow:hidden;text-overflow:ellipsis}.combo{top:88px}.judgement{top:148px}.keys{grid-template-columns:repeat(4,46px);gap:7px}.keys button{width:46px;height:30px}}
+.hidden{display:none!important}
+.game{position:relative;width:100%;height:var(--app-height,100dvh);min-height:100svh;overflow:hidden;background:
+ radial-gradient(circle at 12% 20%,rgba(255,196,219,.32),transparent 24%),
+ radial-gradient(circle at 88% 28%,rgba(255,220,233,.42),transparent 26%),
+ linear-gradient(180deg,#fffafd,#fff 60%,#fff6fa)}
 
-/* Easy hold assist: long notes are judged on the initial press, no precise release timing required. */
-.note.hold{min-height:42px}
+.battle-hud{position:absolute;left:0;right:0;top:0;z-index:30;height:92px;display:grid;grid-template-columns:1fr auto 1fr;align-items:start;padding:24px 4.2vw 0;pointer-events:none}
+.score-rank-wrap,.hp-wrap{pointer-events:none}
+.score-rank-wrap{width:min(410px,34vw)}
+.rank-track{position:relative;height:38px;border:2px solid #efbfd1;border-radius:99px;background:rgba(255,255,255,.82);display:grid;grid-template-columns:repeat(5,1fr);align-items:center;overflow:hidden;box-shadow:0 8px 28px rgba(225,75,132,.08)}
+.rank-track span{position:relative;z-index:2;text-align:center;font-size:15px;font-weight:900}
+.rank-fill{position:absolute;left:0;top:0;bottom:0;width:0;background:linear-gradient(90deg,#ffd5e5,#ff86b4);opacity:.6;transition:width .15s}
+.score-rank-wrap>strong{display:inline-block;margin:7px 0 0 10px;font-size:18px;font-weight:900;color:var(--pink-dark)}
+.score-rank-wrap>small{margin-left:8px;color:var(--muted);font-size:8px;font-weight:900;letter-spacing:1.4px}
 
-/* =========================================================
-   SKILL BUTTON
-========================================================= */
-.skill-btn {
-  position:absolute;
-  left:24px;
-  bottom:18px;
-  z-index:30;
-  width:92px;
-  height:52px;
-  border:1px solid #ddd;
-  border-radius:10px;
-  background:#fff;
-  color:#999;
-  cursor:pointer;
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  justify-content:center;
-  gap:2px;
+.pause-btn{pointer-events:auto;width:72px;height:40px;border:1px solid #f0c8d8;border-radius:99px;background:#fff;display:flex;align-items:center;justify-content:center;gap:7px;box-shadow:0 8px 24px rgba(225,75,132,.1);cursor:pointer}
+.pause-btn span{width:4px;height:14px;border-radius:4px;background:var(--pink)}
+.hp-wrap{justify-self:end;width:min(270px,24vw);text-align:right}
+.hp-pill{position:relative;height:38px;border:2px solid #efbfd1;border-radius:99px;background:#fff;overflow:hidden;display:flex;align-items:center;justify-content:center}
+.hp-fill{position:absolute;inset:0 auto 0 0;width:100%;background:linear-gradient(90deg,#ffe3ee,#ff9fc1);transition:width .2s}
+.hp-pill strong{position:relative;z-index:2;font-size:14px;font-weight:900}
+.hp-wrap>small{display:block;margin:7px 10px 0 0;color:var(--muted);font-size:8px;font-weight:900;letter-spacing:1.2px}
+
+.song-badge{position:absolute;left:50%;top:77px;z-index:15;transform:translateX(-50%);text-align:center;pointer-events:none}
+.song-badge small{display:block;color:#c2a7b3;font-size:7px;font-weight:900;letter-spacing:2px}
+.song-badge strong{display:block;max-width:300px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px}
+.song-badge span{display:inline-block;margin-top:2px;padding:2px 7px;border-radius:99px;background:#fff0f6;color:var(--pink-dark);font-size:7px;font-weight:900;letter-spacing:1px}
+
+.stage{position:absolute;inset:100px 0 0;display:flex;justify-content:center}
+.lane-area{position:relative;width:min(860px,72vw);height:calc(100vh - 112px);overflow:hidden;border-left:1px solid rgba(240,205,220,.7);border-right:1px solid rgba(240,205,220,.7);background:linear-gradient(180deg,rgba(255,255,255,.42),rgba(255,245,250,.72));border-radius:34px 34px 0 0}
+.lane-guides{position:absolute;inset:0 4%;display:grid;grid-template-columns:repeat(4,1fr)}
+.lane-guides i{border-right:1px dashed rgba(236,185,207,.5)}
+.lane-guides i:last-child{border-right:0}
+.hit-zone{position:absolute;left:5%;right:5%;bottom:72px;height:2px;background:linear-gradient(90deg,transparent,#ffb4d0 12%,#ff70a8 50%,#ffb4d0 88%,transparent);box-shadow:0 0 18px rgba(255,95,158,.25)}
+
+.note{position:absolute;top:0;width:52px;height:52px;border-radius:50%;z-index:8;transform:translate3d(-50%,0,0);will-change:transform,opacity;contain:layout paint style;background:linear-gradient(145deg,#ff8fba,#ff4f93);border:4px solid rgba(255,255,255,.92);box-shadow:0 8px 22px rgba(226,61,123,.25),inset 0 0 0 3px rgba(255,255,255,.14);pointer-events:none}
+.note::after{content:"";position:absolute;inset:9px;border-radius:50%;background:rgba(255,255,255,.18)}
+.note.skill-note{background:linear-gradient(145deg,#ffe886,#f2b735);border-color:#fff9dc;box-shadow:0 0 0 4px rgba(246,191,69,.18),0 8px 24px rgba(188,126,7,.28)}
+.note.skill-note::after{content:"✦";inset:0;display:flex;align-items:center;justify-content:center;background:none;color:#fff;font-size:21px;font-weight:900}
+.note.hit{animation:noteHit .18s ease forwards}
+@keyframes noteHit{to{opacity:0;transform:translate3d(-50%,0,0) scale(1.45)}}
+
+.character-targets{position:absolute;left:4%;right:4%;bottom:18px;height:104px;display:grid;grid-template-columns:repeat(4,1fr);align-items:end;z-index:12}
+.character-target{position:relative;justify-self:center;width:92px;height:92px;border:4px solid #fff;border-radius:50%;background:#fff0f6;box-shadow:0 10px 28px rgba(211,76,127,.18),0 0 0 2px #ffc2d8;overflow:hidden;cursor:pointer;transition:.08s}
+.character-target img{width:100%;height:100%;object-fit:cover;object-position:center 20%}
+.character-target .fallback{height:100%;display:flex;align-items:center;justify-content:center;color:var(--pink);font-weight:900;font-size:24px}
+.character-target::after{content:attr(data-key);position:absolute;right:2px;bottom:2px;width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:#fff;color:var(--pink-dark);font-size:9px;font-weight:900;box-shadow:0 2px 8px rgba(0,0,0,.08)}
+.character-target.active{transform:scale(.93);box-shadow:0 0 0 4px rgba(255,95,158,.2)}
+.character-target.skill-ready{box-shadow:0 0 0 4px rgba(244,191,69,.35),0 10px 28px rgba(188,126,7,.20)}
+.character-target.skill-ready::before{content:"SKILL";position:absolute;left:50%;top:5px;transform:translateX(-50%);z-index:3;padding:2px 6px;border-radius:99px;background:#f2b735;color:#fff;font-size:6px;font-weight:900;letter-spacing:.8px}
+
+.combo{position:absolute;left:50%;top:46%;transform:translate(-50%,-50%);z-index:14;text-align:center;pointer-events:none}
+.combo strong{display:block;font-size:38px;line-height:.95}
+.combo span{font-size:9px;font-weight:900;letter-spacing:2px;color:var(--pink-dark)}
+.judgement{position:absolute;left:50%;top:55%;transform:translateX(-50%);z-index:14;min-width:150px;text-align:center;color:var(--pink-dark);font-size:19px;font-weight:900;pointer-events:none;text-shadow:0 2px #fff}
+.judgement.pop{animation:judgePop .2s ease}
+@keyframes judgePop{from{opacity:0;transform:translate(-50%,10px) scale(.8)}to{opacity:1;transform:translate(-50%,0) scale(1)}}
+
+.skill-feed{position:absolute;right:18px;top:128px;z-index:40;width:min(280px,23vw);display:flex;flex-direction:column;gap:7px;pointer-events:none}
+.skill-toast{padding:9px 11px;border:1px solid #f3cfde;border-radius:13px;background:rgba(255,255,255,.94);box-shadow:0 9px 26px rgba(174,72,111,.10);animation:toastIn .22s ease}
+.skill-toast.gold{border-color:#f2d282;background:#fffdf5}
+.skill-toast small{display:block;color:#b39ba6;font-size:7px;font-weight:900;letter-spacing:1px}
+.skill-toast strong{display:block;margin-top:2px;color:var(--pink-dark);font-size:10px}
+.skill-toast span{display:block;margin-top:2px;color:#7f6c75;font-size:8px;line-height:1.35}
+@keyframes toastIn{from{opacity:0;transform:translateX(16px)}to{opacity:1;transform:translateX(0)}}
+
+.ready{position:absolute;left:50%;top:50%;z-index:60;transform:translate(-50%,-50%);padding:14px 24px;border-radius:99px;background:#fff;color:var(--pink-dark);box-shadow:0 15px 50px rgba(214,74,127,.17);font-size:17px;font-weight:900;letter-spacing:3px;opacity:0;pointer-events:none}
+.ready.show{animation:readyAnim 1.2s ease}
+@keyframes readyAnim{0%{opacity:0;transform:translate(-50%,-50%) scale(.8)}25%,75%{opacity:1}100%{opacity:0;transform:translate(-50%,-50%) scale(1.05)}}
+
+.pause-overlay,.result{position:absolute;inset:0;z-index:100;display:flex;align-items:center;justify-content:center;padding:20px;background:rgba(72,40,55,.26);backdrop-filter:blur(9px)}
+.pause-card,.result-card{width:min(600px,92vw);padding:30px;border:1px solid #f2dce6;border-radius:26px;background:#fff;text-align:center;box-shadow:0 24px 80px rgba(80,34,55,.18)}
+.pause-card small,.result-card>small{color:var(--pink);font-size:8px;font-weight:900;letter-spacing:2px}
+.pause-card h2{margin:7px 0 22px;font-size:28px}
+.pause-card button,.result-card>button{width:100%;margin-top:9px;padding:13px;border:0;border-radius:13px;background:var(--pink);color:#fff;font-size:10px;font-weight:900;letter-spacing:1px;cursor:pointer}
+.pause-card button.soft{background:#fff0f6;color:var(--pink-dark)}
+.result-card h1{margin:7px 0 0;font-size:22px}
+.result-score{margin-top:7px;color:var(--pink-dark);font-size:45px;font-weight:900}
+.result-rank{font-size:34px;font-weight:900;color:#d89d1d}
+.result-stats{display:grid;grid-template-columns:repeat(5,1fr);gap:7px;margin:18px 0}
+.result-stats div{padding:10px 4px;border:1px solid #f1e0e7;border-radius:11px;background:#fffafd}
+.result-stats span{display:block;color:#a6919b;font-size:6px;font-weight:900}
+.result-stats strong{display:block;margin-top:4px;font-size:16px}
+.result-skill-summary{max-height:100px;overflow:auto;text-align:left;padding:9px;border-radius:12px;background:#fff8fb;color:#7f6c75;font-size:8px;line-height:1.45}
+
+@media(max-width:900px){
+  .battle-hud{height:62px;padding:10px 14px 0}
+  .rank-track{height:30px}.score-rank-wrap{width:34vw}.score-rank-wrap>strong{font-size:14px;margin-top:3px}
+  .hp-wrap{width:23vw}.hp-pill{height:30px}.hp-pill strong{font-size:11px}
+  .pause-btn{width:56px;height:32px}
+  .song-badge{top:52px}
+  .stage{inset:72px 0 0}
+  .lane-area{width:min(720px,72vw);height:calc(100vh - 72px)}
+  .character-targets{bottom:5px;height:82px}
+  .character-target{width:72px;height:72px}
+  .hit-zone{bottom:59px}
+  .note{width:42px;height:42px}
+  .skill-feed{right:7px;top:80px;width:24vw}
+  .skill-toast{padding:6px 7px}
+  .combo strong{font-size:28px}
+  .judgement{font-size:15px}
 }
-.skill-btn .skill-title {font-size:9px;letter-spacing:2px;font-weight:900}
-.skill-btn strong {font-size:12px;font-weight:900}
-.skill-btn.ready {border-color:#ff5f9e;background:#fff1f7;color:#ff5f9e;box-shadow:0 0 16px rgba(255,95,158,.18)}
-.skill-btn.active {transform:translateY(-2px);background:#ff5f9e;color:#fff}
+@media(orientation:portrait){
+  body::before{content:"ROTATE YOUR PHONE\A\A REALYZE!! RHYTHM MODE";white-space:pre;position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;text-align:center;padding:30px;background:#fffafd;color:var(--pink-dark);font-size:17px;font-weight:900;letter-spacing:1px}
+}
+
 
 /* =========================================================
-   RESULT
+   MOBILE PERFORMANCE / FULLSCREEN ENTRY
 ========================================================= */
-.result {
-  position:absolute;
+.mobile-start-overlay{
+  position:fixed;
   inset:0;
-  z-index:200;
-  background:rgba(255,255,255,.97);
+  z-index:9998;
   display:flex;
   align-items:center;
   justify-content:center;
+  padding:
+    calc(16px + env(safe-area-inset-top))
+    calc(16px + env(safe-area-inset-right))
+    calc(16px + env(safe-area-inset-bottom))
+    calc(16px + env(safe-area-inset-left));
+  background:rgba(255,250,253,.97);
 }
-.result.hidden {display:none}
-.result-card {
-  width:min(560px,92vw);
-  padding:36px 34px 30px;
-  border:1px solid #eee;
-  border-radius:18px;
-  background:#fff;
-  box-shadow:0 20px 60px rgba(0,0,0,.08);
+.mobile-start-overlay.hidden{display:none!important}
+.mobile-start-card{
+  width:min(430px,88vw);
+  padding:24px 22px;
   text-align:center;
+  border:1px solid #f1d7e3;
+  border-radius:24px;
+  background:#fff;
+  box-shadow:0 20px 60px rgba(201,74,124,.12);
 }
-.result-label {font-size:9px;letter-spacing:3px;font-weight:900;color:#ff5f9e}
-.result-card h1 {margin:8px 0 4px;font-size:24px}
-.result-score {font-size:48px;font-weight:900;color:#ff5f9e;margin-top:8px}
-.result-rank {font-size:34px;font-weight:900;margin:4px 0 22px}
-.result-stats {display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:26px}
-.result-stats div {padding:12px 4px;border:1px solid #eee;border-radius:9px}
-.result-stats span {display:block;font-size:7px;letter-spacing:.5px;color:#999;font-weight:900}
-.result-stats strong {display:block;font-size:18px;margin-top:5px}
-.result-back {border:0;border-radius:9px;background:#ff5f9e;color:#fff;padding:12px 20px;font-size:10px;font-weight:900;letter-spacing:1px;cursor:pointer}
-@media(max-width:700px){.skill-btn{left:10px;bottom:12px;width:78px;height:46px}.result-card{padding:28px 16px}.result-stats{grid-template-columns:repeat(3,1fr)}.result-stats div:last-child{grid-column:2}.result-card h1{font-size:18px}.result-score{font-size:38px}}
-
-/* REALYZE landscape mobile gameplay */
-html,body{touch-action:none;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
-.keys button{touch-action:none;-webkit-tap-highlight-color:transparent}
-@media (orientation:landscape) and (max-height:650px){
-  .topbar{height:48px;padding:0 10px}.score-track{top:48px}.stage{height:calc(100vh - 48px)}
-  .lane-area{height:calc(100vh - 70px);margin-top:10px;width:min(620px,78vw)}
-  .combo{top:58px}.judgement{top:105px}.keys{bottom:7px;grid-template-columns:repeat(4,minmax(44px,54px));gap:7px}.keys button{height:38px}
-  .skill-btn{left:10px;bottom:8px;height:42px;width:76px}
-  .song-info strong{font-size:11px}.score-box strong{font-size:17px}
+.mobile-start-card small{
+  color:#b69aa7;
+  font-size:7px;
+  font-weight:900;
+  letter-spacing:1.6px;
 }
-@media (orientation:portrait){
-  body::before{content:'PLEASE ROTATE YOUR PHONE';position:fixed;inset:0;z-index:9999;background:#fff;display:flex;align-items:center;justify-content:center;text-align:center;font-size:14px;font-weight:900;letter-spacing:2px;color:#ff5f9e;padding:30px}
+.mobile-start-card h2{
+  margin:7px 0 6px;
+  color:var(--pink-dark);
+  font-size:25px;
+}
+.mobile-start-card p{
+  margin:0 0 16px;
+  color:#8f7a84;
+  font-size:10px;
+  line-height:1.5;
+}
+.mobile-start-card button{
+  width:100%;
+  min-height:48px;
+  border:0;
+  border-radius:14px;
+  background:var(--pink);
+  color:#fff;
+  font-weight:900;
+  letter-spacing:.8px;
+  touch-action:manipulation;
+  -webkit-tap-highlight-color:transparent;
+}
+.mobile-start-card span{
+  display:block;
+  margin-top:9px;
+  color:#b09aa4;
+  font-size:8px;
+  line-height:1.4;
 }
 
+/* Exact visible viewport, including browser chrome. */
+.game,
+.stage,
+.lane-area{
+  max-height:var(--app-height,100dvh);
+}
 
-/* Mobile gameplay is landscape-only. No transform scaling is applied,
-   so touch coordinates stay aligned with the visible lanes. */
-@media (max-width: 900px) and (orientation: portrait) {
-  body::before {
-    content: "ROTATE YOUR PHONE\A\A REALYZE!! is designed to be played in landscape.";
-    white-space: pre;
-    position: fixed;
-    inset: 0;
-    z-index: 999999;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-    padding: 30px;
-    box-sizing: border-box;
-    background: #fffafd;
-    color: #ed397e;
-    font-family: Nunito, Arial, sans-serif;
-    font-size: 18px;
-    font-weight: 900;
-    letter-spacing: 1px;
-    pointer-events: auto;
+/* Prevent all browser gestures from stealing rhythm taps. */
+.game,
+.stage,
+.lane-area,
+.character-targets,
+.character-target,
+.pause-btn{
+  touch-action:none;
+  -webkit-tap-highlight-color:transparent;
+}
+
+/* Safe-area aware HUD/controls. */
+.battle-hud{
+  padding-left:max(4.2vw,calc(10px + env(safe-area-inset-left)));
+  padding-right:max(4.2vw,calc(10px + env(safe-area-inset-right)));
+  padding-top:max(18px,calc(8px + env(safe-area-inset-top)));
+}
+.skill-feed{
+  right:max(10px,env(safe-area-inset-right));
+}
+.character-targets{
+  padding-bottom:env(safe-area-inset-bottom);
+}
+
+/* Lower-cost rendering on phones: less blur/shadow while playing. */
+@media(max-width:900px){
+  .game{
+    background:linear-gradient(180deg,#fffafd,#fff 58%,#fff6fa);
   }
+  .lane-area{
+    background:linear-gradient(180deg,rgba(255,255,255,.72),rgba(255,246,250,.92));
+    border-radius:22px 22px 0 0;
+  }
+  .pause-btn,
+  .rank-track,
+  .hp-pill,
+  .character-target,
+  .skill-toast{
+    box-shadow:none;
+  }
+  .skill-toast{
+    backdrop-filter:none;
+    background:#fff;
+  }
+  .note{
+    box-shadow:0 4px 10px rgba(226,61,123,.16);
+  }
+  .note.skill-note{
+    box-shadow:0 0 0 3px rgba(246,191,69,.18);
+  }
+}
+
+/* Very short landscape screens: browser bars / small phones. */
+@media (orientation:landscape) and (max-height:520px){
+  .battle-hud{
+    height:48px;
+    padding-top:max(5px,env(safe-area-inset-top));
+  }
+  .rank-track,.hp-pill{height:27px}
+  .score-rank-wrap>strong{font-size:12px;margin-top:1px}
+  .score-rank-wrap>small,.hp-wrap>small{display:none}
+  .pause-btn{width:48px;height:28px}
+  .song-badge{top:42px}
+  .stage{inset:58px 0 0}
+  .lane-area{
+    height:calc(var(--app-height,100dvh) - 58px);
+    width:min(690px,74vw);
+  }
+  .character-targets{height:70px;bottom:2px}
+  .character-target{width:62px;height:62px;border-width:3px}
+  .character-target::after{width:20px;height:20px;font-size:7px}
+  .hit-zone{bottom:51px}
+  .note{width:38px;height:38px;border-width:3px}
+  .combo{top:43%}
+  .combo strong{font-size:25px}
+  .judgement{top:52%;font-size:13px}
+  .skill-feed{top:60px;width:21vw}
+  .skill-toast{padding:5px 6px}
+  .skill-toast span{display:none}
+}
+
+/* Installed PWA / fullscreen gets a little more breathing room. */
+@media(display-mode:standalone){
+  .mobile-start-card p{display:none}
+}
+
+.result-reward-summary{
+  margin:10px 0;
+  padding:11px 12px;
+  border:1px solid #f1d5df;
+  border-radius:13px;
+  background:#fff7fa;
+  text-align:left;
+}
+.result-reward-summary>small{
+  display:block;color:#b2909e;font-size:7px;font-weight:900;letter-spacing:1.4px;
+}
+.result-reward-summary>strong{
+  display:block;margin-top:4px;color:#c54e7b;font-size:11px;
+}
+#resultRewardItems{
+  margin-top:6px;color:#77636c;font-size:8px;line-height:1.6;
+}
+@media (orientation:landscape) and (max-height:520px){
+  .result-card{max-height:94dvh;overflow:auto}
+  .result-reward-summary{padding:7px 9px;margin:6px 0}
+}
+
+
+/* =========================================================
+   PLAYER RANK EXP RESULT
+========================================================= */
+.result-player-xp{
+  margin:10px 0;
+  padding:11px 12px;
+  border:1px solid #eadde4;
+  border-radius:13px;
+  background:#fff;
+  text-align:left;
+}
+.result-player-xp-head{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+}
+.result-player-xp-head span{
+  color:#8d7781;
+  font-size:8px;
+  font-weight:900;
+  letter-spacing:.8px;
+}
+.result-player-xp-head span b{color:#3d3036}
+.result-player-xp-head strong{color:#e74e87;font-size:10px}
+.result-player-xp-track{
+  height:7px;
+  margin-top:7px;
+  overflow:hidden;
+  border-radius:99px;
+  background:#f1e4ea;
+}
+.result-player-xp-track i{
+  display:block;
+  width:0%;
+  height:100%;
+  border-radius:inherit;
+  background:linear-gradient(90deg,#ff5f9e,#ffadca);
+}
+.result-player-xp small{
+  display:block;
+  margin-top:5px;
+  color:#a58d98;
+  font-size:7px;
+  font-weight:900;
+}
+.result-player-xp em{
+  display:block;
+  min-height:10px;
+  margin-top:4px;
+  color:#cf9a23;
+  font-size:8px;
+  font-style:normal;
+  font-weight:900;
+}
+
+/* =========================================================
+   MOBILE RHYTHM TOUCH V3
+   Full-width lane surface = easier thumbs, no page scroll/scale.
+========================================================= */
+@media (max-width:900px) and (orientation:landscape){
+  html,body{
+    position:fixed;
+    inset:0;
+    width:100%;
+    height:var(--app-height,100dvh);
+    min-height:0;
+    overflow:hidden !important;
+    overscroll-behavior:none;
+    touch-action:none;
+  }
+  .game{
+    position:fixed;
+    inset:0;
+    width:100vw;
+    height:var(--app-height,100dvh);
+    overflow:hidden;
+  }
+  .lane-area{
+    width:min(820px,96vw) !important;
+    max-width:96vw;
+    touch-action:none;
+  }
+  .character-targets{
+    left:1.5%;
+    right:1.5%;
+  }
+  .character-target{
+    width:78px;
+    height:78px;
+  }
+  .character-target::after{
+    width:24px;
+    height:24px;
+  }
+  .skill-feed{
+    width:min(180px,22vw);
+    pointer-events:none;
+  }
+  button{
+    touch-action:manipulation;
+    -webkit-tap-highlight-color:transparent;
+  }
+}
+
+/* Small/short phone: lane still uses almost all available width */
+@media (max-width:900px) and (orientation:landscape) and (max-height:520px){
+  .lane-area{
+    width:96vw !important;
+  }
+  .character-targets{
+    height:74px;
+    bottom:max(2px,env(safe-area-inset-bottom));
+  }
+  .character-target{
+    width:66px;
+    height:66px;
+  }
+  .result-player-xp{padding:7px 9px;margin:6px 0}
 }

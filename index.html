@@ -272,6 +272,10 @@
                 <span>
                     RANK <b id="playerRank">1</b>
                 </span>
+                <div class="player-rank-xp-mini" title="Player Rank EXP">
+                    <div class="player-rank-xp-track"><i id="playerRankXpFill"></i></div>
+                    <small id="playerRankXpText">0 / 850 XP</small>
+                </div>
 
             </div>
 
@@ -1006,6 +1010,10 @@
             <div class="play-player-text">
                 <strong id="nowPlayUsername">PLAYER</strong>
                 <span>RANK <b id="nowPlayRank">1</b></span>
+                <div class="player-rank-xp-mini now-play-rank-xp">
+                    <div class="player-rank-xp-track"><i id="nowPlayRankXpFill"></i></div>
+                    <small id="nowPlayRankXpText">0 / 850 XP</small>
+                </div>
             </div>
 
         </div>
@@ -1229,7 +1237,7 @@
                 <h1>SELECT YOUR TEAM</h1>
 
                 <p>
-                    Choose your character and four different cards.
+                    Choose four characters and four different cards. Each character is paired with the card in the same slot.
                 </p>
 
             </div>
@@ -1250,8 +1258,7 @@
 
         </div>
 
-
-        <!-- CHARACTER -->
+        <!-- CHARACTERS -->
 
         <section class="team-character-panel">
 
@@ -1260,54 +1267,21 @@
                 <span>01</span>
 
                 <div>
-                    <small>CHARACTER</small>
-                    <strong>YOUR PARTNER</strong>
+                    <small>CHARACTER TEAM</small>
+                    <strong>CHOOSE 4 CHARACTERS</strong>
                 </div>
+
+                <b id="teamCharacterCount">0 / 4</b>
 
             </div>
 
-
-            <div id="selectedCharacterArea" class="selected-character-area">
-
-                <div class="character-preview">
-
-                    <div class="character-preview-glow"></div>
-
-                    <div
-                        id="selectedCharacterVisual"
-                        class="character-preview-visual mystery-character"
-                    >
-                        <span>?</span>
-                    </div>
-
-                </div>
-
-
-                <div class="character-info">
-
-                    <div class="team-character-meta">
-                        <span id="selectedCharacterRarity" class="character-rarity">★★★★★★</span>
-                        <span id="selectedCharacterRank" class="team-character-rank">RANK 1</span>
-                        <span id="selectedCharacterLevel" class="team-character-level">LV. 1 / 60</span>
-                    </div>
-
-                    <h2 id="selectedCharacterName">
-                        NGƯỜI BÍ ẨN
-                    </h2>
-
-                    <div class="selected-character-actions">
-                        <button
-                            id="changeCharacterButton"
-                            class="change-character-button"
-                            type="button"
-                        >
-                            CHANGE CHARACTER
-                        </button>
-                    </div>
-
-                </div>
-
+            <div id="teamCharacterSlots" class="team-character-slots">
+                <!-- JS render 4 character slots -->
             </div>
+
+            <p class="team-pair-hint">
+                SLOT 01–04 tương ứng với 4 lane trong gameplay. Mỗi character sẽ đi cùng card cùng số slot.
+            </p>
 
         </section>
 
@@ -1360,7 +1334,7 @@
                 </div>
 
                 <span id="teamSelectionMessage">
-                    SELECT 4 CARDS TO START
+                    SELECT 4 CHARACTERS + 4 CARDS TO START
                 </span>
 
             </div>
@@ -1542,7 +1516,7 @@
 
                 <small>CHARACTER COLLECTION</small>
 
-                <h2>CHANGE CHARACTER</h2>
+                <h2>CHOOSE CHARACTER FOR SLOT</h2>
 
             </div>
 
@@ -1665,7 +1639,7 @@
             <button id="friendChatClose" type="button" aria-label="Close">×</button>
         </header>
         <div id="friendChatMessages" class="friend-chat-messages"></div>
-        <form id="friendChatForm" class="friend-chat-form">
+        <form id="friendChatForm" class="friend-chat-form" novalidate autocomplete="off">
             <input id="friendChatInput" type="text" maxlength="300" autocomplete="off" placeholder="Nhập tin nhắn...">
             <button type="submit">SEND</button>
         </form>
@@ -1725,8 +1699,9 @@
 
 
             <button
-                class="banner-select disabled"
-                disabled
+                id="shotaBannerButton"
+                class="banner-select"
+                type="button"
             >
 
                 <span class="banner-number">
@@ -1734,11 +1709,11 @@
                 </span>
 
                 <span>
-                    BEGINNER
-                    <small>NEW PLAYER</small>
+                    SHOTA
+                    <small>BEGINNING · LIMITED 6★</small>
                 </span>
 
-                <b>LOCKED</b>
+                <b>CHARACTER</b>
 
             </button>
 
@@ -2088,6 +2063,66 @@
 <!-- =====================================================
      MIKU LIMITED GACHA
 ===================================================== -->
+<!-- =====================================================
+     SHOTA · BEGINNING LIMITED CHARACTER GACHA
+===================================================== -->
+<section id="shotaGachaContent" class="gacha-content character-gacha-content hidden">
+    <div class="gacha-banner-header">
+        <div>
+            <span class="limited-label">BEGINNING · LIMITED CHARACTER GACHA</span>
+            <h2>SHOTA <em>BEGINNING</em></h2>
+            <p>Recruit the limited 6★ VOCAL character SHOTA.</p>
+        </div>
+        <div class="rate-box character-rate-box">
+            <strong>★ CHARACTER RATE</strong>
+            <span>0.33333%</span>
+        </div>
+    </div>
+
+    <div class="character-banner-feature">
+        <div class="character-banner-art">
+            <img src="assets/shota.png" alt="SHOTA" onerror="this.style.display='none';">
+        </div>
+        <div class="character-banner-info">
+            <span>LIMITED CHARACTER</span>
+            <h3>SHOTA</h3>
+            <div class="character-banner-stars">★★★★★★</div>
+            <p>VOCAL · 19,780 base BP · +550 BP per level.</p>
+            <div class="character-pity-copy">
+                <strong>MAX PITY — 100 PULLS</strong>
+                <span>Guaranteed 6★ SHOTA on the 100th pull. Can appear early.</span>
+            </div>
+        </div>
+    </div>
+
+    <section class="gacha-history-box character-pity-box">
+        <div class="gacha-history-header">
+            <div>
+                <span>SHOTA GACHA STATUS</span>
+                <h3>PITY <strong id="shotaPityCount">0</strong> / 100</h3>
+            </div>
+            <span class="gacha-history-note">SINCE BEGINNING</span>
+        </div>
+    </section>
+
+    <div class="roll-area">
+        <button id="shotaSingleRoll" class="roll-button" type="button">
+            <span>1 ROLL</span>
+            <strong>◆ 160</strong>
+        </button>
+        <button id="shotaTenRoll" class="roll-button ten" type="button">
+            <span>10 ROLLS</span>
+            <strong>◆ 1600</strong>
+            <small>10x ATTEMPTS</small>
+        </button>
+    </div>
+
+    <p class="gacha-disclaimer">
+        6★ SHOTA rate: 0.33333% per pull. Pity is separate from other character banners.
+        The 100th pull guarantees SHOTA and resets only when 6★ SHOTA is obtained.
+    </p>
+</section>
+
 <section id="characterGachaContent" class="gacha-content character-gacha-content hidden">
     <div class="gacha-banner-header">
         <div><span class="limited-label">LIMITED CHARACTER GACHA</span><h2>HATSUNE MIKU <em>RADIANT BRIDE</em></h2><p>Recruit the limited 6★ RAP character HATSUNE MIKU — RADIANT BRIDE.</p></div>
@@ -2574,9 +2609,29 @@
       <div class="card-info-skill-heading"><span>MAIN SKILL / ATTRIBUTE</span><strong id="characterInfoMainType">VOCAL</strong></div>
       <div class="card-info-skill-body"><strong id="characterInfoSkillName">RADIANT VOICE</strong><p id="characterInfoSkillDescription">Boosts performance score during Skills.</p></div>
     </div>
+    <div class="character-event-skill-box">
+      <button id="characterEventSkillToggle" class="character-event-skill-toggle" type="button" aria-expanded="false">
+        <span><small>EVENT MODE</small><strong>KỸ NĂNG GAMEPLAY EVENT</strong></span>
+        <b>＋</b>
+      </button>
+      <div id="characterEventSkillPanel" class="character-event-skill-panel hidden"></div>
+    </div>
   </div>
 </div>
 
+
+
+<div id="rhythmRewardOverlay" class="rhythm-reward-overlay hidden" aria-hidden="true">
+  <div class="rhythm-reward-modal" role="dialog" aria-modal="true">
+    <button id="rhythmRewardClose" class="rhythm-reward-close" type="button">×</button>
+    <div class="rhythm-reward-head">
+      <small>RHYTHM REWARD RECORD</small>
+      <h2 id="rhythmRewardSongName">VIRTUAL TO LIVE</h2>
+      <div class="rhythm-best-score">BEST SCORE <strong id="rhythmRewardBestScore">0</strong></div>
+    </div>
+    <div id="rhythmRewardList" class="rhythm-reward-list"></div>
+  </div>
+</div>
 
 
 
