@@ -288,13 +288,28 @@ async function syncRemoteState(extra={}){
     status:'active'
    };
    game._remoteRps=mergedRps;
-   const {data,error}=await d.rpc('event_submit_action',{p_match_id:game.matchId,p_state:canonical,p_expected_turn:serverTurn});
-   if(error)throw error;
-   // Resolve locally as soon as both choices are present. The next polling/
-   // realtime update will carry the same pair to the other browser.
+   // Resolve locally as soon as both choices are present. If only one
+   // choice exists, submit that partial RPS state. If both exist, submit the
+   // final state ONCE with the winner's activeSide already filled in.
    if(mergedRps.p1&&mergedRps.p2){
-    applyRemoteState({...serverRow,state:canonical,status:'active'});
+    // The opening toss is the authority for the FIRST turn.  Persist the
+    // winner as activeSide; otherwise both browsers receive an RPS-complete
+    // state with activeSide=null and both render WAITING FOR RIVAL forever.
+    const beats=(a,b)=>(a==='rock'&&b==='scissors')||(a==='paper'&&b==='rock')||(a==='scissors'&&b==='paper');
+    let p1First;
+    if(mergedRps.p1===mergedRps.p2){
+      const p1bp=Math.max(...(game.isP1?game.you:game.rival).map(c=>c.bp));
+      const p2bp=Math.max(...(game.isP1?game.rival:game.you).map(c=>c.bp));
+      p1First=p1bp>=p2bp;
+    }else p1First=beats(mergedRps.p1,mergedRps.p2);
+    canonical.activeSide=p1First?'p1':'p2';
+    canonical.turn=serverTurn||1;
+    const {data:resolved,error:resolveError}=await d.rpc('event_submit_action',{p_match_id:game.matchId,p_state:canonical,p_expected_turn:serverTurn});
+    if(resolveError)throw resolveError;
+    applyRemoteState({...serverRow,state:canonical,status:resolved?.status||'active'});
    }else{
+    const {data,error}=await d.rpc('event_submit_action',{p_match_id:game.matchId,p_state:canonical,p_expected_turn:serverTurn});
+    if(error)throw error;
     game.waitingRemote=true;
     $('rpsResult').textContent=`YOU: ${extra.rpsChoice.toUpperCase()} · WAITING FOR RIVAL...`;
     renderBattle();
@@ -370,6 +385,18 @@ function applyRemoteState(row){
  game._lastRemoteTurn=incomingTurn;
  game.turn=incomingTurn;
  if(st.activeSide)game.activeSide=(st.activeSide===(game.isP1?'p1':'p2'))?'you':'rival';
+ else if(st.rps?.p1&&st.rps?.p2){
+  // Backward-compatible recovery for an already-created match whose DB
+  // state has both RPS choices but still has activeSide=null.
+  const beats=(a,b)=>(a==='rock'&&b==='scissors')||(a==='paper'&&b==='rock')||(a==='scissors'&&b==='paper');
+  let p1First;
+  if(st.rps.p1===st.rps.p2){
+   const p1bp=Math.max(...(game.isP1?game.you:game.rival).map(c=>c.bp));
+   const p2bp=Math.max(...(game.isP1?game.rival:game.you).map(c=>c.bp));
+   p1First=p1bp>=p2bp;
+  }else p1First=beats(st.rps.p1,st.rps.p2);
+  game.activeSide=p1First===(game.isP1?'p1':'p2')?'you':'rival';
+ }
  game.points=game.isP1?structuredClone(st.p1Points||game.points):structuredClone(st.p2Points||game.points);
  game.enemy=game.isP1?structuredClone(st.p2Points||game.enemy):structuredClone(st.p1Points||game.enemy);
  game.specialEnergy=game.isP1?Number(st.p1Special??game.specialEnergy):Number(st.p2Special??game.specialEnergy);
