@@ -3693,61 +3693,57 @@ $("rankButton").addEventListener(
 ========================================================= */
 const EVENT_MAX_POINTS = 1000000;
 const EVENT_REWARDS = [
- {points:25000,title:"GOLD",amount:5000},{points:50000,title:"GEMS",amount:100},{points:75000,title:"EVENT TICKET",amount:5},
+ {points:25000,title:"GOLD",amount:5000},{points:50000,title:"GEMS",amount:100},{points:75000,title:"EVENT TICKET",amount:10},
  {points:100000,title:"EVENT LIMITED CARD",amount:1,card:true,cardId:"event-card-100k"},{points:125000,title:"GOLD",amount:12000},
- {points:150000,title:"KOHANE ★★★★★★",amount:1,character:true,characterId:"kohane"},{points:175000,title:"EVENT TICKET",amount:10},
+ {points:150000,title:"KOHANE ★★★★★★",amount:1,character:true,characterId:"kohane"},{points:175000,title:"EVENT TICKET",amount:20},
  {points:200000,title:"GEMS",amount:250},{points:225000,title:"GOLD",amount:18000},{points:250000,title:"KOHANE ★★★★★★",amount:1,character:true,characterId:"kohane"},
- {points:275000,title:"EVENT TICKET",amount:15},{points:300000,title:"EVENT LIMITED CARD",amount:1,card:true,cardId:"event-card-300k"},
+ {points:275000,title:"EVENT TICKET",amount:30},{points:300000,title:"EVENT LIMITED CARD",amount:1,card:true,cardId:"event-card-300k"},
  {points:350000,title:"GEMS",amount:400},{points:400000,title:"KOHANE ★★★★★★",amount:1,character:true,characterId:"kohane"},
  {points:450000,title:"GOLD",amount:30000},{points:500000,title:"EVENT LIMITED CARD",amount:1,card:true,cardId:"event-card-500k"},
- {points:550000,title:"EVENT TICKET",amount:20},{points:600000,title:"GEMS",amount:650},{points:650000,title:"KOHANE ★★★★★★",amount:1,character:true,characterId:"kohane"},
- {points:700000,title:"EVENT LIMITED CARD",amount:1,card:true,cardId:"event-card-700k"},{points:750000,title:"GOLD",amount:45000},{points:800000,title:"EVENT TICKET",amount:30},
+ {points:550000,title:"EVENT TICKET",amount:40},{points:600000,title:"GEMS",amount:650},{points:650000,title:"KOHANE ★★★★★★",amount:1,character:true,characterId:"kohane"},
+ {points:700000,title:"EVENT LIMITED CARD",amount:1,card:true,cardId:"event-card-700k"},{points:750000,title:"GOLD",amount:45000},{points:800000,title:"EVENT TICKET",amount:60},
  {points:850000,title:"KOHANE ★★★★★★",amount:1,character:true,characterId:"kohane"},{points:900000,title:"EVENT LIMITED CARD",amount:1,card:true,cardId:"event-card-900k"},
- {points:925000,title:"GEMS",amount:1000},{points:950000,title:"GOLD",amount:60000},{points:975000,title:"EVENT TICKET",amount:50},
- {points:1000000,title:"EVENT GRAND REWARD",amount:1,gems:2500,gold:100000,tickets:100}
+ {points:925000,title:"GEMS",amount:1000},{points:950000,title:"GOLD",amount:60000},{points:975000,title:"EVENT TICKET",amount:100},
+ {points:1000000,title:"EVENT GRAND REWARD",amount:1,gems:2500,gold:100000,tickets:200}
 ];
 const EVENT_SHOP = [
- {id:"event-gold",title:"GOLD ×5,000",cost:1500,currency:"coins",amount:5000,limit:20},
- {id:"event-gems",title:"GEMS ×100",cost:3000,currency:"gems",amount:100,limit:10},
- {id:"event-ticket",title:"EVENT TICKET ×1",cost:2500,currency:"tickets",amount:1,limit:30},
- {id:"event-card-piece",title:"CARD MEMORY ×1",cost:5000,currency:"eventCardMemory",amount:1,limit:10}
+ {id:"event-gold",title:"GOLD ×5,000",cost:5,currency:"coins",amount:5000,limit:20},
+ {id:"event-gems",title:"GEMS ×100",cost:10,currency:"gems",amount:100,limit:10},
+ {id:"event-card-piece",title:"CARD MEMORY ×1",cost:20,currency:"eventCardMemory",amount:1,limit:10}
 ];
 function ensureEventData(user){if(!user)return;if(!Number.isFinite(Number(user.eventPoints)))user.eventPoints=0;user.eventPoints=Math.max(0,Math.min(EVENT_MAX_POINTS,Number(user.eventPoints)));if(!Number.isFinite(Number(user.eventEnergy)))user.eventEnergy=100;user.eventEnergy=Math.max(0,Math.min(100,Number(user.eventEnergy)));if(!Array.isArray(user.eventClaimedRewards))user.eventClaimedRewards=[];if(!user.eventShopPurchases||typeof user.eventShopPurchases!=="object")user.eventShopPurchases={};if(!Array.isArray(user.eventMailbox))user.eventMailbox=[];}
 function getEventLevel(points){return Math.min(100,Math.floor(Number(points||0)/1000)+1)}
+function renderEventPage(){
+    const user=getCurrentUser();
+    if(!user)return;
+    ensureEventData(user);
+    syncEventMilestoneMail(user);
+    const points=Number(user.eventPoints||0);
+    const energy=Number(user.eventEnergy||0);
+    const level=getEventLevel(points);
+    const set=(id,value)=>{const el=$(id);if(el)el.textContent=value};
+    set("eventPlayerId",user.username||"PLAYER");
+    set("eventLevel",level);
+    set("eventLevelHero",level);
+    set("eventGems",Number(user.gems||0).toLocaleString("en-US"));
+    set("eventCoins",Number(user.coins||0).toLocaleString("en-US"));
+    set("eventTickets",Number(user.tickets||0).toLocaleString("en-US"));
+    set("eventEnergy",energy.toLocaleString("en-US"));
+    set("eventPointsLabel",`${points.toLocaleString("en-US")} / ${EVENT_MAX_POINTS.toLocaleString("en-US")}`);
+    const bar=$("eventProgressBar");
+    if(bar)bar.style.width=`${Math.min(100,(points/EVENT_MAX_POINTS)*100)}%`;
+    renderEventRewards();
+    renderEventShop();
+    renderEventMailbox();
+}
 function rewardMailboxKey(reward,index){return `event-${reward.points}-${index}`}
 function syncEventMilestoneMail(user){ensureEventData(user);const points=Number(user.eventPoints||0);EVENT_REWARDS.forEach((reward,index)=>{if(points<reward.points)return;const id=rewardMailboxKey(reward,index);if(!user.eventMailbox.some(m=>m.id===id))user.eventMailbox.push({id,points:reward.points,title:reward.title,reward:{...reward},claimed:false,createdAt:Date.now()})})}
 function applyEventReward(user,reward){if(reward.card){user.myCards=Array.isArray(user.myCards)?user.myCards:[];const id=reward.cardId||`event-card-${reward.points}`;if(!user.myCards.some(c=>c&&c.id===id))user.myCards.push({id,name:"SHINING MOMENT",image:"assets/event1.png",rarity:6,type:"event",event:"SHINE WITHOUT END"})}else if(reward.character){user.myCharacters=Array.isArray(user.myCharacters)?user.myCharacters:[];user.characterProgress=user.characterProgress||{};if(!user.myCharacters.includes(reward.characterId)){user.myCharacters.push(reward.characterId);user.characterProgress[reward.characterId]={rank:1,level:1}}else{const p=user.characterProgress[reward.characterId]||{rank:1,level:1};p.rank=Math.min(5,Math.max(1,Number(p.rank)||1)+1);p.level=Math.min(getCharacterMaxLevel(p.rank),Number(p.level)||1);user.characterProgress[reward.characterId]=p}}else if(reward.title==="GEMS")user.gems=Number(user.gems||0)+Number(reward.amount||0);else if(reward.title==="GOLD")user.coins=Number(user.coins||0)+Number(reward.amount||0);else if(reward.title==="EVENT TICKET")user.tickets=Number(user.tickets||0)+Number(reward.amount||0);else if(reward.title==="EVENT GRAND REWARD"){user.gems=Number(user.gems||0)+Number(reward.gems||0);user.coins=Number(user.coins||0)+Number(reward.gold||0);user.tickets=Number(user.tickets||0)+Number(reward.tickets||0)}}
 function renderEventMailbox(){const user=getCurrentUser();if(!user)return;ensureEventData(user);syncEventMilestoneMail(user);const list=$("eventMailboxList"),badge=$("eventMailboxBadge");if(!list)return;const unread=user.eventMailbox.filter(m=>!m.claimed).length;if(badge)badge.textContent=unread?unread:"";list.innerHTML=user.eventMailbox.length?user.eventMailbox.slice().sort((a,b)=>b.points-a.points).map(m=>`<article class="event-mail-row ${m.claimed?"claimed":""}"><div class="event-mail-points">${Number(m.points).toLocaleString()} PT</div><div class="event-mail-copy"><small>SHINE WITHOUT END</small><strong>${m.title}</strong></div><button class="event-mail-claim" data-mail-id="${m.id}" ${m.claimed?"disabled":""}>${m.claimed?"CLAIMED":"CLAIM"}</button></article>`).join(""):`<div class="event-mail-row"><div class="event-mail-copy"><strong>NO EVENT MAIL</strong><span>Milestone rewards will arrive here automatically.</span></div></div>`;list.querySelectorAll('[data-mail-id]').forEach(b=>b.onclick=()=>claimEventMail(b.dataset.mailId));}
 function claimEventMail(id){const user=getCurrentUser();if(!user)return;ensureEventData(user);const mail=user.eventMailbox.find(m=>m.id===id);if(!mail||mail.claimed)return;applyEventReward(user,mail.reward||{});mail.claimed=true;mail.claimedAt=Date.now();updateUser(user);renderEventPage();renderEventMailbox()}
 function renderEventRewards(){const user=getCurrentUser();if(!user)return;ensureEventData(user);syncEventMilestoneMail(user);const points=Number(user.eventPoints||0),list=$("eventRewardsList");if(!list)return;list.innerHTML=EVENT_REWARDS.map((r,i)=>{const unlocked=points>=r.points,claimed=user.eventMailbox.some(m=>m.id===rewardMailboxKey(r,i)&&m.claimed);return `<article class="event-reward-row ${unlocked?"unlocked":"locked"} ${claimed?"claimed":""}"><div class="event-reward-point"><small>POINTS</small><strong>${r.points.toLocaleString()}</strong></div><div class="event-reward-icon ${r.card?"card-reward":r.character?"character-reward":""}">${r.card?'<img src="assets/event1.png" alt="">':r.character?'<img src="assets/kohane.png" alt="">':'✦'}</div><div class="event-reward-copy"><small>${r.card?"EVENT CARD · ★★★★★★":r.character?"EVENT CHARACTER · ★★★★★★":"MILESTONE REWARD"}</small><strong>${r.title}</strong><span>${r.card?"SHINING MOMENT · EVENT LIMITED CARD":r.character?"KOHANE · EVENT CHARACTER":r.title==="EVENT GRAND REWARD"?"GEMS ×2,500 · GOLD ×100,000 · TICKET ×100":`×${r.amount}`}</span></div><button class="event-claim-button" data-event-reward="${i}" ${!unlocked||claimed?"disabled":""}>${claimed?"CLAIMED":unlocked?"IN MAILBOX":"LOCKED"}</button></article>`}).join("")}
-function renderEventShop(){const user=getCurrentUser(),list=$("eventShopList");if(!user||!list)return;ensureEventData(user);list.innerHTML=EVENT_SHOP.map(item=>{const bought=Number(user.eventShopPurchases[item.id]||0),left=Math.max(0,item.limit-bought);return `<article class="event-shop-item"><div><small>EVENT SHOP</small><strong>${item.title}</strong><span>${item.cost.toLocaleString()} EVENT PT · ${left} LEFT</span></div><button data-event-shop="${item.id}" ${left<=0?"disabled":""}>EXCHANGE</button></article>`}).join("");list.querySelectorAll('[data-event-shop]').forEach(b=>b.onclick=()=>buyEventShop(b.dataset.eventShop))}
-function buyEventShop(id){const user=getCurrentUser(),item=EVENT_SHOP.find(x=>x.id===id);if(!user||!item)return;ensureEventData(user);const bought=Number(user.eventShopPurchases[id]||0);if(bought>=item.limit){showLobbyToast("EVENT SHOP","Purchase limit reached.");return}if(Number(user.eventPoints||0)<item.cost){showLobbyToast("EVENT SHOP","Not enough Event Points.");return}user.eventPoints-=item.cost;user.eventShopPurchases[id]=bought+1;if(item.currency==="gems")user.gems=Number(user.gems||0)+item.amount;else if(item.currency==="coins")user.coins=Number(user.coins||0)+item.amount;else if(item.currency==="tickets")user.tickets=Number(user.tickets||0)+item.amount;else user.eventCardMemory=Number(user.eventCardMemory||0)+item.amount;updateUser(user);renderEventPage()}
-function renderEventPage(){
-    const user=getCurrentUser();
-    if(!user) return;
-    ensureEventData(user);
-    syncEventMilestoneMail(user);
-    const points=Number(user.eventPoints||0);
-    const energy=Number(user.eventEnergy||0);
-    const level=getEventLevel(points);
-
-    const set=(id,value)=>{const el=$(id);if(el)el.textContent=value;};
-    set("eventPlayerId", user.username || "PLAYER");
-    set("eventLevel", level);
-    set("eventLevelHero", level);
-    set("eventGems", Number(user.gems||0).toLocaleString("en-US"));
-    set("eventCoins", Number(user.coins||0).toLocaleString("en-US"));
-    set("eventEnergy", energy.toLocaleString("en-US"));
-    set("eventPointsLabel", `${points.toLocaleString("en-US")} / ${EVENT_MAX_POINTS.toLocaleString("en-US")}`);
-
-    const bar=$("eventProgressBar");
-    if(bar) bar.style.width=`${Math.min(100,(points/EVENT_MAX_POINTS)*100)}%`;
-
-    renderEventRewards();
-    renderEventShop();
-    renderEventMailbox();
-}
-
+function renderEventShop(){const user=getCurrentUser(),list=$("eventShopList");if(!user||!list)return;ensureEventData(user);list.innerHTML=EVENT_SHOP.map(item=>{const bought=Number(user.eventShopPurchases[item.id]||0),left=Math.max(0,item.limit-bought);return `<article class="event-shop-item"><div><small>EVENT SHOP</small><strong>${item.title}</strong><span>${item.cost.toLocaleString()} EVENT TICKET · ${left} LEFT</span></div><button data-event-shop="${item.id}" ${left<=0?"disabled":""}>EXCHANGE</button></article>`}).join("");list.querySelectorAll('[data-event-shop]').forEach(b=>b.onclick=()=>buyEventShop(b.dataset.eventShop))}
+function buyEventShop(id){const user=getCurrentUser(),item=EVENT_SHOP.find(x=>x.id===id);if(!user||!item)return;ensureEventData(user);const bought=Number(user.eventShopPurchases[id]||0);if(bought>=item.limit){showLobbyToast("EVENT SHOP","Purchase limit reached.");return}if(Number(user.tickets||0)<item.cost){showLobbyToast("EVENT SHOP","Not enough Event Tickets.");return}user.tickets-=item.cost;user.eventShopPurchases[id]=bought+1;if(item.currency==="gems")user.gems=Number(user.gems||0)+item.amount;else if(item.currency==="coins")user.coins=Number(user.coins||0)+item.amount;else user.eventCardMemory=Number(user.eventCardMemory||0)+item.amount;updateUser(user);renderEventPage()}
 function openEventScreen(){const user=getCurrentUser();if(!user)return;ensureEventData(user);try{stopLobbyMusic();}catch(_){}updateUser(user);renderEventPage();showScreen("eventScreen");const a=$("eventLobbyAudio");if(a){a.currentTime=0;a.volume=.32;a.play().catch(()=>{})}}
 function closeEventModal(id){const e=$(id);if(e){e.classList.add("hidden");e.setAttribute("aria-hidden","true")}}
 function openEventModal(id){const e=$(id);if(e){e.classList.remove("hidden");e.setAttribute("aria-hidden","false")}}

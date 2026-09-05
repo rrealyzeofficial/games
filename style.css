@@ -954,10 +954,6 @@ button {
 }
 
 .event-banner button {
-    position: relative;
-    z-index: 20;
-    pointer-events: auto;
-    cursor: pointer;
     margin-left: auto;
 
     padding: 9px 18px;
@@ -2550,9 +2546,7 @@ button {
     }
 
     .event-banner button {
-        display: block;
-        flex: 0 0 auto;
-        padding: 9px 14px;
+        display: none;
     }
 
     /* =========================
@@ -9121,8 +9115,8 @@ body {
 
 
 /* EVENT MAILBOX */
-.event-mailbox-button{width:min(430px,92vw);margin:12px auto 0;display:flex;align-items:center;gap:12px;padding:12px 16px;border:1px solid #f0d9e3;border-radius:16px;background:#fff;box-shadow:0 8px 22px rgba(80,35,55,.07);cursor:pointer;text-align:left}
-.event-mailbox-icon{width:38px;height:38px;border-radius:12px;display:grid;place-items:center;background:#fff0f6;color:#ff5f9e;font-size:20px}.event-mailbox-info{flex:1}.event-mailbox-info small{display:block;font-size:8px;letter-spacing:1.5px;color:#aa93a0;font-weight:900}.event-mailbox-info strong{display:block;font-size:13px;color:#34252c}.event-mailbox-badge{min-width:24px;height:24px;padding:0 7px;border-radius:999px;background:#ff5f9e;color:#fff;display:grid;place-items:center;font-size:10px}.event-mailbox-badge:empty{display:none}.event-mailbox-arrow{font-size:22px;color:#b99eaa}
+.event-mailbox-button{width:48px;height:48px;margin:4px auto 0;padding:0;display:grid;place-items:center;position:relative;border:2px solid #ead5df;border-radius:50%;background:#fff;box-shadow:0 8px 22px rgba(80,35,55,.07);cursor:pointer}
+.event-mailbox-icon{width:32px;height:32px;border-radius:50%;display:grid;place-items:center;background:#fff0f6;color:#ff5f9e;font-size:18px}.event-mailbox-info,.event-mailbox-arrow{display:none}.event-mailbox-badge{position:absolute;right:-3px;top:-3px;min-width:19px;height:19px;padding:0 5px;border-radius:999px;background:#ff5f9e;color:#fff;display:grid;place-items:center;font-size:8px;border:2px solid #fff}.event-mailbox-badge:empty{display:none}
 .event-mailbox-overlay{position:fixed;inset:0;background:rgba(45,20,34,.35);display:grid;place-items:center;z-index:1000;padding:20px}.event-mailbox-overlay.hidden{display:none}.event-mailbox-modal{width:min(720px,94vw);max-height:82vh;overflow:auto;background:#fff;border-radius:24px;padding:24px;box-shadow:0 25px 70px rgba(40,15,28,.2);position:relative}.event-mailbox-close{position:absolute;right:16px;top:14px;border:0;background:#f7edf2;border-radius:12px;width:36px;height:36px;font-size:22px;cursor:pointer}.event-mailbox-head small{font-size:9px;letter-spacing:2px;color:#a58d99;font-weight:900}.event-mailbox-head h2{margin:5px 0;font-size:25px}.event-mailbox-head p{margin:0 0 18px;color:#8e7b85;font-size:12px}.event-mailbox-list{display:grid;gap:10px}.event-mail-row{display:grid;grid-template-columns:90px 1fr auto;gap:14px;align-items:center;border:1px solid #f1e0e7;border-radius:16px;padding:12px;background:#fffafb}.event-mail-row.claimed{opacity:.55}.event-mail-points{font-weight:900;color:#ff5f9e;font-size:13px}.event-mail-copy small{display:block;font-size:8px;color:#aa93a0;letter-spacing:1px;font-weight:900}.event-mail-copy strong{display:block;font-size:13px;margin-top:3px}.event-mail-claim{border:0;border-radius:11px;padding:9px 12px;background:#ff5f9e;color:#fff;font-weight:900;font-size:10px;cursor:pointer}.event-mail-claim:disabled{background:#ddd3d8;color:#8d8187;cursor:default}
 
 /* EVENT MODALS — rewards/shop stay inside a true popup */
@@ -9137,9 +9131,115 @@ body {
 .event-limited-card>div{width:100%;padding:4px 6px;text-align:center}
 #eventLobbyAudio{display:none}
 
-.play-maintenance-notice {
-    font-size: 11px;
-    opacity: 0.7;
-    text-align: center;
-    margin-bottom: 6px;
+/* LOBBY UTILITY BUTTONS */
+#dailyAttendanceMini{transform:translateX(-24px) translateY(18px)}
+#dailyAttendanceMini:hover{transform:translateX(-24px) translateY(15px) scale(1.05)}
+.event-mailbox-button{transform:translateX(-24px)}
+.event-mailbox-button:hover{transform:translateX(-24px) scale(1.05)}
+
+/* OPENING RPS POPUP */
+#rpsView:not(.hidden){position:fixed;inset:0;z-index:2000;margin:0;padding:24px;background:rgba(35,20,28,.52);backdrop-filter:blur(10px);display:flex;align-items:center;justify-content:center}
+#rpsView .ep-rps-modal{width:min(560px,94vw);padding:30px;border:1px solid #eadde5;border-radius:26px;background:#fff;box-shadow:0 30px 100px rgba(40,15,30,.3);text-align:center}
+#rpsView .ep-rps-modal h2{font-size:28px;margin:7px 0}
+#rpsView .ep-rps-modal p{font-size:12px;color:#8f7d86;margin:0}
+#rpsView .rps-buttons{margin-top:22px}
+#rpsView .rps-buttons button{min-height:58px;font-weight:900}
+#rpsView>b{margin-top:16px}
+@media(max-width:700px){#dailyAttendanceMini,#dailyAttendanceMini:hover,.event-mailbox-button,.event-mailbox-button:hover{transform:translateX(-18px) translateY(0)}}
+
+/* EVENT MAIL — directly under Daily Check-in */
+.event-mailbox-button{margin:10px auto 0!important;transform:translate(-24px,18px)!important}
+.event-mailbox-button:hover{transform:translate(-24px,15px) scale(1.05)!important}
+@media(max-width:700px){
+  .event-mailbox-button{margin:10px auto 0!important;transform:translate(-18px,10px)!important}
+  .event-mailbox-button:hover{transform:translate(-18px,7px) scale(1.05)!important}
+}
+
+/* =========================================================
+   EVENT LOBBY — CHECK-IN + MAIL STAY TOGETHER
+========================================================= */
+.lobby-utility-stack{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:flex-start;
+    gap:8px;
+    grid-column:1;
+    grid-row:2;
+    align-self:start;
+    min-width:0;
+}
+.lobby-utility-stack .daily-attendance-mini.compact,
+.lobby-utility-stack .event-mailbox-button{
+    margin:0!important;
+    transform:translateX(-24px)!important;
+}
+.lobby-utility-stack .daily-attendance-mini.compact:hover,
+.lobby-utility-stack .event-mailbox-button:hover{
+    transform:translateX(-24px) scale(1.05)!important;
+}
+.lobby-utility-stack .event-mailbox-button{margin-top:0!important}
+@media(max-width:1050px){
+    .lobby-utility-stack{grid-column:1;grid-row:2}
+}
+@media(max-width:800px){
+    .lobby-utility-stack{
+        order:0;
+        width:100%;
+        grid-column:auto;
+        grid-row:auto;
+        align-items:center;
+        gap:8px;
+        margin:0 0 4px;
+    }
+    .lobby-utility-stack .daily-attendance-mini.compact,
+    .lobby-utility-stack .event-mailbox-button,
+    .lobby-utility-stack .daily-attendance-mini.compact:hover,
+    .lobby-utility-stack .event-mailbox-button:hover{
+        transform:translateX(-18px)!important;
+    }
+}
+
+
+/* FINAL FIX: keep CHECK-IN and MAIL together directly below the check-in circle. */
+.lobby-utility-stack{
+    position:relative!important;
+    display:flex!important;
+    flex-direction:column!important;
+    align-items:center!important;
+    justify-content:flex-start!important;
+    gap:8px!important;
+    width:max-content!important;
+    min-width:0!important;
+    margin:0!important;
+    padding:0!important;
+    transform:none!important;
+}
+.lobby-utility-stack .daily-attendance-mini.compact,
+.lobby-utility-stack .event-mailbox-button{
+    position:relative!important;
+    margin:0!important;
+    transform:none!important;
+}
+.lobby-utility-stack .daily-attendance-mini.compact:hover,
+.lobby-utility-stack .event-mailbox-button:hover{
+    transform:scale(1.05)!important;
+}
+@media(max-width:800px){
+    .lobby-utility-stack{
+        width:max-content!important;
+        margin:0!important;
+        gap:8px!important;
+        transform:none!important;
+    }
+    .lobby-utility-stack .daily-attendance-mini.compact,
+    .lobby-utility-stack .event-mailbox-button,
+    .lobby-utility-stack .daily-attendance-mini.compact:hover,
+    .lobby-utility-stack .event-mailbox-button:hover{
+        transform:none!important;
+    }
+    .lobby-utility-stack .daily-attendance-mini.compact:hover,
+    .lobby-utility-stack .event-mailbox-button:hover{
+        transform:scale(1.05)!important;
+    }
 }

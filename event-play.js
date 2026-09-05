@@ -6,11 +6,15 @@ const MAX_TURNS=20;
 const SONGS=[{id:'heart-bouquet',name:'Heart Bouquet',src:'assets/hb.mp3'},{id:'flos',name:'Flos',src:'assets/fl.mp3'}];
 const CHARS={
  lumina:{id:'lumina',name:'LUMINA',image:'assets/lumina.png',type:'VOCAL',base:13400,per:245,rarity:6,skills:[['RADIANT VOICE','+2,250 VOCAL',2250,'point','vocal'],['BRIGHT CHANCE','+3,200 VOCAL · 25% chance +30%',3200,'point','vocal'],['VOCAL BREAK','+1,250 VOCAL · enemy VOCAL -1,100',1250,'debuff','vocal']]},
- miku:{id:'miku',name:'HATSUNE MIKU',image:'assets/miku.png',type:'VOCAL',base:9879,per:654,rarity:5,skills:[['MIKU VOICE','+1,730 VOCAL',1730,'point','vocal'],['NEXT STAGE','TEAM next turn +30%',0,'teambuff','all'],['COLORFUL VOICE','+2,000 VOCAL · self +15%',2000,'selfbuff','vocal']]},
- akito:{id:'akito',name:'AKITO',image:'assets/akito.png',type:'ACT',base:19450,per:510,rarity:6,skills:[['BURN ACT','+2,780 ACT',2780,'point','act'],['TURN THE TABLE','Take the next 2 allied turns · self ×200% next turn',0,'steal','all'],['CROSS BOOST','Other-type allies +15% next action',0,'otherbuff','all']]},
+ miku:{id:'miku',name:'HATSUNE MIKU',image:'assets/miku.png',type:'VOCAL',base:9879,per:654,rarity:5,skills:[['MIKU VOICE','+1,730 VOCAL',1730,'point','vocal'],['NEXT STAGE','2 allied actions +30%',0,'teambuff','all'],['COLORFUL VOICE','+2,000 VOCAL · Miku next action +15%',2000,'selfbuff','vocal']]},
+ akito:{id:'akito',name:'AKITO',image:'assets/akito.png',type:'ACT',base:19450,per:510,rarity:6,skills:[['BURN ACT','+2,780 ACT',2780,'point','act'],['TURN THE TABLE','Take the next 2 allied turns · Akito next score +200%',0,'steal','all'],['CROSS BOOST','Other-type allies +15% next action',0,'otherbuff','all']]},
  kohane:{id:'kohane',name:'KOHANE',image:'assets/kohane.png',type:'RAP',base:21034,per:410,rarity:6,skills:[['RAP SHINE','+1,800 RAP',1800,'point','rap'],['BLESSING','TEAM next turn +55%',0,'teambuff','all'],['DIVINE TURN','Team gets priority next turn',0,'priority','all']]}
 };
 const SPECIALS=['akito','kohane'];
+const SPECIAL_INFO={
+ akito:'SPECIAL: giảm 30% toàn bộ VOCAL / RAP / ACT của đối thủ ngay khi kích hoạt.',
+ kohane:'SPECIAL: bắt đầu trận với 100% năng lượng. Kích hoạt: cả đội +45% điểm trong 5 turn đầu và được ưu tiên lượt.'
+};
 let user=null,selectedSong='heart-bouquet',selectedMain=[],selectedSpecial='kohane',mode='practice',energy=1,queue=null,game=null,preview=null,battleAudio=null,matchChannel=null;
 function readUser(){try{return JSON.parse(localStorage.getItem('realyze_user_cache')||'null')}catch{return null}}
 async function hydrateUser(){const d=db();try{const s=await d?.auth?.getSession();if(s?.data?.session?.user?.id){const r=await d.from('profiles').select('id,username,game_data').eq('id',s.data.session.user.id).single();if(!r.error&&r.data){user={...(r.data.game_data||{}),username:r.data.username,_supabaseId:r.data.id};localStorage.setItem('realyze_user_cache',JSON.stringify(user));return user}}}catch(e){console.warn(e)}user=readUser();return user}
@@ -24,14 +28,16 @@ function selectSong(id){selectedSong=id;const s=SONGS.find(x=>x.id===id);if(!s)r
 function stopPreview(){if(preview){preview.pause();preview.currentTime=0;preview.src='';preview=null}}
 function startBattleAudio(){stopPreview();const s=SONGS.find(x=>x.id===selectedSong);if(!s)return;battleAudio=new Audio(s.src);battleAudio.loop=true;battleAudio.volume=.65;battleAudio.play().catch(()=>{})}
 function stopBattleAudio(){if(battleAudio){battleAudio.pause();battleAudio.currentTime=0;battleAudio.src='';battleAudio=null}}
-function renderChars(){const g=$('mainCharacterGrid');const ids=Object.keys(CHARS).filter(owned);g.innerHTML=ids.length?ids.map(id=>{const c=CHARS[id];return `<button class="ep-char-card ${selectedMain.includes(id)?'selected':''}" data-id="${id}"><img src="${c.image}"><strong>${c.name}</strong><small>${c.type} · ${bp(c).toLocaleString()} BP</small></button>`}).join(''):`<div style="grid-column:1/-1;padding:20px;text-align:center;color:#9a8791">No owned event characters yet.</div>`;g.querySelectorAll('[data-id]').forEach(b=>b.onclick=()=>{const id=b.dataset.id;if(selectedMain.includes(id))selectedMain=selectedMain.filter(x=>x!==id);else if(selectedMain.length<3)selectedMain.push(id);renderChars()});$('teamCount').textContent=`${selectedMain.length} / 3`;$('specialCharacterGrid').innerHTML=SPECIALS.map(id=>{const c=CHARS[id];return `<button class="ep-special-card ${selectedSpecial===id?'selected':''}" data-special="${id}"><img src="${c.image}"><strong>${c.name}</strong><small>★${c.rarity} · EVENT SPECIAL</small></button>`}).join('');document.querySelectorAll('[data-special]').forEach(b=>b.onclick=()=>{selectedSpecial=b.dataset.special;renderChars()})}
+function renderChars(){const g=$('mainCharacterGrid');const ids=Object.keys(CHARS).filter(owned);g.innerHTML=ids.length?ids.map(id=>{const c=CHARS[id];return `<button class="ep-char-card ${selectedMain.includes(id)?'selected':''}" data-id="${id}"><img src="${c.image}"><strong>${c.name}</strong><small>${c.type} · ${bp(c).toLocaleString()} BP</small></button>`}).join(''):`<div style="grid-column:1/-1;padding:20px;text-align:center;color:#9a8791">No owned event characters yet.</div>`;g.querySelectorAll('[data-id]').forEach(b=>b.onclick=()=>{const id=b.dataset.id;if(selectedMain.includes(id))selectedMain=selectedMain.filter(x=>x!==id);else if(selectedMain.length<3)selectedMain.push(id);renderChars()});$('teamCount').textContent=`${selectedMain.length} / 3`;$('specialCharacterGrid').innerHTML=SPECIALS.map(id=>{const c=CHARS[id];return `<button class="ep-special-card ${selectedSpecial===id?'selected':''}" data-special="${id}"><img src="${c.image}"><strong>${c.name}</strong><small>★${c.rarity} · EVENT SPECIAL</small><em>${SPECIAL_INFO[id]}</em></button>`}).join('');document.querySelectorAll('[data-special]').forEach(b=>b.onclick=()=>{selectedSpecial=b.dataset.special;renderChars()})}
 function pointsForEnergy(e){return 1349+(e-1)*550}
-function init(){user=readUser();$('epUserId').textContent=user?.username||'PLAYER';$('epEventPoints').textContent=`${Number(user?.eventPoints||0).toLocaleString()} PT`;for(let i=1;i<=10;i++)$('energySelect').insertAdjacentHTML('beforeend',`<option value="${i}">${i} ENERGY</option>`);$('energySelect').onchange=e=>{energy=Number(e.target.value);$('energyGain').textContent=pointsForEnergy(energy).toLocaleString()};document.querySelectorAll('.ep-mode').forEach(b=>b.onclick=()=>{document.querySelectorAll('.ep-mode').forEach(x=>x.classList.remove('active'));b.classList.add('active');mode=b.dataset.mode});$('saveTeam').onclick=startQueue;$('cancelQueue').onclick=cancelQueue;$('epBack').onclick=backEvent;$('resultBack').onclick=backEvent;const saved=user?.eventTeam;if(saved?.main?.length===3)selectedMain=saved.main.filter(owned);if(saved?.special&&SPECIALS.includes(saved.special))selectedSpecial=saved.special;if(user?.eventMusic&&SONGS.some(s=>s.id===user.eventMusic))selectedSong=user.eventMusic;renderSongs();renderChars();$('energyGain').textContent=pointsForEnergy(1).toLocaleString();hydrateUser().then(()=>{renderChars();$('epUserId').textContent=user?.username||'PLAYER';$('epEventPoints').textContent=`${Number(user?.eventPoints||0).toLocaleString()} PT`})}
+function pointsForMode(e){const base=pointsForEnergy(e);return mode==='practice'?Math.floor(base/2):base}
+function refreshModeUI(){const gain=pointsForMode(energy);$('energyGain').textContent=gain.toLocaleString();const training=document.querySelector('[data-mode=practice] span');const player=document.querySelector('[data-mode=player] span');if(training)training.textContent='AI · WIN = 1/2 EVENT POINT · 0 ENERGY';if(player)player.textContent='REGISTERED ID · WIN = FULL EVENT POINT · ENERGY'}
+function init(){user=readUser();$('epUserId').textContent=user?.username||'PLAYER';$('epEventPoints').textContent=`${Number(user?.eventPoints||0).toLocaleString()} PT`;for(let i=1;i<=10;i++)$('energySelect').insertAdjacentHTML('beforeend',`<option value="${i}">${i} ENERGY</option>`);$('energySelect').onchange=e=>{energy=Number(e.target.value);refreshModeUI()};document.querySelectorAll('.ep-mode').forEach(b=>b.onclick=()=>{document.querySelectorAll('.ep-mode').forEach(x=>x.classList.remove('active'));b.classList.add('active');mode=b.dataset.mode;refreshModeUI()});$('saveTeam').onclick=startQueue;$('cancelQueue').onclick=cancelQueue;$('epBack').onclick=backEvent;$('resultBack').onclick=backEvent;const saved=user?.eventTeam;if(saved?.main?.length===3)selectedMain=saved.main.filter(owned);if(saved?.special&&SPECIALS.includes(saved.special))selectedSpecial=saved.special;if(user?.eventMusic&&SONGS.some(s=>s.id===user.eventMusic))selectedSong=user.eventMusic;renderSongs();renderChars();refreshModeUI();hydrateUser().then(()=>{renderChars();$('epUserId').textContent=user?.username||'PLAYER';$('epEventPoints').textContent=`${Number(user?.eventPoints||0).toLocaleString()} PT`;refreshModeUI()})}
 function show(id){['setupView','queueView','battleView'].forEach(x=>$(x).classList.toggle('hidden',x!==id));$('resultView').classList.add('hidden')}
 function backEvent(){stopPreview();stopBattleAudio();if(matchChannel)matchChannel.unsubscribe();location.href='index.html?return=event'}
-async function startQueue(){if(!SONGS.some(s=>s.id===selectedSong)){alert('Hãy chọn bài nhạc.');return}if(selectedMain.length!==3){alert('Hãy chọn đủ 3 nhân vật đã sở hữu.');return}if(mode==='player'&&Number(user?.eventEnergy??0)<energy){alert(`Không đủ Event Energy. Cần ${energy}, hiện có ${Number(user?.eventEnergy??0)}.`);return}await saveLocal();stopPreview();$('queueMode').textContent=mode==='practice'?'TRAINING · AI':'PLAYER MATCHMAKING';$('queueTitle').textContent=mode==='practice'?'BUILDING AI RIVAL...':'SEARCHING FOR A PLAYER...';$('queueText').textContent=mode==='practice'?'Training does not add Event Points or Energy.':`Searching for another registered ID on ${SONGS.find(s=>s.id===selectedSong).name}.`;show('queueView');if(mode==='practice'){setTimeout(()=>startBattle(makeAI()),500);return}await joinMatchmaking()}
+async function startQueue(){if(!SONGS.some(s=>s.id===selectedSong)){alert('Hãy chọn bài nhạc.');return}if(selectedMain.length!==3){alert('Hãy chọn đủ 3 nhân vật đã sở hữu.');return}if(mode==='player'&&Number(user?.eventEnergy??0)<energy){alert(`Không đủ Event Energy. Cần ${energy}, hiện có ${Number(user?.eventEnergy??0)}.`);return}await saveLocal();stopPreview();$('queueMode').textContent=mode==='practice'?'TRAINING · AI':'PLAYER MATCHMAKING';$('queueTitle').textContent=mode==='practice'?'BUILDING AI RIVAL...':'SEARCHING FOR A PLAYER...';$('queueText').textContent=mode==='practice'?'Training awards 1/2 Event Points on victory and uses no Energy.':`Searching for another registered ID on ${SONGS.find(s=>s.id===selectedSong).name}.`;show('queueView');if(mode==='practice'){setTimeout(()=>startBattle(makeAI()),500);return}await joinMatchmaking()}
 function teamSnapshot(){return selectedMain.map(id=>({id,level:level(id),bp:bp(CHARS[id])}))}
-async function joinMatchmaking(){const d=db();if(!d){alert('Supabase chưa sẵn sàng.');show('setupView');return}try{const {data,error}=await d.rpc('event_join_matchmaking',{p_song:selectedSong,p_team:teamSnapshot(),p_special:selectedSpecial,p_energy:energy});if(error)throw error;queue=data;if(queue?.match_id){await loadRemoteMatch(queue.match_id)}else{pollQueue()}}catch(e){console.error(e);alert('Không thể vào hàng chờ: '+(e.message||e));show('setupView')}}
+async function joinMatchmaking(){const d=db();if(!d){alert('Supabase chưa sẵn sàng. Hãy kiểm tra supabase-config.js + supabase-client.js trong cùng thư mục với event-play.html.');show('setupView');return}try{const {data,error}=await d.rpc('event_join_matchmaking',{p_song:selectedSong,p_team:teamSnapshot(),p_special:selectedSpecial,p_energy:energy});if(error)throw error;queue=data;if(queue?.match_id){await loadRemoteMatch(queue.match_id)}else{pollQueue()}}catch(e){console.error(e);alert('Không thể vào hàng chờ: '+(e.message||e));show('setupView')}}
 let pollTimer=null;async function pollQueue(){clearTimeout(pollTimer);const d=db();if(!d)return;try{const {data,error}=await d.from('event_matchmaking_queue').select('match_id,status').eq('user_id',user?._supabaseId).maybeSingle();if(!error&&data?.match_id){await loadRemoteMatch(data.match_id);return}}catch(e){}pollTimer=setTimeout(pollQueue,1500)}
 async function cancelQueue(){clearTimeout(pollTimer);const d=db();try{if(d)await d.rpc('event_leave_matchmaking')}catch(e){}show('setupView')}
 async function loadRemoteMatch(id){const d=db();const {data,error}=await d.from('event_matches').select('*').eq('id',id).single();if(error||!data){alert('Match không tồn tại.');show('setupView');return}const me=user?._supabaseId;const mine=data.player1_id===me?data.player1:data.player2;const opp=data.player1_id===me?data.player2:data.player1;startBattle({remote:true,match:data,mine,opp});matchChannel=d.channel(`event-match-${id}`).on('postgres_changes',{event:'UPDATE',schema:'public',table:'event_matches',filter:`id=eq.${id}`},payload=>applyRemoteState(payload.new)).subscribe()}
@@ -43,7 +49,7 @@ function startBattle(remoteInfo){
  const mineIds=mine.map(x=>typeof x==='string'?x:x.id);
  const myTeam=buildTeam(mineIds),enemyTeam=buildTeam(rivalIds);
  const myMax=Math.max(...myTeam.map(c=>c.bp)),enemyMax=Math.max(...enemyTeam.map(c=>c.bp));
- game={remote:!!remoteInfo.remote,matchId:remoteInfo.match?.id||null,isP1:remoteInfo.remote?remoteInfo.match.player1_id===user?._supabaseId:true,turn:1,activeSide:myMax>=enemyMax?'you':'rival',you:myTeam,rival:enemyTeam,points:{vocal:0,rap:0,act:0},enemy:{vocal:0,rap:0,act:0},special:CHARS[remoteInfo.remote?(remoteInfo.mine?.special||selectedSpecial):selectedSpecial],specialEnergy:0,enemySpecialEnergy:0,buffs:{you:{all:0,vocal:0,rap:0,act:0,self:0,other:0,priority:0,extraTurns:0,skip:0,blessingTurns:0},rival:{all:0,vocal:0,rap:0,act:0,self:0,other:0,priority:0,extraTurns:0,skip:0,blessingTurns:0}},coolYou:{},coolRival:{},opponentName:remoteInfo.remote?(remoteInfo.opp?.username||'PLAYER'):'EVENT AI',song:selectedSong,log:[],rps:null,rpsChoice:null,energy,waitingRemote:false};
+ game={remote:!!remoteInfo.remote,matchId:remoteInfo.match?.id||null,isP1:remoteInfo.remote?remoteInfo.match.player1_id===user?._supabaseId:true,turn:1,activeSide:'you',you:myTeam,rival:enemyTeam,actorIndex:{you:0,rival:0},points:{vocal:0,rap:0,act:0},enemy:{vocal:0,rap:0,act:0},special:CHARS[remoteInfo.remote?(remoteInfo.mine?.special||selectedSpecial):selectedSpecial],specialEnergy:((remoteInfo.remote?(remoteInfo.mine?.special||selectedSpecial):selectedSpecial)==='kohane'?100:0),enemySpecialEnergy:0,buffs:{you:{all:0,allTurns:0,vocal:0,rap:0,act:0,self:0,selfActor:null,other:0,otherSource:null,otherTurns:0,priority:0,extraTurns:0,skip:0,blessingTurns:0},rival:{all:0,allTurns:0,vocal:0,rap:0,act:0,self:0,selfActor:null,other:0,otherSource:null,otherTurns:0,priority:0,extraTurns:0,skip:0,blessingTurns:0}},coolYou:{},coolRival:{},opponentName:remoteInfo.remote?(remoteInfo.opp?.username||'PLAYER'):'EVENT AI',song:selectedSong,log:[],rps:null,rpsChoice:null,energy,waitingRemote:false};
  startBattleAudio();$('battleModeLabel').textContent=game.remote?'PLAYER MATCH':'TRAINING · AI';$('rivalName').textContent=game.opponentName;$('youName').textContent=user?.username||'YOU';$('battleSongName').textContent=SONGS.find(s=>s.id===selectedSong)?.name||'';show('battleView');renderBattle();prepareOpening();
 }
 
@@ -52,7 +58,7 @@ function buildTeam(ids){return ids.map(id=>CHARS[id]).filter(Boolean).map(c=>({.
 function totalScore(s){return s.vocal+s.rap+s.act}
 function renderBattle(){$('turnNumber').textContent=`${Math.min(game.turn,MAX_TURNS)} / ${MAX_TURNS}`;$('youPower').textContent=`${game.you.reduce((a,c)=>a+c.bp,0).toLocaleString()} BP`;$('rivalPower').textContent=`${game.rival.reduce((a,c)=>a+c.bp,0).toLocaleString()} BP`;['vocal','rap','act'].forEach(t=>{const a=game.points[t],b=game.enemy[t];$(`you${cap(t)}`).textContent=a.toLocaleString();$(`rival${cap(t)}`).textContent=b.toLocaleString();$(`you${cap(t)}Bar`).style.width=`${Math.min(100,a/100)}%`;$(`rival${cap(t)}Bar`).style.width=`${Math.min(100,b/100)}%`});$('specialEnergyText').textContent=`${Math.min(100,game.specialEnergy)}%`;$('specialSkill').disabled=game.specialEnergy<100||game.activeSide!=='you'||game.waitingRemote;$('battleLog').innerHTML=game.log.slice(-14).map(x=>`<div class="ep-log-line">${x}</div>`).join('')}
 const cap=x=>x[0].toUpperCase()+x.slice(1);
-function prepareOpening(){if(!game.rps){$('rpsView').classList.remove('hidden');$('skillGrid').innerHTML='';return}$('rpsView').classList.add('hidden');prepareTurn()}
+function prepareOpening(){if(!game.rps){$('rpsView').classList.remove('hidden');$('rpsResult').textContent='';$('skillGrid').innerHTML='';return}$('rpsView').classList.add('hidden');prepareTurn()}
 document.querySelectorAll('[data-rps]').forEach(b=>b.onclick=()=>chooseRPS(b.dataset.rps));
 async function chooseRPS(choice){
  if(game.rps)return;game.rpsChoice=choice;$('rpsResult').textContent=`YOU: ${choice.toUpperCase()} · WAITING FOR RIVAL...`;
@@ -66,30 +72,123 @@ function resolveRemoteRPS(st){
  game.rps=p1First===(game.isP1?'you': 'rival')?'you':'rival';game.activeSide=game.rps;$('rpsResult').textContent=`RPS: ${game.isP1?p1:p2} · ${game.isP1?p2:p1} → ${game.rps==='you'?'YOU GO FIRST':'RIVAL GOES FIRST'}`;game.log.push(`<b>Opening toss:</b> ${game.rps==='you'?'YOU':'RIVAL'} goes first.`);game.waitingRemote=false;prepareOpening()
 }
 
-function actorFor(side){const team=side==='you'?game.you:game.rival;const idx=(game.turn-1)%3;return team[idx]}
+function actorFor(side){const team=side==='you'?game.you:game.rival;let idx=Number(game.actorIndex?.[side]??0)%team.length;return team[idx]}
 function currentSideState(side){return side==='you'?game.buffs.you:game.buffs.rival}
 function currentPoints(side){return side==='you'?game.points:game.enemy}
 function currentCooldowns(side){return side==='you'?game.coolYou:game.coolRival}
 function prepareTurn(){if(game.turn>MAX_TURNS){finishBattle();return}const actor=actorFor(game.activeSide);$('activeOwner').textContent=game.activeSide==='you'?'YOUR TURN':'RIVAL TURN';$('activeCharName').textContent=actor.name;$('activeCharType').textContent=`${actor.type} · BP ${actor.bp.toLocaleString()}`;if(game.activeSide==='you'&&!game.waitingRemote)renderSkills(actor);else{$('skillGrid').innerHTML='<div style="padding:12px;color:#9a8791">Waiting for rival...</div>';if(!game.remote)setTimeout(()=>aiAct(actor),650)}renderBattle()}
 function renderSkills(actor){const cds=currentCooldowns('you');$('skillGrid').innerHTML=actor.skills.map((s,i)=>`<button class="ep-skill" data-skill="${i}" ${cds[actor.id+':'+i]>0?'disabled':''}><b>SKILL ${i+1}</b><span>${s[0]}</span><small>${s[1]} ${cds[actor.id+':'+i]>0?`· CD ${cds[actor.id+':'+i]}`:''}</small></button>`).join('');document.querySelectorAll('[data-skill]').forEach(b=>b.onclick=()=>useSkill(actor,Number(b.dataset.skill)))}
 function addScore(side,type,n){const p=currentPoints(side);p[type]=Math.max(0,p[type]+Math.round(n))}
-function multiplier(side,type,actor){const b=currentSideState(side);return (1+(b.all||0)/100+(b[type]||0)/100+(b.self||0)/100+(b.other&&actor.type!==b.otherSource?b.other/100:0))}
+function multiplier(side,type,actor){const b=currentSideState(side);let m=1;m*=1+(b.all||0)/100;m*=1+(b[type]||0)/100;if(b.self&&b.selfActor===actor.id)m*=1+b.self/100;if(b.other&&b.otherTurns>0&&actor.type!==b.otherSource)m*=1+b.other/100;return m}
 function setCd(side,actor,i,n){currentCooldowns(side)[actor.id+':'+i]=n}
 function tickCds(){[game.coolYou,game.coolRival].forEach(c=>Object.keys(c).forEach(k=>{if(c[k]>0)c[k]--}))}
 function useSkill(actor,i){if(game.activeSide!=='you'||game.waitingRemote)return;applySkill('you',actor,i);endTurn();if(game.remote)syncRemoteState()}
-function applySkill(side,actor,i){const s=actor.skills[i],type=s[3],target=s[4],b=currentSideState(side);let value=s[2]||0,msg=`<b>${actor.name}</b> used ${s[0]}.`;if(type==='point'){let m=multiplier(side,target,actor);if(actor.id==='lumina'&&i===1&&Math.random()<.25){m*=1.3;msg+=' <b>25% BONUS!</b>'}addScore(side,target,value*m)}else if(type==='debuff'){addScore(side,target,value);const enemy=side==='you'?game.enemy:game.points;enemy[target]=Math.max(0,enemy[target]-1100);msg+=' Enemy VOCAL -1,100.';setCd(side,actor,i,3)}else if(type==='teamBuff'||type==='teambuff'){b.all=type==='teambuff'?30:55;setCd(side,actor,i,2);msg+=` Team next action +${b.all}%.`}else if(type==='selfbuff'){addScore(side,target,value*multiplier(side,target,actor));b.self+=15;msg+=' Self score multiplier +15%.'}else if(type==='steal'){b.extraTurns=2;b.self+=100;setCd(side,actor,i,3);msg+=' Akito takes the next 2 allied action slots and gains +200% next action.'}else if(type==='otherbuff'){b.other=15;b.otherSource=actor.type;msg+=' Other-attribute allies gain +15% on their next action.'}else if(type==='priority'){b.priority=1;msg+=' Team gets priority on the next turn.'}game[side==='you'?'specialEnergy':'enemySpecialEnergy']=Math.min(100,game[side==='you'?'specialEnergy':'enemySpecialEnergy']+10);game.log.push(msg);renderBattle()}
-function specialUse(){if(game.specialEnergy<100||game.activeSide!=='you'||game.waitingRemote)return;const c=game.special;if(c.id==='akito'){['vocal','rap','act'].forEach(t=>game.enemy[t]=Math.floor(game.enemy[t]*.7));game.log.push('<b>AKITO SPECIAL</b> — Enemy VOCAL / RAP / ACT reduced by 30%.')}else if(c.id==='kohane'){game.buffs.you.all=45;game.buffs.you.priority=1;game.buffs.you.blessingTurns=5;game.log.push('<b>KOHANE SPECIAL</b> — Team +45% score for the first 5 turns and priority.')}game.specialEnergy=0;endTurn();if(game.remote)syncRemoteState()}
+function applySkill(side,actor,i){
+ const s=actor.skills[i],type=s[3],target=s[4],b=currentSideState(side);let value=s[2]||0,msg=`<b>${actor.name}</b> used ${s[0]}.`;
+ if(type==='point'){
+   let m=multiplier(side,target,actor);
+   if(actor.id==='lumina'&&i===1&&Math.random()<.25){m*=1.3;msg+=' <b>BRIGHT CHANCE ACTIVATED · +30% bonus!</b>';}
+   const aiScale=(side==='rival'&&!game.remote)?.5:1;
+   addScore(side,target,value*m*aiScale);
+   if(b.selfActor===actor.id)b.self=0,b.selfActor=null;
+   if(b.otherTurns>0&&actor.type!==b.otherSource)b.otherTurns--;
+   if(b.allTurns>0)b.allTurns--;
+   if(b.allTurns===0)b.all=0;
+ } else if(type==='debuff'){
+   const aiScale=(side==='rival'&&!game.remote)?.5:1;
+   addScore(side,target,value*multiplier(side,target,actor)*aiScale);
+   const enemy=side==='you'?game.enemy:game.points;enemy[target]=Math.max(0,enemy[target]-1100);msg+=' Enemy VOCAL -1,100.';setCd(side,actor,i,3);
+   if(b.selfActor===actor.id)b.self=0,b.selfActor=null;
+   if(b.otherTurns>0&&actor.type!==b.otherSource)b.otherTurns--;
+   if(b.allTurns>0)b.allTurns--;
+   if(b.allTurns===0)b.all=0;
+ } else if(type==='teambuff'){
+   b.all=30; b.allTurns=2; setCd(side,actor,i,2);msg+=' The next 2 allied scoring actions get +30%.';
+ } else if(type==='teamBuff'){
+   b.all=55; b.allTurns=1; setCd(side,actor,i,2);msg+=' The next allied scoring action gets +55%.';
+ } else if(type==='selfbuff'){
+   const aiScale=(side==='rival'&&!game.remote)?.5:1;
+   addScore(side,target,value*multiplier(side,target,actor)*aiScale);b.self=15;b.selfActor=actor.id;msg+=' Miku next scoring action gets +15%.';
+ } else if(type==='steal'){
+   b.skipAlliedTurns=2;setCd(side,actor,i,3);msg+=' Akito steals the next 2 allied turns; they cannot pick skills. The opponent acts next, then Akito returns with +200% on his next scoring action.';
+ } else if(type==='otherbuff'){
+   b.other=15;b.otherSource=actor.type;b.otherTurns=2;msg+=' Other-attribute allies next scoring action +15%.';
+ } else if(type==='priority'){
+   b.priority=1;msg+=' Team gets priority on the next turn.';
+ }
+ game[side==='you'?'specialEnergy':'enemySpecialEnergy']=Math.min(100,game[side==='you'?'specialEnergy':'enemySpecialEnergy']+10);
+ game.log.push(msg);renderBattle()
+}
+function specialUse(){if(game.specialEnergy<100||game.activeSide!=='you'||game.waitingRemote)return;const c=game.special;if(c.id==='akito'){['vocal','rap','act'].forEach(t=>game.enemy[t]=Math.floor(game.enemy[t]*.7));game.log.push('<b>AKITO SPECIAL</b> — Enemy VOCAL / RAP / ACT reduced by 30%.')}else if(c.id==='kohane'){game.buffs.you.all=45;game.buffs.you.allTurns=5;game.buffs.you.blessingTurns=5;game.buffs.you.priority=1;game.log.push('<b>KOHANE SPECIAL</b> — Team +45% score for the next 5 allied scoring actions and priority.')}game.specialEnergy=0;endTurn();if(game.remote)syncRemoteState()}
 
 $('specialSkill').onclick=specialUse;
 function aiAct(actor){if(game.activeSide!=='rival'||game.remote)return;const choices=actor.skills.map((s,i)=>({i,s})).filter(x=>!currentCooldowns('rival')[actor.id+':'+x.i]);choices.sort((a,b)=>(b.s[2]||0)-(a.s[2]||0));applySkill('rival',actor,(choices[0]||{i:0}).i);endTurn()}
-function endTurn(){tickCds();if(game.buffs.you.blessingTurns>0)game.buffs.you.blessingTurns--;if(game.buffs.rival.blessingTurns>0)game.buffs.rival.blessingTurns--;game.turn++;if(game.turn>MAX_TURNS){finishBattle();return}if(game.buffs.you.extraTurns>0&&game.activeSide==='you'){game.buffs.you.extraTurns--;game.activeSide='you'}else if(game.buffs.rival.extraTurns>0&&game.activeSide==='rival'){game.buffs.rival.extraTurns--;game.activeSide='rival'}else{const other=game.activeSide==='you'?'rival':'you';if(game.buffs[other].priority){game.activeSide=other;game.buffs[other].priority=0}else game.activeSide=other}['you','rival'].forEach(s=>{game.buffs[s].all=0;game.buffs[s].other=0;game.buffs[s].otherSource=null;game.buffs[s].self=0});prepareTurn()}
+function endTurn(){
+ tickCds();
+ const actedSide=game.activeSide;
+ const actedBuff=game.buffs[actedSide];
+ const team=game[actedSide==='you'?'you':'rival'];
+ const actedActor=actorFor(actedSide);
+
+ // Akito Skill 2: the next TWO allied characters lose their turns.
+ // They are skipped from the actor rotation; the opponent then acts,
+ // and the actor rotation resumes from Akito on the next allied turn.
+ const stealCount=Number(actedBuff.skipAlliedTurns||0);
+ if(stealCount>0){
+   game.actorIndex[actedSide]=(game.actorIndex[actedSide]+1+stealCount)%team.length;
+   actedBuff.skipAlliedTurns=0;
+   actedBuff.self=200;
+   actedBuff.selfActor=actedActor.id;
+   game.activeSide=actedSide==='you'?'rival':'you';
+ } else {
+   game.actorIndex[actedSide]=(game.actorIndex[actedSide]+1)%team.length;
+   const other=actedSide==='you'?'rival':'you';
+   if(actedBuff.extraTurns>0){
+     actedBuff.extraTurns--;
+     game.activeSide=actedSide;
+   } else if(game.buffs[other].priority){
+     game.activeSide=other;
+     game.buffs[other].priority=0;
+   } else {
+     game.activeSide=other;
+   }
+ }
+
+ game.turn++;
+ if(game.turn>MAX_TURNS){finishBattle();return}
+ prepareTurn();
+}
+
 async function syncRemoteState(extra={}){
  if(!game.remote)return;const d=db();if(!d)return;game.waitingRemote=true;
- const canonical={turn:game.turn,activeSide:game.activeSide==='you'?(game.isP1?'p1':'p2'):(game.isP1?'p2':'p1'),p1Points:game.isP1?game.points:game.enemy,p2Points:game.isP1?game.enemy:game.points,p1Special:game.isP1?game.specialEnergy:game.enemySpecialEnergy,p2Special:game.isP1?game.enemySpecialEnergy:game.specialEnergy,p1Buffs:game.isP1?game.buffs.you:game.buffs.rival,p2Buffs:game.isP1?game.buffs.rival:game.buffs.you,p1Cool:game.isP1?game.coolYou:game.coolRival,p2Cool:game.isP1?game.coolRival:game.coolYou,log:game.log,rps:extra.rpsChoice?{...(game._remoteRps||{}),[game.isP1?'p1':'p2']:extra.rpsChoice}:(game._remoteRps||null),status:(game.turn>MAX_TURNS?'finished':'active')};
+ const canonical={turn:game.turn,activeSide:game.activeSide==='you'?(game.isP1?'p1':'p2'):(game.isP1?'p2':'p1'),p1Points:game.isP1?game.points:game.enemy,p2Points:game.isP1?game.enemy:game.points,p1Special:game.isP1?game.specialEnergy:game.enemySpecialEnergy,p2Special:game.isP1?game.enemySpecialEnergy:game.specialEnergy,p1Buffs:game.isP1?game.buffs.you:game.buffs.rival,p2Buffs:game.isP1?game.buffs.rival:game.buffs.you,p1Cool:game.isP1?game.coolYou:game.coolRival,p2Cool:game.isP1?game.coolRival:game.coolYou,p1ActorIndex:game.isP1?game.actorIndex.you:game.actorIndex.rival,p2ActorIndex:game.isP1?game.actorIndex.rival:game.actorIndex.you,log:game.log,rps:extra.rpsChoice?{...(game._remoteRps||{}),[game.isP1?'p1':'p2']:extra.rpsChoice}:(game._remoteRps||null),status:(game.turn>MAX_TURNS?'finished':'active')};
  game._remoteRps=canonical.rps;
  const {data,error}=await d.rpc('event_submit_action',{p_match_id:game.matchId,p_state:canonical,p_expected_turn:game.turn});if(error){console.warn(error);game.waitingRemote=false;renderBattle()}
 }
-function applyRemoteState(row){if(!game||!game.remote)return;const st=row.state||{};game.turn=st.turn||game.turn;game.activeSide=(st.activeSide===(game.isP1?'p1':'p2'))?'you':'rival';game.points=game.isP1?(st.p1Points||game.points):(st.p2Points||game.points);game.enemy=game.isP1?(st.p2Points||game.enemy):(st.p1Points||game.enemy);game.specialEnergy=game.isP1?Number(st.p1Special||0):Number(st.p2Special||0);game.enemySpecialEnergy=game.isP1?Number(st.p2Special||0):Number(st.p1Special||0);game.buffs={you:game.isP1?(st.p1Buffs||game.buffs.you):(st.p2Buffs||game.buffs.you),rival:game.isP1?(st.p2Buffs||game.buffs.rival):(st.p1Buffs||game.buffs.rival)};game.coolYou=game.isP1?(st.p1Cool||{}):(st.p2Cool||{});game.coolRival=game.isP1?(st.p2Cool||{}):(st.p1Cool||{});game.log=st.log||game.log;game._remoteRps=st.rps||null;game.waitingRemote=false;if(st.rps)resolveRemoteRPS(st);if(row.status==='finished'){finishBattle(true);return}if(game.rps)prepareTurn();else prepareOpening()}
+function applyRemoteState(row){if(!game||!game.remote)return;const st=row.state||{};game.turn=st.turn||game.turn;game.activeSide=(st.activeSide===(game.isP1?'p1':'p2'))?'you':'rival';game.points=game.isP1?(st.p1Points||game.points):(st.p2Points||game.points);game.enemy=game.isP1?(st.p2Points||game.enemy):(st.p1Points||game.enemy);game.specialEnergy=game.isP1?Number(st.p1Special||0):Number(st.p2Special||0);game.enemySpecialEnergy=game.isP1?Number(st.p2Special||0):Number(st.p1Special||0);game.buffs={you:game.isP1?(st.p1Buffs||game.buffs.you):(st.p2Buffs||game.buffs.you),rival:game.isP1?(st.p2Buffs||game.buffs.rival):(st.p1Buffs||game.buffs.rival)};game.coolYou=game.isP1?(st.p1Cool||{}):(st.p2Cool||{});game.coolRival=game.isP1?(st.p2Cool||{}):(st.p1Cool||{});game.actorIndex={you:Number(game.isP1?st.p1ActorIndex:st.p2ActorIndex)||0,rival:Number(game.isP1?st.p2ActorIndex:st.p1ActorIndex)||0};game.log=st.log||game.log;game._remoteRps=st.rps||null;game.waitingRemote=false;if(st.rps)resolveRemoteRPS(st);if(row.status==='finished'){finishBattle(true);return}if(game.rps)prepareTurn();else prepareOpening()}
 
-function finishBattle(remoteFinish=false){if(game.finished)return;game.finished=true;const a=totalScore(game.points),b=totalScore(game.enemy),win=a>b;const earned=mode==='player'&&win?pointsForEnergy(game.energy):0;if(mode==='player'&&win&&!remoteFinish){user.eventPoints=Math.min(1000000,Number(user.eventPoints||0)+earned);user.eventEnergy=Math.max(0,Number(user.eventEnergy||0)-game.energy);localStorage.setItem('realyze_user_cache',JSON.stringify(user));syncUser()}$('resultTitle').textContent=win?'VICTORY':'DEFEAT';$('resultSub').textContent=win?'Your team has the higher total performance.':'The rival has the higher total performance.';$('resultYou').textContent=a.toLocaleString();$('resultRival').textContent=b.toLocaleString();stopBattleAudio();$('resultPoints').textContent=`+${earned.toLocaleString()}`;$('resultEnergy').textContent=mode==='practice'?'TRAINING · NO ENERGY USED':`ENERGY USED · ${game.energy}`;$('resultView').classList.remove('hidden');stopPreview()}
+function finishBattle(remoteFinish=false){
+ if(game.finished)return;
+ game.finished=true;
+ const a=totalScore(game.points),b=totalScore(game.enemy),win=a>b;
+ const earned=win?pointsForMode(game.energy):0;
+ // The player who wins must receive Event Points even if the opponent's final turn
+ // is the action that closes the remote match.
+ if(win&&!game.rewardApplied){
+   game.rewardApplied=true;
+   user.eventPoints=Math.min(1000000,Number(user.eventPoints||0)+earned);
+   if(mode==='player')user.eventEnergy=Math.max(0,Number(user.eventEnergy||0)-game.energy);
+   localStorage.setItem('realyze_user_cache',JSON.stringify(user));
+   syncUser();
+ }
+ $('resultTitle').textContent=win?'VICTORY':'DEFEAT';
+ $('resultSub').textContent=win?'Your team has the higher total performance.':'The rival has the higher total performance.';
+ $('resultYou').textContent=a.toLocaleString();
+ $('resultRival').textContent=b.toLocaleString();
+ stopBattleAudio();
+ $('resultPoints').textContent=`+${earned.toLocaleString()}`;
+ $('resultEnergy').textContent=mode==='practice'?`TRAINING · 1/2 EVENT POINT · NO ENERGY USED`:`ENERGY USED · ${game.energy}`;
+ $('resultView').classList.remove('hidden');
+ stopPreview();
+}
 init();
