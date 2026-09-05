@@ -29,3 +29,23 @@
 /* FINAL RPS MODAL GUARANTEE */
 #rpsView.ep-rps:not(.hidden){position:fixed!important;inset:0!important;z-index:99999!important;width:100vw!important;height:100vh!important;margin:0!important;padding:24px!important;display:flex!important;align-items:center!important;justify-content:center!important;background:rgba(30,18,25,.68)!important;border:0!important;border-radius:0!important;backdrop-filter:blur(8px)!important}
 #rpsView.ep-rps:not(.hidden) .ep-rps-modal{width:min(560px,92vw)!important;max-height:90vh!important;overflow:auto!important}
+
+
+/* TURN CHARACTER CARD */
+.ep-turn-character-card{display:flex;align-items:center;gap:12px;width:min(100%,430px);margin:14px auto 0;padding:10px;border:1px solid #eadfe5;border-radius:16px;background:linear-gradient(135deg,#fffafd,#fff);box-shadow:0 8px 24px rgba(80,35,55,.06)}
+.ep-turn-character-art{position:relative;flex:0 0 86px;width:86px;height:86px;border-radius:13px;overflow:hidden;background:#fff3f8;border:1px solid #f0dce5}
+.ep-turn-character-art img{width:100%;height:100%;object-fit:cover;display:block}
+.ep-turn-character-wait{position:absolute;inset:auto 0 0;padding:5px 3px;background:rgba(45,25,35,.72);color:#fff;text-align:center;font-size:7px;font-weight:900;letter-spacing:.8px}
+.ep-turn-character-info{min-width:0;display:grid;gap:3px;text-align:left}
+.ep-turn-character-info strong{font-size:15px;letter-spacing:.7px}
+.ep-turn-character-info span{color:#c89a25;font-size:10px;letter-spacing:1px}
+.ep-turn-character-info b{font-size:12px;color:#ff5f9e}
+.ep-turn-character-info small{font-size:8px;color:#9a8791;font-weight:800}
+.ep-skill-wait{min-height:100px;display:grid;place-items:center;border:1px dashed #eadfe5;border-radius:15px;color:#9a8791;font-size:10px;font-weight:900;letter-spacing:1px}
+.ep-leave-overlay{position:fixed;inset:0;z-index:100000;background:rgba(30,18,25,.58);backdrop-filter:blur(8px);display:flex;align-items:center;justify-content:center;padding:20px}
+.ep-leave-overlay.hidden{display:none!important}
+.ep-leave-card{width:min(460px,92vw);padding:28px;border:1px solid #eadfe5;border-radius:24px;background:#fff;text-align:center;box-shadow:0 30px 100px rgba(40,15,30,.3)}
+.ep-leave-card>small{font-size:8px;letter-spacing:2px;color:#ff5f9e;font-weight:900}.ep-leave-card h2{margin:7px 0}.ep-leave-card p{font-size:11px;line-height:1.55;color:#8f7d86}.ep-leave-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:18px}.ep-leave-actions .ep-primary{width:100%}
+@media(max-width:800px){.ep-turn-character-card{width:100%;max-width:none}.ep-turn-character-art{flex-basis:72px;width:72px;height:72px}.ep-leave-actions{grid-template-columns:1fr}}
+
+.ep-turn-character-pair{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px}.ep-turn-character-card{display:flex;align-items:center;gap:12px;padding:12px;border:1px solid #eadfe5;border-radius:16px;background:#fff;min-width:0}.ep-turn-character-card.side-you{border-left:4px solid #ff8eb8}.ep-turn-character-card.side-rival{border-right:4px solid #9f8ae9;flex-direction:row-reverse;text-align:right}.ep-turn-character-art{position:relative;width:86px;height:100px;flex:0 0 86px;border-radius:14px;background:#fff6fa;overflow:hidden;display:flex;align-items:center;justify-content:center}.ep-turn-character-art img{width:100%;height:100%;object-fit:contain}.ep-turn-character-wait{position:absolute;left:5px;right:5px;bottom:5px;padding:4px 3px;border-radius:7px;background:rgba(255,255,255,.92);font-size:7px;font-weight:900;letter-spacing:.5px;color:#ff5f9e}.side-rival .ep-turn-character-wait{color:#7763bd}.ep-turn-character-info{min-width:0}.ep-turn-character-info strong,.ep-turn-character-info span,.ep-turn-character-info b,.ep-turn-character-info small{display:block}.ep-turn-character-info strong{font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.ep-turn-character-info span{color:#f0a83a;font-size:10px;margin:3px 0}.ep-turn-character-info b{font-size:11px}.ep-turn-character-info small{color:#9a8791;font-size:8px;margin-top:3px}.ep-person-icon{font-size:42px;color:#b7aab1;line-height:1}.side-rival .ep-person-icon{transform:scaleX(-1)}@media(max-width:700px){.ep-turn-character-pair{grid-template-columns:1fr}.ep-turn-character-card.side-rival{flex-direction:row;text-align:left}.ep-turn-character-art{width:72px;height:88px;flex-basis:72px}}

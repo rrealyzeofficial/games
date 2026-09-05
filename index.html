@@ -278,13 +278,22 @@
         </div>
 
 
-        <button id="lobbyMusicButton" class="lobby-music-button" type="button" aria-label="Chọn nhạc sảnh chờ">
-            <span class="lobby-music-icon">♫</span>
-            <span class="lobby-music-text">
-                <small>NHẠC SẢNH</small>
-                <strong id="lobbyMusicButtonName">VIRTUAL TO LIVE</strong>
-            </span>
-        </button>
+        <div class="lobby-top-choice-buttons">
+            <button id="lobbyMusicButton" class="lobby-music-button" type="button" aria-label="Chọn nhạc sảnh chờ">
+                <span class="lobby-music-icon">♫</span>
+                <span class="lobby-music-text">
+                    <small>NHẠC SẢNH</small>
+                    <strong id="lobbyMusicButtonName">VIRTUAL TO LIVE</strong>
+                </span>
+            </button>
+            <button id="lobbyCharacterButton" class="lobby-character-button" type="button" aria-label="Chọn background sảnh">
+                <span class="lobby-character-button-icon">♢</span>
+                <span class="lobby-music-text">
+                    <small>BACKGROUND</small>
+                    <strong id="lobbyCharacterButtonName">CHARACTER</strong>
+                </span>
+            </button>
+        </div>
 
         <div class="resource-area">
 
@@ -299,6 +308,13 @@
     <span id="coinCount">10000</span>
     <button class="resource-plus" id="coinPlus">+</button>
 </div>
+
+            <div class="resource energy-resource">
+                <span class="resource-icon energy">⚡</span>
+                <span id="lobbyEnergyCount">100</span>
+                <small id="lobbyEnergyTimer" class="resource-timer">FULL</small>
+                <button class="resource-plus" id="energyPlus">+</button>
+            </div>
 
             <div class="resource">
                 <span class="resource-icon ticket">◇</span>
@@ -639,6 +655,22 @@
     </div>
 
 </div>
+    <!-- ENERGY SHOP -->
+    <div id="energyPopup" class="gem-popup-overlay hidden">
+      <div class="gem-popup energy-popup">
+        <button class="gem-popup-close" id="closeEnergyPopup" type="button">×</button>
+        <div class="gem-popup-deco deco-one">✦</div><div class="gem-popup-deco deco-two">✧</div><div class="gem-popup-deco deco-three">✦</div>
+        <div class="gem-popup-header"><span class="gem-popup-icon">⚡</span><div><span>ENERGY SHOP</span><h2>REFILL <em>ENERGY</em></h2><p>Energy naturally recovers up to 100.</p></div></div>
+        <div class="gem-current"><span>ENERGY HIỆN CÓ</span><strong>⚡ <b id="energyPopupCurrent">100</b></strong></div>
+        <div class="gem-pack-list energy-pack-list">
+          <button class="gem-pack" data-energy-pack="50"><div class="gem-pack-icon">⚡</div><div class="gem-pack-info"><span>SMALL PACK</span><strong>+50</strong><small>ENERGY · 100 GEMS</small></div><div class="gem-pack-arrow">+</div></button>
+          <button class="gem-pack" data-energy-pack="100"><div class="gem-pack-icon">⚡</div><div class="gem-pack-info"><span>MEDIUM PACK</span><strong>+100</strong><small>ENERGY · 220 GEMS</small></div><div class="gem-pack-arrow">+</div></button>
+          <button class="gem-pack premium" data-energy-pack="200"><div class="gem-pack-icon">⚡</div><div class="gem-pack-info"><span>MEGA PACK</span><strong>+200</strong><small>ENERGY · 360 GEMS</small></div><div class="gem-pack-arrow">+</div></button>
+        </div>
+        <div class="gem-popup-success" id="energyPopupSuccess"><span>✓</span><strong>ĐÃ CỘNG ENERGY!</strong><small id="energyPopupSuccessText">+50 ENERGY</small></div>
+      </div>
+    </div>
+
     <!-- =====================================================
          LOBBY MUSIC SELECT
     ===================================================== -->
@@ -654,6 +686,22 @@
                 </div>
             </div>
             <div id="lobbyMusicList" class="lobby-music-list"></div>
+        </div>
+    </div>
+
+    <!-- LOBBY CHARACTER SELECT -->
+    <div id="lobbyCharacterOverlay" class="lobby-character-overlay hidden">
+        <div class="lobby-character-modal" role="dialog" aria-modal="true" aria-labelledby="lobbyCharacterTitle">
+            <button id="closeLobbyCharacter" class="lobby-character-close" type="button" aria-label="Đóng">×</button>
+            <div class="lobby-character-header">
+                <span class="lobby-character-header-icon">♢</span>
+                <div>
+                    <small>LOBBY BACKGROUND</small>
+                    <h2 id="lobbyCharacterTitle">CHỌN NHÂN VẬT</h2>
+                    <p>Chọn một character bạn đã sở hữu làm background sảnh.</p>
+                </div>
+            </div>
+            <div id="lobbyCharacterList" class="lobby-character-list"></div>
         </div>
     </div>
 
@@ -835,11 +883,22 @@
         </span>
     </div>
 
+
+
+    </main>
+
 </section>
 
 
-
-
+<!-- WORLD RANK -->
+<div id="worldRankOverlay" class="world-rank-overlay hidden" aria-hidden="true">
+  <div class="world-rank-modal">
+    <button id="closeWorldRank" class="world-rank-close" type="button">×</button>
+    <div class="world-rank-head"><div><small>REALYZE!! · GLOBAL</small><h2>WORLD RANK</h2><p>TOP 100 · EVENT POINTS</p></div><button id="refreshWorldRank" class="world-rank-refresh" type="button">↻ REFRESH</button></div>
+    <div class="world-rank-table-head"><span>#</span><span>ID</span><span>LVL</span><span>EVENT POINTS</span></div>
+    <div id="worldRankList" class="world-rank-list"><div class="world-rank-empty">LOADING WORLD RANK...</div></div>
+  </div>
+</div>
 
 <!-- =========================================================
      EVENT — SHINE WITHOUT END
@@ -1410,6 +1469,7 @@
         </div>
 
 
+
     </main>
 
 
@@ -1713,8 +1773,8 @@
                 </span>
 
                 <span>
-                    LUMINA
-                    <small>CHARACTER GACHA</small>
+                    HATSUNE MIKU
+                    <small>LIMITED 6★ · RADIANT BRIDE</small>
                 </span>
 
                 <b>CHARACTER</b>
@@ -2026,62 +2086,20 @@
 </section>
 
 <!-- =====================================================
-     CHARACTER LIMITED GACHA
+     MIKU LIMITED GACHA
 ===================================================== -->
 <section id="characterGachaContent" class="gacha-content character-gacha-content hidden">
-
     <div class="gacha-banner-header">
-        <div>
-            <span class="limited-label">LIMITED CHARACTER GACHA</span>
-            <h2>LUMINA <em>STARLIGHT</em></h2>
-            <p>Recruit the limited character LUMINA.</p>
-        </div>
-        <div class="rate-box character-rate-box">
-            <strong>★ CHARACTER RATE</strong>
-            <span>0.33333%</span>
-        </div>
+        <div><span class="limited-label">LIMITED CHARACTER GACHA</span><h2>HATSUNE MIKU <em>RADIANT BRIDE</em></h2><p>Recruit the limited 6★ RAP character HATSUNE MIKU — RADIANT BRIDE.</p></div>
+        <div class="rate-box character-rate-box"><strong>★ CHARACTER RATE</strong><span>0.33333%</span></div>
     </div>
-
     <div class="character-banner-feature">
-        <div class="character-banner-art">
-            <img src="assets/lumina.png" alt="LUMINA" onerror="this.style.display='none';">
-        </div>
-        <div class="character-banner-info">
-            <span>LIMITED CHARACTER</span>
-            <h3>LUMINA</h3>
-            <div class="character-banner-stars">★★★★★★</div>
-            <p>A radiant performer whose rhythm shines across the stage.</p>
-            <div class="character-pity-copy">
-                <strong>MAX PITY — 100 PULLS</strong>
-                <span>Guaranteed LUMINA on the 100th pull. Can appear early.</span>
-            </div>
-        </div>
+        <div class="character-banner-art"><img src="assets/miku1.png" alt="HATSUNE MIKU" onerror="this.style.display='none';"></div>
+        <div class="character-banner-info"><span>LIMITED CHARACTER</span><h3>HATSUNE MIKU</h3><div class="character-banner-stars">★★★★★★</div><p>Radiant Bride — a dazzling 6★ RAP performer.</p><div class="character-pity-copy"><strong>MAX PITY — 100 PULLS</strong><span>Guaranteed HATSUNE MIKU on the 100th pull. Can appear early.</span></div></div>
     </div>
-
-    <section class="gacha-history-box character-pity-box">
-        <div class="gacha-history-header">
-            <div>
-                <span>CHARACTER GACHA STATUS</span>
-                <h3>PITY <strong id="characterPityCount">0</strong> / 100</h3>
-            </div>
-            <span class="gacha-history-note">SINCE LUMINA</span>
-        </div>
-    </section>
-
-    <div class="roll-area">
-        <button id="characterSingleRoll" class="roll-button" type="button">
-            <span>1 ROLL</span>
-            <strong>◆ 160</strong>
-        </button>
-        <button id="characterTenRoll" class="roll-button ten" type="button">
-            <span>10 ROLLS</span>
-            <strong>◆ 1600</strong>
-            <small>10x ATTEMPTS</small>
-        </button>
-    </div>
-
-    <p class="gacha-disclaimer">Rate: 0.33333% per pull. Pity resets only when LUMINA is obtained.</p>
-
+    <section class="gacha-history-box character-pity-box"><div class="gacha-history-header"><div><span>CHARACTER GACHA STATUS</span><h3>PITY <strong id="characterPityCount">0</strong> / 100</h3></div><span class="gacha-history-note">SINCE RADIANT BRIDE</span></div></section>
+    <div class="roll-area"><button id="characterSingleRoll" class="roll-button" type="button"><span>1 ROLL</span><strong>◆ 160</strong></button><button id="characterTenRoll" class="roll-button ten" type="button"><span>10 ROLLS</span><strong>◆ 1600</strong><small>10x ATTEMPTS</small></button></div>
+    <p class="gacha-disclaimer">6★ Rate: 0.33333% per pull. The separate 5★ HATSUNE MIKU (miku.png) may appear at 5% and does NOT reset 6★ pity. Pity resets only when the 6★ RADIANT BRIDE MIKU is obtained.</p>
 </section>
 
 <!-- =====================================================

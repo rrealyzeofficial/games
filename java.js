@@ -18,6 +18,19 @@ window.clearAuth = function(reason) {
 
 const $ = (id) => document.getElementById(id);
 
+function finiteNumber(value, fallback = 0) {
+    const n = Number(value);
+    return Number.isFinite(n) ? n : fallback;
+}
+
+function normalizeLobbyResources(user) {
+    if (!user) return;
+    // Preserve a real zero. Only repair missing/invalid values.
+    if (!Number.isFinite(Number(user.gems))) user.gems = 0;
+    if (!Number.isFinite(Number(user.coins))) user.coins = 0;
+    if (!Number.isFinite(Number(user.tickets))) user.tickets = 0;
+}
+
 
 /* =========================================================
    MOBILE ORIENTATION
@@ -108,7 +121,7 @@ async function apiRequest(path, options = {}) {
     if (path === "/api/user" && method === "PUT") {
         await getDbSession();
         const incoming = body.user || {};
-        const allowed = ['gems','coins','tickets','rank','gachaPity','characterPity','akitoPity','gachaHistory','myCards','myCharacters','characterProgress','selectedCharacterId','eventPoints','eventEnergy','eventClaimedRewards','eventShopPurchases','eventMailbox','eventTeam','eventCardMemory','eventMusic'];
+        const allowed = ['gems','coins','tickets','rank','gachaPity','characterPity','akitoPity','gachaHistory','myCards','myCharacters','characterProgress','selectedCharacterId','lobbyCharacterId','eventPoints','eventEnergy','eventEnergyUpdatedAt','eventClaimedRewards','eventShopPurchases','eventMailbox','eventTeam','eventCardMemory','eventMusic'];
         const session = await getDbSession();
         if (!session?.user?.id) throw new Error("Unauthorized");
 
@@ -1081,6 +1094,74 @@ $("lobbyMusicOverlay")?.addEventListener("click", event => {
 updateLobbyMusicButton();
 
 /* =========================================================
+   LOBBY BACKGROUND CHARACTER SELECTOR
+========================================================= */
+function getLobbyCharacterId(user) {
+    const id = user?.lobbyCharacterId;
+    if (id && isCharacterOwned(id)) return id;
+    // Keep the lobby background independent from the gameplay character.
+    return null;
+}
+
+function applyLobbyCharacterBackground() {
+    const user = getCurrentUser();
+    const lobby = $("lobbyScreen");
+    const name = $("lobbyCharacterButtonName");
+    if (!lobby) return;
+    const id = getLobbyCharacterId(user);
+    const character = id ? CHARACTERS.find(c => c.id === id) : null;
+    if (character?.image) {
+        lobby.style.setProperty("--lobby-character-bg", `url("${character.image}")`);
+        lobby.classList.add("has-lobby-character-bg");
+        if (name) name.textContent = character.name;
+    } else {
+        lobby.style.removeProperty("--lobby-character-bg");
+        lobby.classList.remove("has-lobby-character-bg");
+        if (name) name.textContent = "CHARACTER";
+    }
+}
+
+function renderLobbyCharacterSelector() {
+    const list = $("lobbyCharacterList");
+    if (!list) return;
+    const user = getCurrentUser();
+    if (!user) { list.innerHTML = ""; return; }
+    initGachaData(user);
+    const selectedId = getLobbyCharacterId(user);
+    const owned = getOwnedCharacters().slice().sort((a,b) => Number(b.rarity||0)-Number(a.rarity||0));
+    list.innerHTML = owned.length ? owned.map(character => {
+        const p = getCharacterProgress(character);
+        const selected = character.id === selectedId;
+        return `<button type="button" class="lobby-character-option ${selected ? "active" : ""}" data-lobby-character="${character.id}">
+            <span class="lobby-character-option-art">${character.image ? `<img src="${character.image}" alt="${character.name}">` : "✦"}</span>
+            <span class="lobby-character-option-copy"><small>${getCardStars(Number(character.rarity || 1))} · LV.${p.level}</small><strong>${character.name}</strong><em>${character.main || "VOCAL"} · ${getCharacterStat(character).toLocaleString()} BP</em></span>
+            <span class="lobby-character-option-check">${selected ? "✓" : ""}</span>
+        </button>`;
+    }).join("") : `<div class="lobby-character-empty">NO OWNED CHARACTERS YET</div>`;
+
+    list.querySelectorAll("[data-lobby-character]").forEach(button => {
+        button.addEventListener("click", async () => {
+            const id = button.dataset.lobbyCharacter;
+            if (!isCharacterOwned(id)) return;
+            user.lobbyCharacterId = id;
+            applyLobbyCharacterBackground();
+            renderLobbyCharacterSelector();
+            await updateUser(user);
+            showLobbyToast("LOBBY BACKGROUND", "Đã thay background sảnh.");
+        });
+    });
+}
+
+$("lobbyCharacterButton")?.addEventListener("click", () => {
+    renderLobbyCharacterSelector();
+    $("lobbyCharacterOverlay")?.classList.remove("hidden");
+});
+$("closeLobbyCharacter")?.addEventListener("click", () => $("lobbyCharacterOverlay")?.classList.add("hidden"));
+$("lobbyCharacterOverlay")?.addEventListener("click", event => {
+    if (event.target === $("lobbyCharacterOverlay")) $("lobbyCharacterOverlay").classList.add("hidden");
+});
+
+/* =========================================================
    GAMEPLAY AUDIO STOP
 ========================================================= */
 
@@ -1118,7 +1199,7 @@ function stopGameplayAudio() {
 function setupLobby(user) {
 
     if (!user) return;
-
+    normalizeLobbyResources(user);
 
     $("lobbyUsername")
         .textContent =
@@ -1137,28 +1218,32 @@ function setupLobby(user) {
 
     $("gemCount")
         .textContent =
-        Number(user.gems ?? 5000).toLocaleString();
+        finiteNumber(user.gems, 0).toLocaleString();
 
 
     $("coinCount")
         .textContent =
-        Number(user.coins ?? 10000).toLocaleString();
+        finiteNumber(user.coins, 0).toLocaleString();
 
 
     $("ticketCount")
         .textContent =
-        Number(user.tickets ?? 10).toLocaleString();
+        finiteNumber(user.tickets, 0).toLocaleString();
+
+    ensureEventData(user);
+    updateEnergyUI(user);
 
 
     $("gachaGemCount")
         .textContent =
-        Number(user.gems ?? 5000).toLocaleString();
+        finiteNumber(user.gems, 0).toLocaleString();
 
 
     loadAvatar(
         user.username
     );
     updateDailyAttendanceMini();
+    applyLobbyCharacterBackground();
 }
 
 
@@ -1888,7 +1973,7 @@ const CHARACTERS = [
     {
         id: "miku",
         name: "HATSUNE MIKU",
-        description: "A special 5★ performer available from the LUMINA and AKITO banners.",
+        description: "A special 5★ performer available from character banners.",
         image: "assets/miku.png",
         default: false,
         rarity: 5,
@@ -1898,6 +1983,21 @@ const CHARACTERS = [
         skillName: "COLORFUL VOICE",
         skill: "Event: special performance effects.",
         number: "004"
+    },
+    {
+        id: "miku6",
+        name: "HATSUNE MIKU",
+        description: "Radiant Bride — a dazzling limited 6★ RAP performer.",
+        image: "assets/miku1.png",
+        default: false,
+        rarity: 6,
+        rate: 0.33333,
+        main: "RAP",
+        stat: { base: 21250, perLevel: 620 },
+        skillName: "RADIANT REWARD",
+        skill: "After completing a stage, increases the amount of rewards received by 35%.",
+        rewardMultiplier: 1.35,
+        number: "005"
     }
 ];
 
@@ -3675,17 +3775,25 @@ $("characterBack")?.addEventListener("click", () => {
 });
 
 
-$("rankButton").addEventListener(
-    "click",
-    () => {
-
-        showLobbyToast(
-            "WORLD RANK",
-            "Global ranking is coming soon."
-        );
-
-    }
-);
+async function loadWorldRank(){
+    const list=$("worldRankList");
+    if(!list)return;
+    list.innerHTML='<div class="world-rank-empty">LOADING WORLD RANK...</div>';
+    try{
+        if(!window.REALYZE_DB)throw new Error("Supabase chưa sẵn sàng.");
+        const {data,error}=await window.REALYZE_DB.rpc("event_world_rank",{p_limit:100});
+        if(error)throw error;
+        const rows=Array.isArray(data)?data:[];
+        if(!rows.length){list.innerHTML='<div class="world-rank-empty">NO EVENT RANK DATA YET.</div>';return}
+        list.innerHTML=rows.map(r=>`<div class="world-rank-row"><span class="world-rank-pos">#${Number(r.rank)||0}</span><span class="world-rank-id">${String(r.id||"PLAYER")}</span><span class="world-rank-level">LV.${Number(r.level)||1}</span><span class="world-rank-points">${Number(r.event_points||0).toLocaleString("en-US")} PT</span></div>`).join("");
+    }catch(e){console.warn("WORLD RANK",e);list.innerHTML=`<div class="world-rank-error">WORLD RANK chưa tải được.<br><small>${String(e.message||e)}</small></div>`}
+}
+function openWorldRank(){const o=$("worldRankOverlay");if(!o)return;o.classList.remove("hidden");o.setAttribute("aria-hidden","false");loadWorldRank()}
+function closeWorldRank(){const o=$("worldRankOverlay");if(o){o.classList.add("hidden");o.setAttribute("aria-hidden","true")}}
+$("rankButton").addEventListener("click",openWorldRank);
+$("closeWorldRank")?.addEventListener("click",closeWorldRank);
+$("refreshWorldRank")?.addEventListener("click",loadWorldRank);
+$("worldRankOverlay")?.addEventListener("click",e=>{if(e.target===$("worldRankOverlay"))closeWorldRank()});
 
 
 /* =========================================================
@@ -3711,8 +3819,64 @@ const EVENT_SHOP = [
  {id:"event-gems",title:"GEMS ×100",cost:10,currency:"gems",amount:100,limit:10},
  {id:"event-card-piece",title:"CARD MEMORY ×1",cost:20,currency:"eventCardMemory",amount:1,limit:10}
 ];
-function ensureEventData(user){if(!user)return;if(!Number.isFinite(Number(user.eventPoints)))user.eventPoints=0;user.eventPoints=Math.max(0,Math.min(EVENT_MAX_POINTS,Number(user.eventPoints)));if(!Number.isFinite(Number(user.eventEnergy)))user.eventEnergy=100;user.eventEnergy=Math.max(0,Math.min(100,Number(user.eventEnergy)));if(!Array.isArray(user.eventClaimedRewards))user.eventClaimedRewards=[];if(!user.eventShopPurchases||typeof user.eventShopPurchases!=="object")user.eventShopPurchases={};if(!Array.isArray(user.eventMailbox))user.eventMailbox=[];}
+function ensureEventData(user){if(!user)return;if(!Number.isFinite(Number(user.eventPoints)))user.eventPoints=0;user.eventPoints=Math.max(0,Math.min(EVENT_MAX_POINTS,Number(user.eventPoints)));if(!Number.isFinite(Number(user.eventEnergy)))user.eventEnergy=100;user.eventEnergy=Math.max(0,Number(user.eventEnergy));if(!Number.isFinite(Number(user.eventEnergyUpdatedAt)))user.eventEnergyUpdatedAt=Date.now();recoverEventEnergy(user);if(!Array.isArray(user.eventClaimedRewards))user.eventClaimedRewards=[];if(!user.eventShopPurchases||typeof user.eventShopPurchases!=="object")user.eventShopPurchases={};if(!Array.isArray(user.eventMailbox))user.eventMailbox=[];}
 function getEventLevel(points){return Math.min(100,Math.floor(Number(points||0)/1000)+1)}
+let energyTimerHandle=null;
+function recoverEventEnergy(user){
+    if(!user)return 0;
+    let energy=Number(user.eventEnergy);
+    if(!Number.isFinite(energy))energy=100;
+    let stamp=Number(user.eventEnergyUpdatedAt);
+    if(!Number.isFinite(stamp)||stamp<=0)stamp=Date.now();
+    const now=Date.now(), maxNatural=100, interval=90000;
+    if(energy<maxNatural){
+        const gained=Math.floor((now-stamp)/interval);
+        if(gained>0){energy=Math.min(maxNatural,energy+gained);stamp+=gained*interval;}
+    }else stamp=now;
+    user.eventEnergy=energy; user.eventEnergyUpdatedAt=stamp;
+    return energy;
+}
+function updateEnergyUI(user=getCurrentUser()){
+    if(!user)return;
+    const energy=recoverEventEnergy(user), now=Date.now(), stamp=Number(user.eventEnergyUpdatedAt)||now;
+    const count=$("lobbyEnergyCount"); if(count)count.textContent=energy.toLocaleString("en-US");
+    const popup=$("energyPopupCurrent"); if(popup)popup.textContent=energy.toLocaleString("en-US");
+    const timer=$("lobbyEnergyTimer");
+    if(timer)timer.textContent=energy>=100?'FULL':`${Math.max(0,90000-(now-stamp))/1000|0}s`;
+    if(energyTimerHandle)clearTimeout(energyTimerHandle);
+    energyTimerHandle=setTimeout(()=>updateEnergyUI(getCurrentUser()),1000);
+}
+function openEnergyPopup(){const u=getCurrentUser();if(!u)return;ensureEventData(u);updateEnergyUI(u);$("energyPopup")?.classList.remove("hidden");}
+function closeEnergyPopup(){$("energyPopup")?.classList.add("hidden");}
+async function buyEnergyPack(amount){
+    const u=getCurrentUser(); const costs={50:100,100:220,200:360}; const cost=costs[amount]; if(!u||!cost)return;
+    ensureEventData(u); recoverEventEnergy(u);
+    if(Number(u.gems||0)<cost){ (typeof showLobbyToast==="function"?showLobbyToast:()=>{})("ENERGY SHOP","Không đủ kim cương."); return; }
+    const currentGems = finiteNumber(u.gems, 0);
+    if (currentGems < cost) {
+        (typeof showLobbyToast === "function" ? showLobbyToast : () => {})("ENERGY SHOP", "Không đủ kim cương.");
+        return;
+    }
+    u.gems = currentGems - cost;
+    u.eventEnergy = finiteNumber(u.eventEnergy, 0) + amount;
+    u.eventEnergyUpdatedAt = Date.now();
+    normalizeLobbyResources(u);
+    await updateUser(u);
+    setupLobby(u);
+    updateEnergyUI(u);
+    const text=$("energyPopupSuccessText"); if(text)text.textContent=`+${amount} ENERGY`; const ok=$("energyPopupSuccess"); if(ok){ok.classList.remove('show');void ok.offsetWidth;ok.classList.add('show');clearTimeout(ok._hideTimer);ok._hideTimer=setTimeout(()=>ok.classList.remove('show'),1800);}
+}
+
+// ENERGY SHOP UI
+$("energyPlus")?.addEventListener("click", openEnergyPopup);
+$("closeEnergyPopup")?.addEventListener("click", closeEnergyPopup);
+$("energyPopup")?.addEventListener("click", event => {
+    if (event.target === $("energyPopup")) closeEnergyPopup();
+});
+document.querySelectorAll("[data-energy-pack]").forEach(button => {
+    button.addEventListener("click", () => buyEnergyPack(Number(button.dataset.energyPack)));
+});
+
 function renderEventPage(){
     const user=getCurrentUser();
     if(!user)return;
@@ -3737,10 +3901,10 @@ function renderEventPage(){
     renderEventMailbox();
 }
 function rewardMailboxKey(reward,index){return `event-${reward.points}-${index}`}
-function syncEventMilestoneMail(user){ensureEventData(user);const points=Number(user.eventPoints||0);EVENT_REWARDS.forEach((reward,index)=>{if(points<reward.points)return;const id=rewardMailboxKey(reward,index);if(!user.eventMailbox.some(m=>m.id===id))user.eventMailbox.push({id,points:reward.points,title:reward.title,reward:{...reward},claimed:false,createdAt:Date.now()})})}
+function syncEventMilestoneMail(user){ensureEventData(user);const points=Number(user.eventPoints||0);let changed=false;EVENT_REWARDS.forEach((reward,index)=>{if(points<reward.points)return;const id=rewardMailboxKey(reward,index);if(!user.eventMailbox.some(m=>m.id===id)){user.eventMailbox.push({id,points:reward.points,title:reward.title,reward:{...reward},claimed:false,createdAt:Date.now()});changed=true}});return changed}
 function applyEventReward(user,reward){if(reward.card){user.myCards=Array.isArray(user.myCards)?user.myCards:[];const id=reward.cardId||`event-card-${reward.points}`;if(!user.myCards.some(c=>c&&c.id===id))user.myCards.push({id,name:"SHINING MOMENT",image:"assets/event1.png",rarity:6,type:"event",event:"SHINE WITHOUT END"})}else if(reward.character){user.myCharacters=Array.isArray(user.myCharacters)?user.myCharacters:[];user.characterProgress=user.characterProgress||{};if(!user.myCharacters.includes(reward.characterId)){user.myCharacters.push(reward.characterId);user.characterProgress[reward.characterId]={rank:1,level:1}}else{const p=user.characterProgress[reward.characterId]||{rank:1,level:1};p.rank=Math.min(5,Math.max(1,Number(p.rank)||1)+1);p.level=Math.min(getCharacterMaxLevel(p.rank),Number(p.level)||1);user.characterProgress[reward.characterId]=p}}else if(reward.title==="GEMS")user.gems=Number(user.gems||0)+Number(reward.amount||0);else if(reward.title==="GOLD")user.coins=Number(user.coins||0)+Number(reward.amount||0);else if(reward.title==="EVENT TICKET")user.tickets=Number(user.tickets||0)+Number(reward.amount||0);else if(reward.title==="EVENT GRAND REWARD"){user.gems=Number(user.gems||0)+Number(reward.gems||0);user.coins=Number(user.coins||0)+Number(reward.gold||0);user.tickets=Number(user.tickets||0)+Number(reward.tickets||0)}}
-function renderEventMailbox(){const user=getCurrentUser();if(!user)return;ensureEventData(user);syncEventMilestoneMail(user);const list=$("eventMailboxList"),badge=$("eventMailboxBadge");if(!list)return;const unread=user.eventMailbox.filter(m=>!m.claimed).length;if(badge)badge.textContent=unread?unread:"";list.innerHTML=user.eventMailbox.length?user.eventMailbox.slice().sort((a,b)=>b.points-a.points).map(m=>`<article class="event-mail-row ${m.claimed?"claimed":""}"><div class="event-mail-points">${Number(m.points).toLocaleString()} PT</div><div class="event-mail-copy"><small>SHINE WITHOUT END</small><strong>${m.title}</strong></div><button class="event-mail-claim" data-mail-id="${m.id}" ${m.claimed?"disabled":""}>${m.claimed?"CLAIMED":"CLAIM"}</button></article>`).join(""):`<div class="event-mail-row"><div class="event-mail-copy"><strong>NO EVENT MAIL</strong><span>Milestone rewards will arrive here automatically.</span></div></div>`;list.querySelectorAll('[data-mail-id]').forEach(b=>b.onclick=()=>claimEventMail(b.dataset.mailId));}
-function claimEventMail(id){const user=getCurrentUser();if(!user)return;ensureEventData(user);const mail=user.eventMailbox.find(m=>m.id===id);if(!mail||mail.claimed)return;applyEventReward(user,mail.reward||{});mail.claimed=true;mail.claimedAt=Date.now();updateUser(user);renderEventPage();renderEventMailbox()}
+function renderEventMailbox(){const user=getCurrentUser();if(!user)return;ensureEventData(user);const mailChanged=syncEventMilestoneMail(user);if(mailChanged)updateUser(user);const list=$("eventMailboxList"),badge=$("eventMailboxBadge");if(!list)return;const unread=user.eventMailbox.filter(m=>!m.claimed).length;if(badge)badge.textContent=unread?unread:"";list.innerHTML=user.eventMailbox.length?user.eventMailbox.slice().sort((a,b)=>b.points-a.points).map(m=>`<article class="event-mail-row ${m.claimed?"claimed":""}"><div class="event-mail-points">${Number(m.points).toLocaleString()} PT</div><div class="event-mail-copy"><small>SHINE WITHOUT END</small><strong>${m.title}</strong></div><button class="event-mail-claim" data-mail-id="${m.id}" ${m.claimed?"disabled":""}>${m.claimed?"CLAIMED":"CLAIM"}</button></article>`).join(""):`<div class="event-mail-row"><div class="event-mail-copy"><strong>NO EVENT MAIL</strong><span>Milestone rewards will arrive here automatically.</span></div></div>`;list.querySelectorAll('[data-mail-id]').forEach(b=>b.onclick=()=>claimEventMail(b.dataset.mailId));}
+async function claimEventMail(id){const user=getCurrentUser();if(!user)return;ensureEventData(user);const mail=user.eventMailbox.find(m=>m.id===id);if(!mail||mail.claimed)return;applyEventReward(user,mail.reward||{});mail.claimed=true;mail.claimedAt=Date.now();normalizeLobbyResources(user);await updateUser(user);setupLobby(user);renderEventPage();renderEventMailbox();showLobbyToast("MAILBOX", "Đã nhận phần thưởng.")}
 function renderEventRewards(){const user=getCurrentUser();if(!user)return;ensureEventData(user);syncEventMilestoneMail(user);const points=Number(user.eventPoints||0),list=$("eventRewardsList");if(!list)return;list.innerHTML=EVENT_REWARDS.map((r,i)=>{const unlocked=points>=r.points,claimed=user.eventMailbox.some(m=>m.id===rewardMailboxKey(r,i)&&m.claimed);return `<article class="event-reward-row ${unlocked?"unlocked":"locked"} ${claimed?"claimed":""}"><div class="event-reward-point"><small>POINTS</small><strong>${r.points.toLocaleString()}</strong></div><div class="event-reward-icon ${r.card?"card-reward":r.character?"character-reward":""}">${r.card?'<img src="assets/event1.png" alt="">':r.character?'<img src="assets/kohane.png" alt="">':'✦'}</div><div class="event-reward-copy"><small>${r.card?"EVENT CARD · ★★★★★★":r.character?"EVENT CHARACTER · ★★★★★★":"MILESTONE REWARD"}</small><strong>${r.title}</strong><span>${r.card?"SHINING MOMENT · EVENT LIMITED CARD":r.character?"KOHANE · EVENT CHARACTER":r.title==="EVENT GRAND REWARD"?"GEMS ×2,500 · GOLD ×100,000 · TICKET ×100":`×${r.amount}`}</span></div><button class="event-claim-button" data-event-reward="${i}" ${!unlocked||claimed?"disabled":""}>${claimed?"CLAIMED":unlocked?"IN MAILBOX":"LOCKED"}</button></article>`}).join("")}
 function renderEventShop(){const user=getCurrentUser(),list=$("eventShopList");if(!user||!list)return;ensureEventData(user);list.innerHTML=EVENT_SHOP.map(item=>{const bought=Number(user.eventShopPurchases[item.id]||0),left=Math.max(0,item.limit-bought);return `<article class="event-shop-item"><div><small>EVENT SHOP</small><strong>${item.title}</strong><span>${item.cost.toLocaleString()} EVENT TICKET · ${left} LEFT</span></div><button data-event-shop="${item.id}" ${left<=0?"disabled":""}>EXCHANGE</button></article>`}).join("");list.querySelectorAll('[data-event-shop]').forEach(b=>b.onclick=()=>buyEventShop(b.dataset.eventShop))}
 function buyEventShop(id){const user=getCurrentUser(),item=EVENT_SHOP.find(x=>x.id===id);if(!user||!item)return;ensureEventData(user);const bought=Number(user.eventShopPurchases[id]||0);if(bought>=item.limit){showLobbyToast("EVENT SHOP","Purchase limit reached.");return}if(Number(user.tickets||0)<item.cost){showLobbyToast("EVENT SHOP","Not enough Event Tickets.");return}user.tickets-=item.cost;user.eventShopPurchases[id]=bought+1;if(item.currency==="gems")user.gems=Number(user.gems||0)+item.amount;else if(item.currency==="coins")user.coins=Number(user.coins||0)+item.amount;else user.eventCardMemory=Number(user.eventCardMemory||0)+item.amount;updateUser(user);renderEventPage()}
@@ -3880,12 +4044,13 @@ function getOwnedCharacters() {
     const ownedIds =
         getOwnedCharacterIds();
 
-    return CHARACTERS.filter(
-        character =>
-            ownedIds.includes(
-                character.id
-            )
-    );
+    return CHARACTERS
+        .filter(character => ownedIds.includes(character.id))
+        .sort((a, b) => {
+            const rarityDiff = Number(b.rarity || 0) - Number(a.rarity || 0);
+            if (rarityDiff !== 0) return rarityDiff;
+            return String(a.name || a.id).localeCompare(String(b.name || b.id));
+        });
 }
 
 /* =========================================================
@@ -3898,7 +4063,8 @@ const CHARACTER_INFO = {
     lumina: { base: 13400, perLevel: 245, main: "VOCAL", skillName: "RADIANT VOICE", skill: "Boosts performance score during Skills." },
     akito: { base: 19450, perLevel: 510, main: "ACT", skillName: "REWARD AMPLIFIER", skill: "After completing a stage, increases the amount of stage rewards by 35%.", rewardMultiplier: 1.35 },
     kohane: { base: 21034, perLevel: 410, main: "RAP", skillName: "SHINING REWARD", skill: "After completing a stage, increases the amount of stage rewards by 45%.", rewardMultiplier: 1.45 },
-    miku: { base: 9879, perLevel: 654, main: "VOCAL", skillName: "COLORFUL VOICE", skill: "Event: +15% score multiplier." }
+    miku: { base: 9879, perLevel: 654, main: "VOCAL", skillName: "COLORFUL VOICE", skill: "Event: +15% score multiplier." },
+    miku6: { base: 21250, perLevel: 620, main: "RAP", skillName: "RADIANT REWARD", skill: "After completing a stage, increases the amount of rewards received by 35%.", rewardMultiplier: 1.35 }
 };
 
 function getCharacterProgress(character) {
@@ -4035,7 +4201,11 @@ function renderMyCharacters() {
     if (!user || !grid) return;
 
     initGachaData(user);
-    const owned = getOwnedCharacters();
+    const owned = getOwnedCharacters().slice().sort((a, b) => {
+        const rarityDiff = Number(b.rarity || 0) - Number(a.rarity || 0);
+        if (rarityDiff) return rarityDiff;
+        return String(a.name || "").localeCompare(String(b.name || ""));
+    });
     if (count) count.textContent = owned.length;
     if (total) total.textContent = owned.length;
     grid.innerHTML = "";
@@ -4160,9 +4330,11 @@ const GACHA_ITEMS = [
 ========================================================= */
 
 const GACHA_CHARACTERS = [
-    { id:"lumina", name:"LUMINA", image:"assets/lumina.png", type:"character", rarity:6, rate:0.33333, banner:"character", main:"VOCAL", base:13400, perLevel:245 },
-    { id:"akito", name:"AKITO", image:"assets/akito.png", type:"character", rarity:6, rate:0.33333, banner:"akito", main:"ACT", base:19450, perLevel:510, rewardMultiplier:1.35 },
-    { id:"miku", name:"HATSUNE MIKU", image:"assets/miku.png", type:"character", rarity:5, rate:5, banner:"both", main:"VOCAL", base:9879, perLevel:654 }
+    // 6★ LIMITED RADIANT BRIDE MIKU — separate ID from the original 5★ Miku.
+    { id:"miku6", name:"HATSUNE MIKU", image:"assets/miku1.png", type:"character", rarity:6, rate:0.33333, banner:"character", main:"RAP", base:21250, perLevel:620, rewardMultiplier:1.35 },
+    // Original 5★ Miku. Appears as an off-feature character and never resets 6★ pity.
+    { id:"miku", name:"HATSUNE MIKU", image:"assets/miku.png", type:"character", rarity:5, rate:5, banner:"both", main:"VOCAL", base:9879, perLevel:654 },
+    { id:"akito", name:"AKITO", image:"assets/akito.png", type:"character", rarity:6, rate:0.33333, banner:"akito", main:"ACT", base:19450, perLevel:510, rewardMultiplier:1.35 }
 ];
 /* =========================================================
    GACHA PITY / HISTORY / MY CARD DATA
@@ -5318,7 +5490,7 @@ const gemPopupSuccessText =
 
 const gemPacks =
     document.querySelectorAll(
-        ".gem-pack"
+        '#gemPopup .gem-pack[data-gems]'
     );
 
 
@@ -5877,20 +6049,15 @@ coinPacks.forEach(
 
 
     if (currentUser) {
-
-        usernameInput.value =
-            currentUser.username;
-
-        const returnPage =
-            new URLSearchParams(window.location.search)
-                .get("return");
-
-        if (returnPage === "nowplay") {
-            setupLobby(currentUser); renderNowPlay(); showScreen("nowPlayScreen"); return;
-        }
-        if (returnPage === "event") {
-            setupLobby(currentUser); openEventScreen(); return;
-        }
+        usernameInput.value=currentUser.username;
+        const returnPage=new URLSearchParams(window.location.search).get("return");
+        setupLobby(currentUser);
+        if(returnPage==="event"){openEventScreen();loadRemoteUser().then(remote=>{cacheUser(remote);setupLobby(remote);renderEventPage();}).catch(()=>{});return;}
+        if(returnPage==="nowplay"){renderNowPlay();showScreen("nowPlayScreen");loadRemoteUser().then(remote=>{cacheUser(remote);setupLobby(remote);}).catch(()=>{});return;}
+        // Plain reload: stay in the MAIN lobby instead of showing Login/Event/PLAY.
+        showScreen("lobbyScreen");
+        loadRemoteUser().then(remote=>{cacheUser(remote);setupLobby(remote);}).catch(()=>{});
+        return;
     }
 
     let selectedExchangeCards = new Set();
