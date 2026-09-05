@@ -65,9 +65,58 @@ async function startQueue(){
 }
 function teamSnapshot(){return selectedMain.map(id=>({id,level:level(id),rank:Number(user?.characterProgress?.[id]?.rank)||1,bp:bp(CHARS[id])}))}
 async function joinMatchmaking(){const d=db();if(!d){alert('Supabase chưa sẵn sàng. Hãy kiểm tra supabase-config.js + supabase-client.js trong cùng thư mục với event-play.html.');show('setupView');return}try{const {data,error}=await d.rpc('event_join_matchmaking',{p_song:selectedSong,p_team:teamSnapshot(),p_special:selectedSpecial,p_energy:energy});if(error)throw error;queue=data;if(queue?.match_id){await loadRemoteMatch(queue.match_id)}else{pollQueue()}}catch(e){console.error(e);alert('Không thể vào hàng chờ: '+(e.message||e));show('setupView')}}
-let pollTimer=null;async function pollQueue(){clearTimeout(pollTimer);const d=db();if(!d)return;try{const {data,error}=await d.from('event_matchmaking_queue').select('match_id,status').eq('user_id',user?._supabaseId).maybeSingle();if(!error&&data?.match_id){await loadRemoteMatch(data.match_id);return}}catch(e){}pollTimer=setTimeout(pollQueue,1500)}
-async function cancelQueue(){clearTimeout(pollTimer);const d=db();try{if(d)await d.rpc('event_leave_matchmaking')}catch(e){}show('setupView')}
-async function loadRemoteMatch(id){const d=db();const {data,error}=await d.from('event_matches').select('*').eq('id',id).single();if(error||!data){alert('Match không tồn tại.');show('setupView');return}const me=user?._supabaseId;const mine=data.player1_id===me?data.player1:data.player2;const opp=data.player1_id===me?data.player2:data.player1;startBattle({remote:true,match:data,mine,opp});matchChannel=d.channel(`event-match-${id}`).on('postgres_changes',{event:'UPDATE',schema:'public',table:'event_matches',filter:`id=eq.${id}`},payload=>applyRemoteState(payload.new)).subscribe()}
+let pollTimer=null;let matchPollTimer=null;let matchSyncBusy=false;
+async function pollQueue(){
+ clearTimeout(pollTimer);
+ const d=db();if(!d)return;
+ try{
+  const {data,error}=await d.from('event_matchmaking_queue').select('match_id,status').eq('user_id',user?._supabaseId).maybeSingle();
+  if(!error&&data?.match_id){await loadRemoteMatch(data.match_id);return}
+ }catch(e){}
+ pollTimer=setTimeout(pollQueue,1500)
+}
+async function cancelQueue(){clearTimeout(pollTimer);clearTimeout(matchPollTimer);const d=db();try{if(d)await d.rpc('event_leave_matchmaking')}catch(e){}show('setupView')}
+
+// Realtime is used when available, but the battle must not depend on it.
+// Some Supabase projects have Realtime disabled/not configured for event_matches.
+// Polling the authoritative row is the fallback that guarantees both browsers
+// eventually see the same turn even when postgres_changes does not fire.
+async function pollRemoteMatch(id){
+ clearTimeout(matchPollTimer);
+ const d=db();
+ if(!d||!game?.remote||game.matchId!==id||game.finished)return;
+ try{
+  if(!matchSyncBusy){
+   matchSyncBusy=true;
+   const {data,error}=await d.from('event_matches').select('*').eq('id',id).single();
+   if(!error&&data) applyRemoteState(data);
+  }
+ }catch(e){console.warn('remote match poll',e)}
+ finally{
+  matchSyncBusy=false;
+  if(game?.remote&&game.matchId===id&&!game.finished)matchPollTimer=setTimeout(()=>pollRemoteMatch(id),700);
+ }
+}
+
+async function loadRemoteMatch(id){
+ clearTimeout(pollTimer);clearTimeout(matchPollTimer);
+ const d=db();
+ const {data,error}=await d.from('event_matches').select('*').eq('id',id).single();
+ if(error||!data){alert('Match không tồn tại.');show('setupView');return}
+ const me=user?._supabaseId;
+ const mine=data.player1_id===me?data.player1:data.player2;
+ const opp=data.player1_id===me?data.player2:data.player1;
+ startBattle({remote:true,match:data,mine,opp});
+ // IMPORTANT: hydrate the battle from the server row immediately. The local
+ // browser must never assume it owns the first turn just because it loaded first.
+ if(data.state) applyRemoteState(data);
+ if(matchChannel)try{await matchChannel.unsubscribe()}catch(e){}
+ matchChannel=d.channel(`event-match-${id}`)
+  .on('postgres_changes',{event:'UPDATE',schema:'public',table:'event_matches',filter:`id=eq.${id}`},payload=>applyRemoteState(payload.new))
+  .subscribe();
+ // Realtime is an optimization; polling is the reliable fallback.
+ matchPollTimer=setTimeout(()=>pollRemoteMatch(id),700);
+}
 function makeAI(){const ids=['lumina','akito','kohane'].filter(x=>CHARS[x]);return {username:'EVENT AI',main:ids, special:'kohane',song:selectedSong}}
 function snapshotTeam(arr){return Array.isArray(arr)?arr.map(x=>({...x})):[]}
 function normalizePlayerPayload(value){if(typeof value==='string'){try{return JSON.parse(value)}catch(_){return {}}}return value&&typeof value==='object'?value:{}}
