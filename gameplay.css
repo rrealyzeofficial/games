@@ -435,3 +435,72 @@ button{font:inherit}
   }
   .result-player-xp{padding:7px 9px;margin:6px 0}
 }
+
+
+/* =========================================================
+   RESULT SCREEN MOBILE SCROLL FIX V7
+========================================================= */
+@media (orientation:landscape) and (max-height:700px){
+  .result{
+    position:fixed !important;
+    inset:0 !important;
+    height:var(--app-height,100dvh) !important;
+    box-sizing:border-box;
+    align-items:flex-start !important;
+    justify-content:center !important;
+    overflow-y:auto !important;
+    overflow-x:hidden !important;
+    padding:
+      max(8px,env(safe-area-inset-top))
+      max(10px,env(safe-area-inset-right))
+      max(14px,env(safe-area-inset-bottom))
+      max(10px,env(safe-area-inset-left)) !important;
+    overscroll-behavior-y:contain;
+    -webkit-overflow-scrolling:touch;
+    touch-action:pan-y !important;
+  }
+
+  .result-card{
+    flex:0 0 auto;
+    width:min(700px,96vw) !important;
+    max-height:none !important;
+    height:auto !important;
+    margin:0 auto;
+    padding:14px 16px max(12px,env(safe-area-inset-bottom)) !important;
+    border-radius:18px !important;
+    overflow:visible !important;
+    box-sizing:border-box;
+  }
+
+  .result-card h1{font-size:18px !important}
+  .result-score{font-size:32px !important;margin-top:3px !important}
+  .result-rank{font-size:27px !important}
+  .result-stats{
+    grid-template-columns:repeat(5,minmax(54px,1fr)) !important;
+    gap:5px !important;
+    margin:8px 0 !important;
+  }
+  .result-stats div{padding:6px 3px !important}
+  .result-stats strong{font-size:12px !important}
+
+  .result-player-xp,
+  .result-reward-summary{
+    margin:6px 0 !important;
+    padding:7px 9px !important;
+  }
+
+  .result-skill-summary{
+    max-height:none !important;
+    overflow:visible !important;
+    margin-bottom:7px;
+  }
+
+  #resultBackBtn{
+    position:sticky;
+    bottom:max(0px,env(safe-area-inset-bottom));
+    z-index:5;
+    min-height:44px;
+    margin-top:10px !important;
+    box-shadow:0 -6px 18px rgba(255,255,255,.95);
+  }
+}

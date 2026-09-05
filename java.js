@@ -1579,11 +1579,13 @@ function mergePendingRhythmProgress(user){
     try { pending = JSON.parse(localStorage.getItem("realyze_rhythm_pending") || "null"); } catch(_){}
     if (!pending || !pending.songId) return false;
     const p = getSongRhythmProgress(user, pending.songId);
-    p.bestScore = Math.max(Number(p.bestScore||0), Number(pending.bestScore||0));
+    const oldBestScore = Number(p.bestScore || 0);
+    const incomingBestScore = Number(pending.bestScore || 0);
+    p.bestScore = Math.max(oldBestScore, incomingBestScore);
     p.bestCombo = Math.max(Number(p.bestCombo||0), Number(pending.bestCombo||0));
     p.clearCount = Math.max(Number(p.clearCount||0), Number(pending.clearCount||0));
     p.totalNotes = Math.max(Number(p.totalNotes||0), Number(pending.totalNotes||0));
-    if (pending.bestRank) p.bestRank = pending.bestRank;
+    if (pending.bestRank && incomingBestScore >= oldBestScore) p.bestRank = pending.bestRank;
     ["rank","combo","clear"].forEach(k=>{
         const incoming = pending.claimed?.[k] || [];
         p.claimed[k] = Array.from(new Set([...(p.claimed[k]||[]), ...incoming]));
@@ -1871,12 +1873,32 @@ button.addEventListener(
 }
 
 
+
+function updateNowPlayBestScoreDisplay(song){
+    const user = getCurrentUser();
+    if (!song || !user) return;
+    const progress = getSongRhythmProgress(user, song.id);
+    const value = Number(progress.bestScore || 0).toLocaleString();
+
+    let badge = document.getElementById("nowPlayBestScoreBadge");
+    const detail = document.querySelector(".song-detail-info") || document.querySelector(".song-detail") || document.querySelector(".now-play-detail");
+    if (!badge && detail) {
+        badge = document.createElement("div");
+        badge.id = "nowPlayBestScoreBadge";
+        badge.className = "now-play-best-score-badge";
+        detail.appendChild(badge);
+    }
+    if (badge) badge.innerHTML = `<small>BEST SCORE</small><strong>${value}</strong>`;
+}
+
 function renderNowPlayDetail() {
 
     const song =
         NOW_PLAY_SONGS[selectedNowPlaySong];
 
     if (!song) return;
+
+    updateNowPlayBestScoreDisplay(song);
 
     $("selectedSongNumber").textContent =
         String(selectedNowPlaySong + 1).padStart(2, "0");

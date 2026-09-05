@@ -9773,3 +9773,302 @@ body {
         padding-top:10px !important;
     }
 }
+
+
+/* =========================================================
+   MOBILE LANDSCAPE FIX V7
+   Real phones often report a very wide CSS viewport in landscape,
+   so max-width alone does NOT reliably detect them.
+========================================================= */
+@media (orientation:landscape) and (max-height:700px){
+    html,body{
+        width:100%;
+        height:var(--mobile-app-height,100dvh);
+        overflow:hidden !important;
+        overscroll-behavior:none;
+    }
+
+    .game-screen,
+    .screen{
+        position:fixed !important;
+        inset:0 !important;
+        width:100% !important;
+        height:var(--mobile-app-height,100dvh) !important;
+        max-height:var(--mobile-app-height,100dvh) !important;
+        overflow-x:hidden !important;
+        overflow-y:auto !important;
+        overscroll-behavior-y:contain;
+        -webkit-overflow-scrolling:touch;
+    }
+
+    /* ---------- LOBBY TOP BAR ---------- */
+    .top-bar{
+        position:sticky !important;
+        top:0;
+        z-index:900;
+        height:auto !important;
+        min-height:96px;
+        padding:
+            max(6px,env(safe-area-inset-top))
+            max(10px,env(safe-area-inset-right))
+            7px
+            max(10px,env(safe-area-inset-left)) !important;
+        display:grid !important;
+        grid-template-columns:auto minmax(150px,220px) minmax(0,1fr);
+        grid-template-areas:
+            "logo player resources"
+            "choices choices choices";
+        align-items:center;
+        gap:6px 10px !important;
+        background:rgba(255,255,255,.97);
+        backdrop-filter:none;
+    }
+
+    .mini-logo{
+        grid-area:logo;
+        width:36px;
+        height:36px;
+        font-size:16px;
+        border-radius:11px;
+    }
+    .player-info{
+        grid-area:player;
+        min-width:0;
+        gap:7px;
+    }
+    .avatar-wrap,
+    .avatar-wrap img,
+    #avatarPlaceholder{
+        width:38px;
+        height:38px;
+    }
+    .player-text{
+        min-width:0;
+    }
+    .player-text strong{
+        max-width:130px;
+        overflow:hidden;
+        text-overflow:ellipsis;
+        white-space:nowrap;
+        font-size:11px;
+    }
+    .player-text span{font-size:7px}
+    .player-rank-xp-mini{
+        width:min(130px,28vw) !important;
+        margin-top:3px;
+    }
+
+    .resource-area{
+        grid-area:resources;
+        min-width:0;
+        width:100%;
+        margin-left:0 !important;
+        display:flex !important;
+        overflow-x:auto !important;
+        overflow-y:hidden;
+        gap:6px !important;
+        padding:2px 2px 5px;
+        scroll-snap-type:x proximity;
+        scrollbar-width:none;
+        overscroll-behavior-x:contain;
+        -webkit-overflow-scrolling:touch;
+        touch-action:pan-x;
+    }
+    .resource-area::-webkit-scrollbar{display:none}
+    .resource{
+        flex:0 0 auto;
+        min-width:94px !important;
+        height:34px !important;
+        padding:0 6px !important;
+        gap:5px !important;
+        border-radius:11px;
+        font-size:10px;
+        scroll-snap-align:start;
+    }
+    .energy-resource{min-width:116px !important}
+    .resource-icon{width:19px;height:19px}
+    .resource-plus{width:20px;height:20px;font-size:13px}
+
+    .lobby-top-choice-buttons{
+        grid-area:choices;
+        width:100%;
+        min-width:0;
+        display:grid !important;
+        grid-template-columns:1fr 1fr;
+        gap:7px !important;
+    }
+    .lobby-music-button,
+    .lobby-character-button{
+        width:100% !important;
+        min-width:0 !important;
+        height:34px !important;
+        padding:0 9px !important;
+        border-radius:10px !important;
+    }
+    .lobby-music-text{
+        min-width:0;
+    }
+    .lobby-music-text small{font-size:6px !important}
+    .lobby-music-text strong{
+        display:block;
+        overflow:hidden;
+        text-overflow:ellipsis;
+        white-space:nowrap;
+        font-size:8px !important;
+    }
+
+    /* ---------- LOBBY BODY ---------- */
+    .lobby-main{
+        min-height:auto !important;
+        padding:12px max(12px,env(safe-area-inset-right)) 22px max(12px,env(safe-area-inset-left)) !important;
+        display:grid !important;
+        grid-template-columns:minmax(230px,.9fr) minmax(300px,1.25fr) !important;
+        grid-template-rows:auto auto auto !important;
+        gap:10px 14px !important;
+    }
+    .lobby-title{
+        grid-column:1 !important;
+        grid-row:1 !important;
+        padding-top:5px !important;
+        order:unset !important;
+    }
+    .lobby-title span{font-size:7px}
+    .lobby-title h1{font-size:21px;margin:2px 0 0}
+
+    .lobby-menu{
+        grid-column:1 !important;
+        grid-row:2 !important;
+        align-self:start !important;
+        order:unset !important;
+        display:grid !important;
+        grid-template-columns:1fr 1fr !important;
+        gap:7px !important;
+    }
+    .lobby-menu-button{
+        min-height:66px !important;
+        padding:9px !important;
+        gap:8px !important;
+        border-radius:14px !important;
+    }
+    .menu-icon{
+        width:32px;height:32px;flex-basis:32px;
+        border-radius:10px;font-size:16px;
+    }
+    .menu-text{font-size:11px}
+    .menu-text small{font-size:6px;margin-bottom:2px}
+
+    .character-stage{
+        grid-column:2 !important;
+        grid-row:1 / 3 !important;
+        order:unset !important;
+        min-height:260px !important;
+        height:260px !important;
+        align-self:start !important;
+        border-radius:18px;
+    }
+    .character-stage img{
+        max-height:280px !important;
+        max-width:100% !important;
+        object-fit:contain;
+    }
+    .character-glow{
+        width:250px;height:250px;bottom:0;
+    }
+
+    .event-banner{
+        grid-column:1 / 3 !important;
+        grid-row:3 !important;
+        order:unset !important;
+        min-height:58px !important;
+        margin-top:0 !important;
+        padding:10px 12px !important;
+        border-radius:14px !important;
+    }
+    .event-info strong{font-size:10px}
+    .event-info span{font-size:7px}
+    .event-banner button{
+        min-height:36px;
+        padding:8px 12px !important;
+    }
+
+    /* ---------- NOW PLAY / SONG SELECT ---------- */
+    .song-best-mini{
+        display:block !important;
+        font-size:8px !important;
+    }
+    .song-best-mini b{
+        font-size:9px !important;
+        color:#2f252a !important;
+    }
+    .song-record-mini{
+        min-width:95px;
+        align-items:flex-end;
+    }
+    .song-reward-button{
+        min-height:30px !important;
+        padding:5px 9px !important;
+    }
+
+    /* Popups must scroll inside the visible browser viewport. */
+    .rhythm-reward-overlay,
+    .character-info-overlay,
+    .gem-popup-overlay{
+        position:fixed !important;
+        inset:0 !important;
+        height:var(--mobile-app-height,100dvh) !important;
+        overflow:auto !important;
+        align-items:flex-start !important;
+        padding:
+            max(10px,env(safe-area-inset-top))
+            max(10px,env(safe-area-inset-right))
+            max(14px,env(safe-area-inset-bottom))
+            max(10px,env(safe-area-inset-left)) !important;
+        -webkit-overflow-scrolling:touch;
+    }
+    .rhythm-reward-modal{
+        margin:auto;
+        max-height:none !important;
+    }
+}
+
+/* Ultra-short browser viewport */
+@media (orientation:landscape) and (max-height:460px){
+    .top-bar{min-height:84px !important}
+    .lobby-main{
+        grid-template-columns:minmax(250px,1fr) minmax(280px,1fr) !important;
+    }
+    .character-stage{
+        height:220px !important;
+        min-height:220px !important;
+    }
+    .character-stage img{max-height:235px !important}
+}
+
+.now-play-best-score-badge{
+    display:inline-flex;
+    flex-direction:column;
+    gap:2px;
+    margin-top:8px;
+    padding:7px 10px;
+    border:1px solid #f1d6e1;
+    border-radius:10px;
+    background:#fff7fa;
+}
+.now-play-best-score-badge small{
+    color:#a78e99;
+    font-size:7px;
+    font-weight:900;
+    letter-spacing:1px;
+}
+.now-play-best-score-badge strong{
+    color:#d94e83;
+    font-size:16px;
+    font-weight:900;
+}
+@media (orientation:landscape) and (max-height:700px){
+    .now-play-best-score-badge{
+        margin-top:5px;
+        padding:5px 8px;
+    }
+    .now-play-best-score-badge strong{font-size:13px}
+}
