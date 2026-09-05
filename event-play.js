@@ -122,7 +122,7 @@ function renderActiveCharacter(){
   const img=$(side==='you'?'turnCharacterImageYou':'turnCharacterImageRival');
   const person=$(side==='you'?'turnCharacterPersonYou':'turnCharacterPersonRival');
   const name=$(side==='you'?'turnCharacterNameYou':'turnCharacterNameRival'),stars=$(side==='you'?'turnCharacterStarsYou':'turnCharacterStarsRival'),bpEl=$(side==='you'?'turnCharacterBPYou':'turnCharacterBPRival'),lvl=$(side==='you'?'turnCharacterLevelYou':'turnCharacterLevelRival'),wait=$(side==='you'?'turnCharacterWaitYou':'turnCharacterWaitRival');
-  if(active){if(img){img.classList.remove('hidden');img.src=actor.image;img.alt=actor.name}if(person)person.classList.add('hidden');if(name)name.textContent=actor.name;if(stars)stars.textContent='★'.repeat(actor.rarity||1);if(bpEl)bpEl.textContent=`${Number(actor.bp||0).toLocaleString()} BP`;if(lvl)lvl.textContent=`LV.${actor.level||1} · RANK ${actor.rank||1}`;}else{if(img)img.classList.add('hidden');if(person)person.classList.remove('hidden');if(name)name.textContent=side==='you'?'YOU':'RIVAL';if(stars)stars.textContent='—';if(bpEl)bpEl.textContent='— BP';if(lvl)lvl.textContent='WAITING';}if(wait)wait.textContent=active?'YOUR TURN':'WAIT FOR YOUR TURN';
+  if(active){if(img){img.classList.remove('hidden');img.src=actor.image;img.alt=actor.name}if(person)person.classList.add('hidden');if(name)name.textContent=actor.name;if(stars)stars.textContent='★'.repeat(actor.rarity||1);if(bpEl)bpEl.textContent=`${Number(actor.bp||0).toLocaleString()} BP`;if(lvl)lvl.textContent=`LV.${actor.level||1} · RANK ${actor.rank||1}`;}else{if(img)img.classList.add('hidden');if(person)person.classList.remove('hidden');if(name)name.textContent=side==='you'?'YOU':'RIVAL';if(stars)stars.textContent='—';if(bpEl)bpEl.textContent='— BP';if(lvl)lvl.textContent='WAITING';}if(wait) wait.textContent = side==='you' ? (active ? 'YOUR TURN' : 'WAIT FOR YOUR TURN') : (active ? 'RIVAL IS ACTING' : 'NEXT TURN');
  };
  setSide('you',you,myTurn); setSide('rival',rival,rivalTurn);
 }
@@ -196,7 +196,8 @@ async function syncRemoteState(extra={}){
  if(!game.remote)return;const d=db();if(!d)return;game.waitingRemote=true;
  const canonical={turn:game.turn,activeSide:game.rps?(game.activeSide==='you'?(game.isP1?'p1':'p2'):(game.isP1?'p2':'p1')):null,p1Points:game.isP1?game.points:game.enemy,p2Points:game.isP1?game.enemy:game.points,p1Special:game.isP1?game.specialEnergy:game.enemySpecialEnergy,p2Special:game.isP1?game.enemySpecialEnergy:game.specialEnergy,p1Buffs:game.isP1?game.buffs.you:game.buffs.rival,p2Buffs:game.isP1?game.buffs.rival:game.buffs.you,p1Cool:game.isP1?game.coolYou:game.coolRival,p2Cool:game.isP1?game.coolRival:game.coolYou,p1ActorIndex:game.isP1?game.actorIndex.you:game.actorIndex.rival,p2ActorIndex:game.isP1?game.actorIndex.rival:game.actorIndex.you,log:game.log,rps:extra.rpsChoice?{...(game._remoteRps||{}),[game.isP1?'p1':'p2']:extra.rpsChoice}:(game._remoteRps||null),status:(game.turn>MAX_TURNS?'finished':'active')};
  game._remoteRps=canonical.rps;
- const {data,error}=await d.rpc('event_submit_action',{p_match_id:game.matchId,p_state:canonical,p_expected_turn:game.turn});
+ const expectedTurn = extra.rpsChoice ? game.turn : Math.max(1, game.turn - 1);
+ const {data,error}=await d.rpc('event_submit_action',{p_match_id:game.matchId,p_state:canonical,p_expected_turn:expectedTurn});
  if(error){console.warn(error);game.waitingRemote=true;renderBattle();return}
  game.waitingRemote=extra.rpsChoice?true:game.activeSide!=='you';
  renderBattle();
