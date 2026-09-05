@@ -281,6 +281,10 @@
 
         </div>
 
+        <button id="logoutButton" class="lobby-logout-button" type="button" aria-label="Đăng xuất">
+            <span>↪</span>
+            <b>LOG OUT</b>
+        </button>
 
         <div class="lobby-top-choice-buttons">
             <button id="lobbyMusicButton" class="lobby-music-button" type="button" aria-label="Chọn nhạc sảnh chờ">
@@ -2634,6 +2638,19 @@
 </div>
 
 
+
+
+<div id="logoutOverlay" class="logout-overlay hidden" aria-hidden="true">
+    <div class="logout-card" role="dialog" aria-modal="true" aria-labelledby="logoutTitle">
+        <small>REALYZE!! ACCOUNT</small>
+        <h2 id="logoutTitle">ĐĂNG XUẤT?</h2>
+        <p>Bạn sẽ quay lại màn hình đăng nhập. Tiến trình đã đồng bộ trên tài khoản sẽ không bị xóa.</p>
+        <div class="logout-actions">
+            <button id="logoutCancel" type="button">CANCEL</button>
+            <button id="logoutConfirm" type="button">LOG OUT</button>
+        </div>
+    </div>
+</div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="supabase-config.js"></script>

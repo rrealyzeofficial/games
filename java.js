@@ -6260,6 +6260,78 @@ coinPacks.forEach(
     }
 );
 
+
+/* =========================================================
+   EXPLICIT LOG OUT
+   Separate from clearAuth(): clearAuth is intentionally blocked elsewhere
+   to prevent random errors from throwing the player back to Login.
+========================================================= */
+function openLogoutConfirm(){
+    const overlay=$("logoutOverlay");
+    if(!overlay)return;
+    overlay.classList.remove("hidden");
+    overlay.setAttribute("aria-hidden","false");
+}
+
+function closeLogoutConfirm(){
+    const overlay=$("logoutOverlay");
+    if(!overlay)return;
+    overlay.classList.add("hidden");
+    overlay.setAttribute("aria-hidden","true");
+}
+
+async function performExplicitLogout(){
+    const confirmBtn=$("logoutConfirm");
+    if(confirmBtn){
+        confirmBtn.disabled=true;
+        confirmBtn.textContent="LOGGING OUT...";
+    }
+
+    try{
+        // This is a user-requested logout, so it is allowed to end the Supabase session.
+        if(window.REALYZE_DB?.auth){
+            const {error}=await window.REALYZE_DB.auth.signOut();
+            if(error)console.warn("Supabase signOut:",error);
+        }
+    }catch(error){
+        console.warn("Logout signOut failed:",error);
+    }
+
+    // Clear only session/account cache keys. Persistent local preferences/assets stay.
+    localStorage.removeItem("realyze_current_user");
+    localStorage.removeItem("realyze_auth_token");
+    localStorage.removeItem("realyze_user_cache");
+    localStorage.removeItem("realyze_rhythm_pending");
+
+    // Remove return=event / return=nowplay so login cannot bounce straight back.
+    try{
+        history.replaceState(null,"",location.pathname);
+    }catch(_){}
+
+    closeLogoutConfirm();
+
+    // Reset login form/UI without depending on the anti-auto-logout clearAuth override.
+    try{
+        setAuthMode("login");
+        if(typeof usernameInput!=="undefined"&&usernameInput)usernameInput.value="";
+        if(typeof passwordInput!=="undefined"&&passwordInput)passwordInput.value="";
+        showScreen("loginScreen");
+    }catch(_){
+        location.href="index.html";
+    }
+}
+
+$("logoutButton")?.addEventListener("click",openLogoutConfirm);
+$("logoutCancel")?.addEventListener("click",closeLogoutConfirm);
+$("logoutConfirm")?.addEventListener("click",performExplicitLogout);
+$("logoutOverlay")?.addEventListener("click",event=>{
+    if(event.target===$("logoutOverlay"))closeLogoutConfirm();
+});
+document.addEventListener("keydown",event=>{
+    if(event.key==="Escape"&&!$("logoutOverlay")?.classList.contains("hidden"))closeLogoutConfirm();
+});
+
+
 /* =========================================================
    AUTO INITIALIZE
 ========================================================= */
