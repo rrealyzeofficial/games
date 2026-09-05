@@ -17,6 +17,7 @@ const SPECIAL_INFO={
  kohane:'SPECIAL: bắt đầu trận với 100% năng lượng. Kích hoạt: cả đội +45% điểm trong 5 turn đầu và được ưu tiên lượt.'
 };
 let user=null,selectedSong='heart-bouquet',selectedMain=[],selectedSpecial='kohane',mode='practice',energy=1,queue=null,game=null,preview=null,battleAudio=null,matchChannel=null;
+let pollTimer=null,matchPollTimer=null,matchSyncBusy=false,remoteWriteBusy=false;
 function readUser(){try{return JSON.parse(localStorage.getItem('realyze_user_cache')||'null')}catch{return null}}
 async function hydrateUser(){const d=db();try{const s=await d?.auth?.getSession();if(s?.data?.session?.user?.id){const r=await d.from('profiles').select('id,username,game_data').eq('id',s.data.session.user.id).single();if(!r.error&&r.data){user={...(r.data.game_data||{}),username:r.data.username,_supabaseId:r.data.id};localStorage.setItem('realyze_user_cache',JSON.stringify(user));return user}}}catch(e){console.warn(e)}user=readUser();return user}
 function owned(id){return Array.isArray(user?.myCharacters)&&user.myCharacters.includes(id)}
@@ -39,7 +40,7 @@ function openLeaveModal(){const m=$('leaveMatchModal');if(m)m.classList.remove('
 function closeLeaveModal(){const m=$('leaveMatchModal');if(m)m.classList.add('hidden')}
 async function leaveRemoteMatch(){if(!game?.remote||!game.matchId){backEvent();return}const d=db();try{await d?.rpc('event_leave_match',{p_match_id:game.matchId})}catch(e){console.warn('leave match',e)}backEvent()}
 function handleBattleBack(){if(game&&!game.finished){openLeaveModal();return}backEvent()}
-function backEvent(){stopPreview();stopBattleAudio();if(matchChannel)matchChannel.unsubscribe();location.href='index.html?return=event'}
+function backEvent(){stopPreview();stopBattleAudio();clearTimeout(pollTimer);clearTimeout(matchPollTimer);if(matchChannel)matchChannel.unsubscribe();location.href='index.html?return=event'}
 function ensureEventData(u){if(!u)return;u.eventPoints=Math.max(0,Math.min(1000000,Number(u.eventPoints)||0));u.eventEnergy=Math.max(0,Number(u.eventEnergy??100));u.eventEnergyUpdatedAt=Number(u.eventEnergyUpdatedAt)||Date.now();u.eventClaimedRewards=Array.isArray(u.eventClaimedRewards)?u.eventClaimedRewards:[];u.eventShopPurchases=(u.eventShopPurchases&&typeof u.eventShopPurchases==='object')?u.eventShopPurchases:{};u.eventMailbox=Array.isArray(u.eventMailbox)?u.eventMailbox:[]}
 function recoverEventEnergy(u){if(!u)return 0;const maxNatural=100,interval=90000,now=Date.now();let en=Math.max(0,Number(u.eventEnergy)||0),stamp=Number(u.eventEnergyUpdatedAt)||now;if(en<maxNatural){const gained=Math.floor(Math.max(0,now-stamp)/interval);if(gained>0){en=Math.min(maxNatural,en+gained);stamp+=gained*interval}}else stamp=now;u.eventEnergy=en;u.eventEnergyUpdatedAt=stamp;return en}
 async function startQueue(){
@@ -65,7 +66,6 @@ async function startQueue(){
 }
 function teamSnapshot(){return selectedMain.map(id=>({id,level:level(id),rank:Number(user?.characterProgress?.[id]?.rank)||1,bp:bp(CHARS[id])}))}
 async function joinMatchmaking(){const d=db();if(!d){alert('Supabase chưa sẵn sàng. Hãy kiểm tra supabase-config.js + supabase-client.js trong cùng thư mục với event-play.html.');show('setupView');return}try{const {data,error}=await d.rpc('event_join_matchmaking',{p_song:selectedSong,p_team:teamSnapshot(),p_special:selectedSpecial,p_energy:energy});if(error)throw error;queue=data;if(queue?.match_id){await loadRemoteMatch(queue.match_id)}else{pollQueue()}}catch(e){console.error(e);alert('Không thể vào hàng chờ: '+(e.message||e));show('setupView')}}
-let pollTimer=null;let matchPollTimer=null;let matchSyncBusy=false;
 async function pollQueue(){
  clearTimeout(pollTimer);
  const d=db();if(!d)return;
@@ -89,7 +89,15 @@ async function pollRemoteMatch(id){
   if(!matchSyncBusy){
    matchSyncBusy=true;
    const {data,error}=await d.from('event_matches').select('*').eq('id',id).single();
-   if(!error&&data) applyRemoteState(data);
+   if(!error&&data){
+    applyRemoteState(data);
+    const rs=data.state?.rps;
+    const mineChoice=game?.rpsChoice;
+    const mineKey=game?.isP1?'p1':'p2';
+    if(game&&!game.rps&&mineChoice&&rs&&rs[mineKey]!==mineChoice&&!remoteWriteBusy){
+      syncRemoteState({rpsChoice:mineChoice});
+    }
+   }
   }
  }catch(e){console.warn('remote match poll',e)}
  finally{
@@ -138,7 +146,7 @@ function startBattle(remoteInfo){
  const mineMeta=remoteInfo.remote?normalizePlayerPayload(remoteInfo.mine):{};
  const mySpecial=mineMeta?.special||selectedSpecial;
  const enemyMeta=remoteInfo.remote?normalizePlayerPayload(remoteInfo.opp):{};
- game={remote:!!remoteInfo.remote,matchId:remoteInfo.match?.id||null,isP1:remoteInfo.remote?remoteInfo.match.player1_id===user?._supabaseId:true,turn:1,activeSide:'you',you:myTeam,rival:enemyTeam,actorIndex:{you:0,rival:0},points:{vocal:0,rap:0,act:0},enemy:{vocal:0,rap:0,act:0},special:CHARS[mySpecial],specialEnergy:(mySpecial==='kohane'?100:0),enemySpecialEnergy:0,buffs:{you:{all:0,allTurns:0,vocal:0,rap:0,act:0,self:0,selfActor:null,other:0,otherSource:null,otherTurns:0,priority:0,extraTurns:0,skip:0,skipAlliedTurns:0,blessingTurns:0},rival:{all:0,allTurns:0,vocal:0,rap:0,act:0,self:0,selfActor:null,other:0,otherSource:null,otherTurns:0,priority:0,extraTurns:0,skip:0,skipAlliedTurns:0,blessingTurns:0}},coolYou:{},coolRival:{},opponentName:remoteInfo.remote?(enemyMeta?.username||'PLAYER'):'EVENT AI',song:selectedSong,log:[],rps:null,rpsChoice:null,energy:Number(remoteInfo.remote?mineMeta?.energy:energy)||energy,waitingRemote:false,forfeit:null};
+ game={remote:!!remoteInfo.remote,matchId:remoteInfo.match?.id||null,isP1:remoteInfo.remote?remoteInfo.match.player1_id===user?._supabaseId:true,turn:1,activeSide:remoteInfo.remote?null:'you',you:myTeam,rival:enemyTeam,actorIndex:{you:0,rival:0},points:{vocal:0,rap:0,act:0},enemy:{vocal:0,rap:0,act:0},special:CHARS[mySpecial],specialEnergy:(mySpecial==='kohane'?100:0),enemySpecialEnergy:0,buffs:{you:{all:0,allTurns:0,vocal:0,rap:0,act:0,self:0,selfActor:null,other:0,otherSource:null,otherTurns:0,priority:0,extraTurns:0,skip:0,skipAlliedTurns:0,blessingTurns:0},rival:{all:0,allTurns:0,vocal:0,rap:0,act:0,self:0,selfActor:null,other:0,otherSource:null,otherTurns:0,priority:0,extraTurns:0,skip:0,skipAlliedTurns:0,blessingTurns:0}},coolYou:{},coolRival:{},opponentName:remoteInfo.remote?(enemyMeta?.username||'PLAYER'):'EVENT AI',song:selectedSong,log:[],rps:null,rpsChoice:null,energy:Number(remoteInfo.remote?mineMeta?.energy:energy)||energy,waitingRemote:!!remoteInfo.remote,forfeit:null};
  startBattleAudio();$('battleModeLabel').textContent=game.remote?'PLAYER MATCH':'TRAINING · AI';$('rivalName').textContent=game.opponentName;$('youName').textContent=user?.username||'YOU';$('battleSongName').textContent=SONGS.find(s=>s.id===selectedSong)?.name||'';show('battleView');renderBattle();prepareOpening();
 }
 
@@ -242,46 +250,143 @@ function endTurn(){
 }
 
 async function syncRemoteState(extra={}){
- if(!game.remote)return;const d=db();if(!d)return;game.waitingRemote=true;
- const canonical={turn:game.turn,activeSide:game.rps?(game.activeSide==='you'?(game.isP1?'p1':'p2'):(game.isP1?'p2':'p1')):null,p1Points:game.isP1?game.points:game.enemy,p2Points:game.isP1?game.enemy:game.points,p1Special:game.isP1?game.specialEnergy:game.enemySpecialEnergy,p2Special:game.isP1?game.enemySpecialEnergy:game.specialEnergy,p1Buffs:game.isP1?game.buffs.you:game.buffs.rival,p2Buffs:game.isP1?game.buffs.rival:game.buffs.you,p1Cool:game.isP1?game.coolYou:game.coolRival,p2Cool:game.isP1?game.coolRival:game.coolYou,p1ActorIndex:game.isP1?game.actorIndex.you:game.actorIndex.rival,p2ActorIndex:game.isP1?game.actorIndex.rival:game.actorIndex.you,log:game.log,rps:extra.rpsChoice?{...(game._remoteRps||{}),[game.isP1?'p1':'p2']:extra.rpsChoice}:(game._remoteRps||null),status:(game.turn>MAX_TURNS?'finished':'active')};
- game._remoteRps=canonical.rps;
- const expectedTurn = extra.rpsChoice ? game.turn : Math.max(1, game.turn - 1);
- const {data,error}=await d.rpc('event_submit_action',{p_match_id:game.matchId,p_state:canonical,p_expected_turn:expectedTurn});
- if(error){console.warn(error);game.waitingRemote=true;renderBattle();return}
- game.waitingRemote=extra.rpsChoice?true:game.activeSide!=='you';
+ if(!game?.remote)return;
+ const d=db();
+ if(!d)return;
+ if(remoteWriteBusy)return;
+ remoteWriteBusy=true;
+ game.waitingRemote=true;
  renderBattle();
+ try{
+  // IMPORTANT: never build a remote update from an old local copy alone.
+  // Read the newest match first so the second RPS player cannot accidentally
+  // overwrite the first player's RPS choice with a state containing only theirs.
+  const latest=await d.from('event_matches').select('*').eq('id',game.matchId).single();
+  if(latest.error||!latest.data)throw latest.error||new Error('MATCH STATE NOT FOUND');
+  const serverRow=latest.data;
+  const serverState=serverRow.state&&typeof serverRow.state==='object'?serverRow.state:{};
+
+  if(extra.rpsChoice){
+   const mergedRps={...(serverState.rps||{}),...(game._remoteRps||{}),[game.isP1?'p1':'p2']:extra.rpsChoice};
+   const serverTurn=Number(serverState.turn)||game.turn||1;
+   const canonical={
+    ...serverState,
+    turn:serverTurn,
+    activeSide:serverState.activeSide??null,
+    p1Points:serverState.p1Points||(game.isP1?game.points:game.enemy),
+    p2Points:serverState.p2Points||(game.isP1?game.enemy:game.points),
+    p1Special:serverState.p1Special??(game.isP1?game.specialEnergy:game.enemySpecialEnergy),
+    p2Special:serverState.p2Special??(game.isP1?game.enemySpecialEnergy:game.specialEnergy),
+    p1Buffs:serverState.p1Buffs|| (game.isP1?game.buffs.you:game.buffs.rival),
+    p2Buffs:serverState.p2Buffs|| (game.isP1?game.buffs.rival:game.buffs.you),
+    p1Cool:serverState.p1Cool|| (game.isP1?game.coolYou:game.coolRival),
+    p2Cool:serverState.p2Cool|| (game.isP1?game.coolRival:game.coolYou),
+    p1ActorIndex:serverState.p1ActorIndex??(game.isP1?game.actorIndex.you:game.actorIndex.rival),
+    p2ActorIndex:serverState.p2ActorIndex??(game.isP1?game.actorIndex.rival:game.actorIndex.you),
+    log:serverState.log||game.log,
+    rps:mergedRps,
+    status:'active'
+   };
+   game._remoteRps=mergedRps;
+   const {data,error}=await d.rpc('event_submit_action',{p_match_id:game.matchId,p_state:canonical,p_expected_turn:serverTurn});
+   if(error)throw error;
+   // Resolve locally as soon as both choices are present. The next polling/
+   // realtime update will carry the same pair to the other browser.
+   if(mergedRps.p1&&mergedRps.p2){
+    applyRemoteState({...serverRow,state:canonical,status:'active'});
+   }else{
+    game.waitingRemote=true;
+    $('rpsResult').textContent=`YOU: ${extra.rpsChoice.toUpperCase()} · WAITING FOR RIVAL...`;
+    renderBattle();
+   }
+   return;
+  }
+
+  // Normal skill/turn update. Only submit while this browser actually owns
+  // the turn. This prevents a stale browser tab from sending a second action.
+  const serverActive=serverState.activeSide;
+  const myServerSide=game.isP1?'p1':'p2';
+  if(serverActive&&serverActive!==myServerSide){
+   applyRemoteState(serverRow);
+   return;
+  }
+  const serverTurn=Number(serverState.turn)||1;
+  const expectedTurn=Math.max(1,game.turn-1);
+  if(serverTurn!==expectedTurn && serverTurn!==game.turn){
+   applyRemoteState(serverRow);
+   return;
+  }
+  const canonical={
+   ...serverState,
+   turn:game.turn,
+   activeSide:game.activeSide==='you'?myServerSide:(myServerSide==='p1'?'p2':'p1'),
+   p1Points:game.isP1?game.points:structuredClone(serverState.p1Points||game.enemy),
+   p2Points:game.isP1?structuredClone(serverState.p2Points||game.enemy):game.points,
+   p1Special:game.isP1?game.specialEnergy:Number(serverState.p1Special??game.enemySpecialEnergy),
+   p2Special:game.isP1?Number(serverState.p2Special??game.enemySpecialEnergy):game.specialEnergy,
+   p1Buffs:game.isP1?game.buffs.you:structuredClone(serverState.p1Buffs||game.buffs.rival),
+   p2Buffs:game.isP1?structuredClone(serverState.p2Buffs||game.buffs.rival):game.buffs.you,
+   p1Cool:game.isP1?game.coolYou:structuredClone(serverState.p1Cool||game.coolRival),
+   p2Cool:game.isP1?structuredClone(serverState.p2Cool||game.coolRival):game.coolYou,
+   p1ActorIndex:game.isP1?game.actorIndex.you:Number(serverState.p1ActorIndex??game.actorIndex.rival),
+   p2ActorIndex:game.isP1?Number(serverState.p2ActorIndex??game.actorIndex.rival):game.actorIndex.you,
+   log:game.log,
+   rps:game._remoteRps||serverState.rps||null,
+   status:(game.turn>MAX_TURNS?'finished':'active')
+  };
+  const {data,error}=await d.rpc('event_submit_action',{p_match_id:game.matchId,p_state:canonical,p_expected_turn:expectedTurn});
+  if(error)throw error;
+  game.waitingRemote=game.activeSide!=='you';
+  renderBattle();
+ }catch(error){
+  console.warn('remote state sync',error);
+  // Do not leave the UI permanently locked on a failed write. The polling
+  // loop will fetch the authoritative state again.
+  game.waitingRemote=true;
+  renderBattle();
+ }finally{
+  remoteWriteBusy=false;
+ }
 }
 function applyRemoteState(row){
- if(!game||!game.remote)return;
- const st=row.state||{};
+ if(!game||!game.remote||!row)return;
+ const st=row.state&&typeof row.state==='object'?row.state:{};
  if(row.status==='forfeit'){
-   const winner=st.forfeit_winner, leaver=st.forfeit_by, half=Number(st.forfeit_points)||0;
-   const iWon=winner===user?._supabaseId;
-   game.forfeit={winner,leaver,points:half,iWon};
-   game.finished=true;
-   $('resultTitle').textContent=iWon?'VICTORY':'DEFEAT';
-   $('resultSub').textContent=iWon?'The rival forfeited. You receive 1/2 Event Points.':'You left the match.';
-   $('resultYou').textContent=totalScore(game.points).toLocaleString();
-   $('resultRival').textContent=totalScore(game.enemy).toLocaleString();
-   $('resultPoints').textContent=iWon?`+${half.toLocaleString()}`:'+0';
-   $('resultEnergy').textContent=iWon?'RIVAL FORFEITED · 1/2 EVENT POINT':'MATCH LEFT';
-   stopBattleAudio();$('resultView').classList.remove('hidden');
-   setTimeout(backEvent,1800);
-   return;
+  const winner=st.forfeit_winner, leaver=st.forfeit_by, half=Number(st.forfeit_points)||0;
+  const iWon=winner===user?._supabaseId;
+  game.forfeit={winner,leaver,points:half,iWon}; game.finished=true;
+  $('resultTitle').textContent=iWon?'VICTORY':'DEFEAT';
+  $('resultSub').textContent=iWon?'The rival forfeited. You receive 1/2 Event Points.':'You left the match.';
+  $('resultYou').textContent=totalScore(game.points).toLocaleString();
+  $('resultRival').textContent=totalScore(game.enemy).toLocaleString();
+  $('resultPoints').textContent=iWon?`+${half.toLocaleString()}`:'+0';
+  $('resultEnergy').textContent=iWon?'RIVAL FORFEITED · 1/2 EVENT POINT':'MATCH LEFT';
+  stopBattleAudio();$('resultView').classList.remove('hidden');setTimeout(backEvent,1800);return;
  }
- game.turn=Number(st.turn)||game.turn;
+ const incomingTurn=Number(st.turn)||1;
+ // A delayed Realtime/poll response must never roll a browser back to an older
+ // turn after it has just submitted a valid action.
+ if(game._lastRemoteTurn!=null && incomingTurn<game._lastRemoteTurn)return;
+ game._lastRemoteTurn=incomingTurn;
+ game.turn=incomingTurn;
  if(st.activeSide)game.activeSide=(st.activeSide===(game.isP1?'p1':'p2'))?'you':'rival';
  game.points=game.isP1?structuredClone(st.p1Points||game.points):structuredClone(st.p2Points||game.points);
  game.enemy=game.isP1?structuredClone(st.p2Points||game.enemy):structuredClone(st.p1Points||game.enemy);
  game.specialEnergy=game.isP1?Number(st.p1Special??game.specialEnergy):Number(st.p2Special??game.specialEnergy);
  game.enemySpecialEnergy=game.isP1?Number(st.p2Special??game.enemySpecialEnergy):Number(st.p1Special??game.enemySpecialEnergy);
  game.buffs={you:structuredClone(game.isP1?(st.p1Buffs||game.buffs.you):(st.p2Buffs||game.buffs.you)),rival:structuredClone(game.isP1?(st.p2Buffs||game.buffs.rival):(st.p1Buffs||game.buffs.rival))};
- game.coolYou=structuredClone(game.isP1?(st.p1Cool||{}):(st.p2Cool||{}));game.coolRival=structuredClone(game.isP1?(st.p2Cool||{}):(st.p1Cool||{}));
+ game.coolYou=structuredClone(game.isP1?(st.p1Cool||{}):(st.p2Cool||{}));
+ game.coolRival=structuredClone(game.isP1?(st.p2Cool||{}):(st.p1Cool||{}));
  game.actorIndex={you:Number(game.isP1?st.p1ActorIndex:st.p2ActorIndex)||0,rival:Number(game.isP1?st.p2ActorIndex:st.p1ActorIndex)||0};
- game.log=st.log||game.log;game._remoteRps=st.rps||null;game.waitingRemote=game.rps?game.activeSide!=='you':true;
- if(st.rps)resolveRemoteRPS(st);
+ game.log=Array.isArray(st.log)?st.log:game.log;
+ game._remoteRps=st.rps||null;
+ if(st.rps){
+  if(st.rps.p1&&st.rps.p2)resolveRemoteRPS(st);
+  else game.waitingRemote=true;
+ }else game.waitingRemote=true;
  if(row.status==='finished'){finishBattle(true);return}
- if(game.rps)prepareTurn();else prepareOpening();
+ if(game.rps){game.waitingRemote=game.activeSide!=='you';prepareTurn();}
+ else prepareOpening();
 }
 
 function finishBattle(remoteFinish=false){
