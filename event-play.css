@@ -49,3 +49,402 @@
 @media(max-width:800px){.ep-turn-character-card{width:100%;max-width:none}.ep-turn-character-art{flex-basis:72px;width:72px;height:72px}.ep-leave-actions{grid-template-columns:1fr}}
 
 .ep-turn-character-pair{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px}.ep-turn-character-card{display:flex;align-items:center;gap:12px;padding:12px;border:1px solid #eadfe5;border-radius:16px;background:#fff;min-width:0}.ep-turn-character-card.side-you{border-left:4px solid #ff8eb8}.ep-turn-character-card.side-rival{border-right:4px solid #9f8ae9;flex-direction:row-reverse;text-align:right}.ep-turn-character-art{position:relative;width:86px;height:100px;flex:0 0 86px;border-radius:14px;background:#fff6fa;overflow:hidden;display:flex;align-items:center;justify-content:center}.ep-turn-character-art img{width:100%;height:100%;object-fit:contain}.ep-turn-character-wait{position:absolute;left:5px;right:5px;bottom:5px;padding:4px 3px;border-radius:7px;background:rgba(255,255,255,.92);font-size:7px;font-weight:900;letter-spacing:.5px;color:#ff5f9e}.side-rival .ep-turn-character-wait{color:#7763bd}.ep-turn-character-info{min-width:0}.ep-turn-character-info strong,.ep-turn-character-info span,.ep-turn-character-info b,.ep-turn-character-info small{display:block}.ep-turn-character-info strong{font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.ep-turn-character-info span{color:#f0a83a;font-size:10px;margin:3px 0}.ep-turn-character-info b{font-size:11px}.ep-turn-character-info small{color:#9a8791;font-size:8px;margin-top:3px}.ep-person-icon{font-size:42px;color:#b7aab1;line-height:1}.side-rival .ep-person-icon{transform:scaleX(-1)}@media(max-width:700px){.ep-turn-character-pair{grid-template-columns:1fr}.ep-turn-character-card.side-rival{flex-direction:row;text-align:left}.ep-turn-character-art{width:72px;height:88px;flex-basis:72px}}
+
+
+/* =========================================================
+   EVENT BATTLE — MOBILE LANDSCAPE COMPACT V2
+   Goal: scoreboard + actors + 3 skills + special all visible
+   without vertical scrolling.
+========================================================= */
+html,body{
+  overscroll-behavior:none;
+}
+
+@media (orientation:landscape) and (max-height:700px){
+  body.ep-battle-mobile{
+    position:fixed;
+    inset:0;
+    width:100%;
+    height:var(--ep-vh,100dvh);
+    overflow:hidden !important;
+    touch-action:none;
+    background:#fff8fb;
+  }
+
+  body.ep-battle-mobile .ep-shell{
+    position:fixed;
+    inset:0;
+    width:100%;
+    height:var(--ep-vh,100dvh);
+    min-height:0;
+    overflow:hidden;
+  }
+
+  /* Very small header, but keep Event/back + player PT visible. */
+  body.ep-battle-mobile .ep-topbar{
+    position:absolute !important;
+    top:0;left:0;right:0;
+    z-index:60;
+    height:42px;
+    min-height:42px;
+    padding:
+      max(3px,env(safe-area-inset-top))
+      max(8px,env(safe-area-inset-right))
+      3px
+      max(8px,env(safe-area-inset-left));
+    display:grid;
+    grid-template-columns:80px minmax(0,1fr) 110px;
+    gap:6px;
+    backdrop-filter:none;
+  }
+  body.ep-battle-mobile .ep-back{
+    min-height:30px;
+    padding:4px 8px;
+    border-radius:9px;
+    font-size:14px;
+  }
+  body.ep-battle-mobile .ep-back small{display:inline;font-size:7px}
+  body.ep-battle-mobile .ep-topbar>div:nth-child(2) small{display:none}
+  body.ep-battle-mobile .ep-topbar>div:nth-child(2) strong{
+    font-size:11px;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+  }
+  body.ep-battle-mobile .ep-user span{font-size:7px}
+  body.ep-battle-mobile .ep-user b{font-size:9px}
+
+  /* Battle itself fills exactly the browser-visible area below header. */
+  body.ep-battle-mobile #battleView{
+    position:absolute !important;
+    top:42px;
+    left:max(5px,env(safe-area-inset-left));
+    right:max(5px,env(safe-area-inset-right));
+    bottom:max(4px,env(safe-area-inset-bottom));
+    width:auto !important;
+    height:auto !important;
+    margin:0 !important;
+    padding:4px 0 !important;
+    overflow:hidden !important;
+    display:grid !important;
+    grid-template-rows:34px 82px minmax(0,1fr);
+    gap:5px;
+  }
+
+  body.ep-battle-mobile #battleView.hidden{display:none!important}
+
+  /* Battle title becomes a tiny status strip. */
+  body.ep-battle-mobile .ep-battle-head{
+    min-height:0;
+    height:34px;
+    padding:0 7px;
+    border:1px solid #f0e2e8;
+    border-radius:10px;
+    background:#fff;
+    display:flex;
+    align-items:center;
+  }
+  body.ep-battle-mobile .ep-battle-head>div:first-child{
+    min-width:0;
+    display:flex;
+    align-items:center;
+    gap:7px;
+  }
+  body.ep-battle-mobile .ep-battle-head small{
+    font-size:6px;
+    white-space:nowrap;
+  }
+  body.ep-battle-mobile .ep-battle-head h1{
+    margin:0;
+    font-size:10px;
+    white-space:nowrap;
+  }
+  body.ep-battle-mobile .ep-battle-head p{
+    font-size:7px;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    max-width:24vw;
+  }
+  body.ep-battle-mobile .ep-turn small{font-size:6px}
+  body.ep-battle-mobile .ep-turn b{font-size:13px}
+
+  /* Both scoreboards stay side-by-side. */
+  body.ep-battle-mobile .ep-scoreboard{
+    height:82px;
+    margin:0;
+    display:grid !important;
+    grid-template-columns:minmax(0,1fr) 22px minmax(0,1fr) !important;
+    gap:5px;
+  }
+  body.ep-battle-mobile .ep-side{
+    min-width:0;
+    height:82px;
+    padding:6px 8px;
+    border-radius:11px;
+  }
+  body.ep-battle-mobile .ep-side-head{
+    margin-bottom:3px;
+    gap:5px;
+  }
+  body.ep-battle-mobile .ep-side-head strong{
+    max-width:50%;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+    font-size:8px;
+  }
+  body.ep-battle-mobile .ep-side-head span{font-size:6px}
+  body.ep-battle-mobile .ep-bars>div{
+    grid-template-columns:35px 46px minmax(40px,1fr);
+    gap:4px;
+    margin:2px 0;
+    font-size:7px;
+  }
+  body.ep-battle-mobile .ep-bars i{height:5px}
+  body.ep-battle-mobile .ep-vs{
+    display:grid;
+    place-items:center;
+    font-size:8px;
+  }
+
+  /* Main action area: actor status + two portraits + skills + special. */
+  body.ep-battle-mobile .ep-active{
+    min-height:0;
+    overflow:hidden;
+    padding:6px;
+    border-radius:12px;
+    display:grid;
+    grid-template-columns:150px minmax(0,1fr) 76px;
+    grid-template-rows:31px minmax(0,1fr);
+    grid-template-areas:
+      "info skills special"
+      "chars skills special";
+    gap:5px 7px;
+    align-items:stretch;
+  }
+
+  body.ep-battle-mobile .ep-active-info{
+    grid-area:info;
+    min-width:0;
+    display:grid;
+    grid-template-columns:auto minmax(0,1fr);
+    grid-template-rows:auto auto;
+    column-gap:5px;
+    align-content:center;
+  }
+  body.ep-battle-mobile .ep-active-info small{
+    grid-column:1;
+    grid-row:1 / 3;
+    align-self:center;
+    font-size:6px;
+    writing-mode:vertical-rl;
+    transform:rotate(180deg);
+  }
+  body.ep-battle-mobile .ep-active-info h2{
+    grid-column:2;
+    margin:0;
+    font-size:10px;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+  }
+  body.ep-battle-mobile .ep-active-info span{
+    grid-column:2;
+    font-size:6px;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+  }
+
+  body.ep-battle-mobile .ep-turn-character-pair{
+    grid-area:chars;
+    min-height:0;
+    margin:0;
+    display:grid !important;
+    grid-template-columns:1fr 1fr !important;
+    gap:4px;
+  }
+  body.ep-battle-mobile .ep-turn-character-card,
+  body.ep-battle-mobile .ep-turn-character-card.side-rival{
+    min-width:0;
+    width:auto;
+    height:100%;
+    max-height:74px;
+    margin:0;
+    padding:3px;
+    gap:4px;
+    border-radius:9px;
+    flex-direction:column !important;
+    text-align:center !important;
+    justify-content:center;
+  }
+  body.ep-battle-mobile .ep-turn-character-art{
+    width:42px;
+    height:42px;
+    flex:0 0 42px;
+    border-radius:8px;
+  }
+  body.ep-battle-mobile .ep-turn-character-wait{
+    left:2px;right:2px;bottom:2px;
+    padding:2px 1px;
+    font-size:4.5px;
+    border-radius:4px;
+  }
+  body.ep-battle-mobile .ep-turn-character-info{
+    min-width:0;
+    width:100%;
+    text-align:center;
+    display:block;
+  }
+  body.ep-battle-mobile .ep-turn-character-info strong{
+    display:block;
+    font-size:6.5px;
+    line-height:1.1;
+  }
+  body.ep-battle-mobile .ep-turn-character-info span,
+  body.ep-battle-mobile .ep-turn-character-info small{
+    display:none;
+  }
+  body.ep-battle-mobile .ep-turn-character-info b{
+    display:block;
+    margin:1px 0 0;
+    font-size:5.5px;
+  }
+  body.ep-battle-mobile .ep-person-icon{font-size:24px}
+
+  /* 3 skills permanently visible, side-by-side, no scrolling. */
+  body.ep-battle-mobile .ep-skill-grid{
+    grid-area:skills;
+    min-width:0;
+    min-height:0;
+    margin:0;
+    display:grid !important;
+    grid-template-columns:repeat(3,minmax(0,1fr)) !important;
+    gap:5px;
+  }
+  body.ep-battle-mobile .ep-skill{
+    min-width:0;
+    min-height:0 !important;
+    height:100%;
+    max-height:none;
+    padding:6px;
+    border-radius:10px;
+    overflow:hidden;
+    touch-action:manipulation;
+  }
+  body.ep-battle-mobile .ep-skill b{
+    font-size:6px;
+    letter-spacing:.4px;
+  }
+  body.ep-battle-mobile .ep-skill span{
+    margin:4px 0 3px;
+    font-size:8px;
+    line-height:1.05;
+    overflow-wrap:anywhere;
+  }
+  body.ep-battle-mobile .ep-skill small{
+    font-size:6px;
+    line-height:1.18;
+    display:block;
+  }
+  body.ep-battle-mobile .ep-skill-wait{
+    grid-column:1 / -1;
+    min-height:0;
+    height:100%;
+    border-radius:10px;
+    font-size:8px;
+  }
+
+  /* Special energy always visible at far right. */
+  body.ep-battle-mobile .ep-special-wrap{
+    grid-area:special;
+    margin:0;
+    min-width:0;
+  }
+  body.ep-battle-mobile .ep-special-wrap button{
+    width:100%;
+    height:100%;
+    min-height:0;
+    padding:5px 3px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    gap:3px;
+    border-radius:10px;
+    touch-action:manipulation;
+  }
+  body.ep-battle-mobile .ep-special-wrap span{
+    margin:0;
+    font-size:18px;
+  }
+  body.ep-battle-mobile .ep-special-wrap b{font-size:7px}
+  body.ep-battle-mobile .ep-special-wrap small{
+    font-size:13px;
+    font-weight:900;
+    color:#ff5f9e;
+  }
+
+  /* Battle log is non-essential during mobile combat; hiding it saves a full
+     vertical section. State still remains in game.log and appears normally
+     on desktop. */
+  body.ep-battle-mobile .ep-log{
+    display:none !important;
+  }
+
+  /* Overlays remain usable and can scroll independently. */
+  body.ep-battle-mobile .ep-rps,
+  body.ep-battle-mobile .ep-leave-overlay,
+  .ep-result{
+    height:var(--ep-vh,100dvh) !important;
+    max-height:var(--ep-vh,100dvh);
+  }
+  body.ep-battle-mobile #rpsView .ep-rps-modal{
+    max-height:calc(var(--ep-vh,100dvh) - 16px) !important;
+    padding:14px !important;
+  }
+  body.ep-battle-mobile #rpsView .ep-rps-modal h2{font-size:17px}
+  body.ep-battle-mobile #rpsView .rps-buttons{
+    grid-template-columns:repeat(3,1fr);
+    gap:7px;
+    margin-top:10px;
+  }
+  body.ep-battle-mobile #rpsView .rps-buttons button{
+    min-height:40px;
+    padding:7px 5px;
+    font-size:10px;
+  }
+}
+
+/* Tiny phones / Chrome address bar still visible */
+@media (orientation:landscape) and (max-height:460px){
+  body.ep-battle-mobile .ep-topbar{
+    height:36px;
+    min-height:36px;
+  }
+  body.ep-battle-mobile #battleView{
+    top:36px;
+    grid-template-rows:29px 70px minmax(0,1fr);
+    gap:3px;
+  }
+  body.ep-battle-mobile .ep-battle-head{height:29px}
+  body.ep-battle-mobile .ep-scoreboard,
+  body.ep-battle-mobile .ep-side{height:70px}
+  body.ep-battle-mobile .ep-bars>div{margin:1px 0}
+  body.ep-battle-mobile .ep-active{
+    grid-template-columns:132px minmax(0,1fr) 64px;
+    gap:3px 5px;
+    padding:4px;
+  }
+  body.ep-battle-mobile .ep-turn-character-card,
+  body.ep-battle-mobile .ep-turn-character-card.side-rival{
+    max-height:60px;
+  }
+  body.ep-battle-mobile .ep-turn-character-art{
+    width:34px;height:34px;flex-basis:34px;
+  }
+  body.ep-battle-mobile .ep-skill{padding:4px}
+  body.ep-battle-mobile .ep-skill span{font-size:7px;margin:2px 0}
+  body.ep-battle-mobile .ep-skill small{font-size:5.5px}
+}
