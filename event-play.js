@@ -42,14 +42,30 @@ let pollTimer=null;async function pollQueue(){clearTimeout(pollTimer);const d=db
 async function cancelQueue(){clearTimeout(pollTimer);const d=db();try{if(d)await d.rpc('event_leave_matchmaking')}catch(e){}show('setupView')}
 async function loadRemoteMatch(id){const d=db();const {data,error}=await d.from('event_matches').select('*').eq('id',id).single();if(error||!data){alert('Match không tồn tại.');show('setupView');return}const me=user?._supabaseId;const mine=data.player1_id===me?data.player1:data.player2;const opp=data.player1_id===me?data.player2:data.player1;startBattle({remote:true,match:data,mine,opp});matchChannel=d.channel(`event-match-${id}`).on('postgres_changes',{event:'UPDATE',schema:'public',table:'event_matches',filter:`id=eq.${id}`},payload=>applyRemoteState(payload.new)).subscribe()}
 function makeAI(){const ids=['lumina','akito','kohane'].filter(x=>CHARS[x]);return {username:'EVENT AI',main:ids, special:'kohane',song:selectedSong}}
-function snapshotTeam(arr){return arr.map(x=>({...x}))}
+function snapshotTeam(arr){return Array.isArray(arr)?arr.map(x=>({...x})):[]}
+function normalizeTeamPayload(value){
+ if(Array.isArray(value)) return value;
+ if(value&&Array.isArray(value.team)) return value.team;
+ if(typeof value==='string'){
+  try{return normalizeTeamPayload(JSON.parse(value))}catch(_){return []}
+ }
+ if(value&&typeof value==='object'){
+  // Accept legacy/object-shaped team payloads such as {0:{id:'lumina'},1:{id:'miku'}}.
+  const vals=Object.values(value);
+  if(vals.length&&vals.every(x=>x&&typeof x==='object'&&('id' in x))) return vals;
+ }
+ return [];
+}
 function startBattle(remoteInfo){
- const mine=remoteInfo.remote?(Array.isArray(remoteInfo.mine)?remoteInfo.mine:(remoteInfo.mine?.team||[])):teamSnapshot();
- const rivalIds=remoteInfo.remote?(Array.isArray(remoteInfo.opp)?remoteInfo.opp.map(x=>typeof x==='string'?x:x.id):(remoteInfo.opp?.team||[]).map(x=>typeof x==='string'?x:x.id)):(teamSnapshotFromAI().main);
- const mineIds=mine.map(x=>typeof x==='string'?x:x.id);
+ const mine=remoteInfo.remote?normalizeTeamPayload(remoteInfo.mine):teamSnapshot();
+ const rivalPayload=remoteInfo.remote?normalizeTeamPayload(remoteInfo.opp):teamSnapshotFromAI().main;
+ const mineIds=mine.map(x=>typeof x==='string'?x:x?.id).filter(Boolean);
+ const rivalIds=rivalPayload.map(x=>typeof x==='string'?x:x?.id).filter(Boolean);
  const myTeam=buildTeam(mineIds),enemyTeam=buildTeam(rivalIds);
  const myMax=Math.max(...myTeam.map(c=>c.bp)),enemyMax=Math.max(...enemyTeam.map(c=>c.bp));
- game={remote:!!remoteInfo.remote,matchId:remoteInfo.match?.id||null,isP1:remoteInfo.remote?remoteInfo.match.player1_id===user?._supabaseId:true,turn:1,activeSide:'you',you:myTeam,rival:enemyTeam,actorIndex:{you:0,rival:0},points:{vocal:0,rap:0,act:0},enemy:{vocal:0,rap:0,act:0},special:CHARS[remoteInfo.remote?((Array.isArray(remoteInfo.mine)?null:remoteInfo.mine?.special)||selectedSpecial):selectedSpecial],specialEnergy:((remoteInfo.remote?((Array.isArray(remoteInfo.mine)?null:remoteInfo.mine?.special)||selectedSpecial):selectedSpecial)==='kohane'?100:0),enemySpecialEnergy:0,buffs:{you:{all:0,allTurns:0,vocal:0,rap:0,act:0,self:0,selfActor:null,other:0,otherSource:null,otherTurns:0,priority:0,extraTurns:0,skip:0,blessingTurns:0},rival:{all:0,allTurns:0,vocal:0,rap:0,act:0,self:0,selfActor:null,other:0,otherSource:null,otherTurns:0,priority:0,extraTurns:0,skip:0,blessingTurns:0}},coolYou:{},coolRival:{},opponentName:remoteInfo.remote?(remoteInfo.opp?.username||'PLAYER'):'EVENT AI',song:selectedSong,log:[],rps:null,rpsChoice:null,energy,waitingRemote:false};
+ const mineMeta=remoteInfo.remote&&remoteInfo.mine&&!Array.isArray(remoteInfo.mine)?remoteInfo.mine:{};
+ const mySpecial=mineMeta?.special||selectedSpecial;
+ game={remote:!!remoteInfo.remote,matchId:remoteInfo.match?.id||null,isP1:remoteInfo.remote?remoteInfo.match.player1_id===user?._supabaseId:true,turn:1,activeSide:'you',you:myTeam,rival:enemyTeam,actorIndex:{you:0,rival:0},points:{vocal:0,rap:0,act:0},enemy:{vocal:0,rap:0,act:0},special:CHARS[mySpecial],specialEnergy:(mySpecial==='kohane'?100:0),enemySpecialEnergy:0,buffs:{you:{all:0,allTurns:0,vocal:0,rap:0,act:0,self:0,selfActor:null,other:0,otherSource:null,otherTurns:0,priority:0,extraTurns:0,skip:0,blessingTurns:0},rival:{all:0,allTurns:0,vocal:0,rap:0,act:0,self:0,selfActor:null,other:0,otherSource:null,otherTurns:0,priority:0,extraTurns:0,skip:0,blessingTurns:0}},coolYou:{},coolRival:{},opponentName:remoteInfo.remote?(remoteInfo.opp?.username||'PLAYER'):'EVENT AI',song:selectedSong,log:[],rps:null,rpsChoice:null,energy,waitingRemote:false};
  startBattleAudio();$('battleModeLabel').textContent=game.remote?'PLAYER MATCH':'TRAINING · AI';$('rivalName').textContent=game.opponentName;$('youName').textContent=user?.username||'YOU';$('battleSongName').textContent=SONGS.find(s=>s.id===selectedSong)?.name||'';show('battleView');renderBattle();prepareOpening();
 }
 
