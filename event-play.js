@@ -19,7 +19,9 @@ const CHARS={
  miku:{id:'miku',name:'HATSUNE MIKU',image:'assets/miku.png',type:'VOCAL',base:9879,per:654,rarity:5,skills:[['MIKU VOICE','+1,730 VOCAL',1730,'point','vocal'],['NEXT STAGE','2 allied actions +30%',0,'teambuff','all'],['COLORFUL VOICE','+2,000 VOCAL · Miku next action +15%',2000,'selfbuff','vocal']]},
  miku6:{id:'miku6',name:'HATSUNE MIKU · RADIANT BRIDE',image:'assets/miku1.png',type:'RAP',base:21250,per:620,rarity:6,rewardMultiplier:1.35,skills:[['RADIANT RAP','+2,780 RAP',2780,'point','rap'],['BRIDAL ENCORE','Choose 1 allied character to act immediately after Miku',0,'chooseNext','all'],['BRIGHT PROCESSION','Advance the other 2 allied characters before the rival',0,'teamAdvance','all']]} ,
  akito:{id:'akito',name:'AKITO',image:'assets/akito.png',type:'ACT',base:19450,per:510,rarity:6,skills:[['BURN ACT','+2,780 ACT',2780,'point','act'],['TURN THE TABLE','Take the next 2 allied turns · Akito next score +200%',0,'steal','all'],['CROSS BOOST','Other-type allies +15% next action',0,'otherbuff','all']]},
- kohane:{id:'kohane',name:'KOHANE',image:'assets/kohane.png',type:'RAP',base:21034,per:410,rarity:6,skills:[['RAP SHINE','+1,800 RAP',1800,'point','rap'],['BLESSING','TEAM next turn +55%',0,'teambuff','all'],['DIVINE TURN','Team gets priority next turn',0,'priority','all']]}
+ kohane:{id:'kohane',name:'KOHANE',image:'assets/kohane.png',type:'RAP',base:21034,per:410,rarity:6,skills:[['RAP SHINE','+1,800 RAP',1800,'point','rap'],['BLESSING','TEAM next turn +55%',0,'teambuff','all'],['DIVINE TURN','Team gets priority next turn',0,'priority','all']]},
+ shota:{id:'shota',name:'SHOTA',image:'assets/shota.png',type:'VOCAL',base:19780,per:550,rarity:6,skills:[['PERFECT HARMONY','+2,650 VOCAL',2650,'point','vocal'],['NO WRONG NOTE','Block the next 2 enemy score-reduction effects',0,'shield','all'],['ENCORE PROTECTION','Choose 1 ally to act immediately · that action +25%',0,'shotaEncore','all']]},
+ rui:{id:'rui',name:'RUI KAMISHIRO',image:'assets/rui.png',type:'ACT',base:13479,per:490,rarity:5,skills:[['CURTAIN CALL','+1,950 ACT · MARK enemy for 2 turns · next debuff +25%',1950,'ruiMark','act'],["DIRECTOR'S TRICK",'Choose VOCAL / RAP / ACT JAM · enemy gains -20% in that type for 2 actions',0,'ruiJam','all'],['GRAND FINALE','DELAYED BOMB · after 2 enemy actions: -1,500 from their highest type · Rui +1,500 ACT',0,'ruiBomb','all']]}
 };
 const SPECIALS=['akito','kohane'];
 const SPECIAL_INFO={
@@ -173,7 +175,7 @@ function startBattle(remoteInfo){
  const mineMeta=remoteInfo.remote?normalizePlayerPayload(remoteInfo.mine):{};
  const mySpecial=mineMeta?.special||selectedSpecial;
  const enemyMeta=remoteInfo.remote?normalizePlayerPayload(remoteInfo.opp):{};
- game={remote:!!remoteInfo.remote,matchId:remoteInfo.match?.id||null,isP1:remoteInfo.remote?remoteInfo.match.player1_id===user?._supabaseId:true,turn:1,activeSide:remoteInfo.remote?null:'you',you:myTeam,rival:enemyTeam,actorIndex:{you:0,rival:0},points:{vocal:0,rap:0,act:0},enemy:{vocal:0,rap:0,act:0},special:CHARS[mySpecial],specialEnergy:(mySpecial==='kohane'?100:0),enemySpecialEnergy:0,buffs:{you:{all:0,allTurns:0,vocal:0,rap:0,act:0,self:0,selfActor:null,other:0,otherSource:null,otherTurns:0,priority:0,extraTurns:0,skip:0,skipAlliedTurns:0,blessingTurns:0},rival:{all:0,allTurns:0,vocal:0,rap:0,act:0,self:0,selfActor:null,other:0,otherSource:null,otherTurns:0,priority:0,extraTurns:0,skip:0,skipAlliedTurns:0,blessingTurns:0}},coolYou:{},coolRival:{},opponentName:remoteInfo.remote?(enemyMeta?.username||'PLAYER'):'EVENT AI',song:selectedSong,log:[],rps:null,rpsChoice:null,energy:Number(remoteInfo.remote?mineMeta?.energy:energy)||energy,waitingRemote:!!remoteInfo.remote,forfeit:null};
+ game={remote:!!remoteInfo.remote,matchId:remoteInfo.match?.id||null,isP1:remoteInfo.remote?remoteInfo.match.player1_id===user?._supabaseId:true,turn:1,activeSide:remoteInfo.remote?null:'you',you:myTeam,rival:enemyTeam,actorIndex:{you:0,rival:0},points:{vocal:0,rap:0,act:0},enemy:{vocal:0,rap:0,act:0},special:CHARS[mySpecial],specialEnergy:(mySpecial==='kohane'?100:0),enemySpecialEnergy:0,buffs:{you:{all:0,allTurns:0,vocal:0,rap:0,act:0,self:0,selfActor:null,other:0,otherSource:null,otherTurns:0,priority:0,extraTurns:0,skip:0,skipAlliedTurns:0,blessingTurns:0,shield:0,ruiMarkTurns:0,ruiJamType:null,ruiJamActions:0,ruiBombActions:0,ruiBombOwner:null,encoreBoost:0,encoreActor:null},rival:{all:0,allTurns:0,vocal:0,rap:0,act:0,self:0,selfActor:null,other:0,otherSource:null,otherTurns:0,priority:0,extraTurns:0,skip:0,skipAlliedTurns:0,blessingTurns:0,shield:0,ruiMarkTurns:0,ruiJamType:null,ruiJamActions:0,ruiBombActions:0,ruiBombOwner:null,encoreBoost:0,encoreActor:null}},coolYou:{},coolRival:{},opponentName:remoteInfo.remote?(enemyMeta?.username||'PLAYER'):'EVENT AI',song:selectedSong,log:[],rps:null,rpsChoice:null,energy:Number(remoteInfo.remote?mineMeta?.energy:energy)||energy,waitingRemote:!!remoteInfo.remote,forfeit:null};
  startBattleAudio();$('battleModeLabel').textContent=game.remote?'PLAYER MATCH':'TRAINING · AI';$('rivalName').textContent=game.opponentName;$('youName').textContent=user?.username||'YOU';$('battleSongName').textContent=SONGS.find(s=>s.id===selectedSong)?.name||'';show('battleView');renderBattle();prepareOpening();
 }
 
@@ -213,14 +215,139 @@ function renderActiveCharacter(){
 function prepareTurn(){if(game.turn>MAX_TURNS){finishBattle();return}const actor=actorFor(game.activeSide);renderActiveCharacter();$('activeOwner').textContent=game.activeSide==='you'?'YOUR TURN':'RIVAL TURN';$('activeCharName').textContent=actor.name;$('activeCharType').textContent=`${actor.type} · BP ${actor.bp.toLocaleString()}`;if(game.activeSide==='you'&&!game.waitingRemote)renderSkills(actor);else{$('skillGrid').innerHTML='<div class="ep-skill-wait">WAITING FOR RIVAL...</div>';if(!game.remote)setTimeout(()=>aiAct(actor),650)}renderBattle()}
 function renderSkills(actor){const cds=currentCooldowns('you');$('skillGrid').innerHTML=actor.skills.map((s,i)=>`<button class="ep-skill" data-skill="${i}" ${cds[actor.id+':'+i]>0?'disabled':''}><b>SKILL ${i+1}</b><span>${s[0]}</span><small>${s[1]} ${cds[actor.id+':'+i]>0?`· CD ${cds[actor.id+':'+i]}`:''}</small></button>`).join('');document.querySelectorAll('[data-skill]').forEach(b=>b.onclick=()=>useSkill(actor,Number(b.dataset.skill)))}
 function addScore(side,type,n){const p=currentPoints(side);p[type]=Math.max(0,p[type]+Math.round(n))}
-function multiplier(side,type,actor){const b=currentSideState(side);let m=1;m*=1+(b.all||0)/100;m*=1+(b[type]||0)/100;if(b.self&&b.selfActor===actor.id)m*=1+b.self/100;if(b.other&&b.otherTurns>0&&actor.type!==b.otherSource)m*=1+b.other/100;return m}
+function multiplier(side,type,actor){
+ const b=currentSideState(side);let m=1;
+ m*=1+(b.all||0)/100;
+ m*=1+(b[type]||0)/100;
+ if(b.self&&b.selfActor===actor.id)m*=1+b.self/100;
+ if(b.other&&b.otherTurns>0&&actor.type!==b.otherSource)m*=1+b.other/100;
+ if(b.encoreBoost&&b.encoreActor===actor.id)m*=1+b.encoreBoost/100;
+ if(b.ruiJamActions>0&&b.ruiJamType===type)m*=.8;
+ return m;
+}
 function setCd(side,actor,i,n){currentCooldowns(side)[actor.id+':'+i]=n}
 function tickCds(){[game.coolYou,game.coolRival].forEach(c=>Object.keys(c).forEach(k=>{if(c[k]>0)c[k]--}))}
 function useSkill(actor,i){if(game.activeSide!=='you'||game.waitingRemote)return;const acted=applySkill('you',actor,i);if(acted===false)return;endTurn();if(game.remote)syncRemoteState()}
+
+function consumeScoreActionBuffs(side,type,actor){
+ const b=currentSideState(side);
+ if(b.encoreActor===actor.id){b.encoreBoost=0;b.encoreActor=null;}
+ if(b.ruiJamActions>0&&b.ruiJamType===type){
+   b.ruiJamActions--;
+   if(b.ruiJamActions<=0){b.ruiJamActions=0;b.ruiJamType=null;}
+ }
+}
+function reduceEnemyScore(attackerSide,targetType,amount){
+ const defenderSide=attackerSide==='you'?'rival':'you';
+ const defenderBuff=currentSideState(defenderSide);
+ const enemy=attackerSide==='you'?game.enemy:game.points;
+ if(defenderBuff.shield>0){
+   defenderBuff.shield--;
+   game.log.push(`<b>SHOTA</b> — NO WRONG NOTE blocked a score-reduction effect. (${defenderBuff.shield} shield left)`);
+   return 0;
+ }
+ let finalAmount=Number(amount)||0;
+ if(defenderBuff.ruiMarkTurns>0){
+   finalAmount=Math.round(finalAmount*1.25);
+   defenderBuff.ruiMarkTurns=0;
+   game.log.push(`<b>RUI MARK</b> — the debuff was amplified by 25%.`);
+ }
+ enemy[targetType]=Math.max(0,Number(enemy[targetType]||0)-finalAmount);
+ return finalAmount;
+}
+function openRuiJamPicker(side,actor,i){
+ if(side!=='you'){
+   const target=['vocal','rap','act'].sort((a,b)=>game.points[b]-game.points[a])[0];
+   game.buffs.you.ruiJamType=target;
+   game.buffs.you.ruiJamActions=2;
+   setCd(side,actor,i,3);
+   game.log.push(`<b>${actor.name}</b> used DIRECTOR'S TRICK — ${target.toUpperCase()} JAM for 2 scoring actions.`);
+   return true;
+ }
+ let overlay=$('ruiJamPicker');
+ if(!overlay){
+   overlay=document.createElement('div');
+   overlay.id='ruiJamPicker';
+   overlay.className='ep-rps hidden';
+   overlay.innerHTML=`<div class="ep-rps-modal"><small>RUI KAMISHIRO · SKILL 2</small><h2>DIRECTOR'S TRICK</h2><p>Chọn hệ muốn JAM. Đối thủ bị -20% điểm hệ đó trong 2 hành động tính điểm.</p><div class="rps-buttons" id="ruiJamChoices"><button data-rui-jam="vocal">VOCAL</button><button data-rui-jam="rap">RAP</button><button data-rui-jam="act">ACT</button></div></div>`;
+   document.body.appendChild(overlay);
+ }
+ overlay.classList.remove('hidden');
+ overlay.querySelectorAll('[data-rui-jam]').forEach(btn=>btn.onclick=()=>{
+   const target=btn.dataset.ruiJam;
+   overlay.classList.add('hidden');
+   game.buffs.rival.ruiJamType=target;
+   game.buffs.rival.ruiJamActions=2;
+   setCd('you',actor,i,3);
+   game.specialEnergy=Math.min(100,game.specialEnergy+10);
+   game.log.push(`<b>RUI KAMISHIRO</b> used DIRECTOR'S TRICK — ${target.toUpperCase()} JAM for 2 rival scoring actions.`);
+   endTurn();
+   if(game.remote)syncRemoteState();
+ });
+ return false;
+}
+function openShotaEncorePicker(side,actor,i){
+ if(side!=='you'){
+   const team=game.rival;
+   const current=game.actorIndex.rival;
+   const pick=team.map((c,idx)=>({c,idx})).filter(x=>x.idx!==current).sort((a,b)=>b.c.bp-a.c.bp)[0];
+   if(pick){
+     game.actorIndex.rival=pick.idx;
+     game.buffs.rival.encoreBoost=25;
+     game.buffs.rival.encoreActor=pick.c.id;
+     game._shotaEncoreQueuedRival=true;
+   }
+   setCd(side,actor,i,3);
+   return true;
+ }
+ let overlay=$('shotaEncorePicker');
+ if(!overlay){
+   overlay=document.createElement('div');
+   overlay.id='shotaEncorePicker';
+   overlay.className='ep-rps hidden';
+   overlay.innerHTML=`<div class="ep-rps-modal"><small>SHOTA · SKILL 3</small><h2>ENCORE PROTECTION</h2><p>Chọn 1 đồng minh hành động ngay. Hành động đó được +25%.</p><div class="rps-buttons" id="shotaEncoreChoices"></div></div>`;
+   document.body.appendChild(overlay);
+ }
+ const list=$('shotaEncoreChoices');
+ const current=game.actorIndex.you;
+ list.innerHTML=game.you.map((c,idx)=>({c,idx})).filter(x=>x.idx!==current).map(x=>`<button data-shota-encore="${x.idx}">${x.c.name}<small> · ${x.c.type}</small></button>`).join('');
+ overlay.classList.remove('hidden');
+ list.querySelectorAll('[data-shota-encore]').forEach(btn=>btn.onclick=()=>{
+   const idx=Number(btn.dataset.shotaEncore);
+   const c=game.you[idx];
+   overlay.classList.add('hidden');
+   game.actorIndex.you=idx;
+   game.buffs.you.encoreBoost=25;
+   game.buffs.you.encoreActor=c.id;
+   game._shotaEncoreQueued=true;
+   setCd('you',actor,i,3);
+   game.specialEnergy=Math.min(100,game.specialEnergy+10);
+   game.log.push(`<b>SHOTA</b> — ${c.name} acts immediately with +25%.`);
+   endTurn();
+   if(game.remote)syncRemoteState();
+ });
+ return false;
+}
+function processRuiBombAfterAction(actedSide){
+ const b=currentSideState(actedSide);
+ if(!b.ruiBombActions||b.ruiBombActions<=0)return;
+ b.ruiBombActions--;
+ if(b.ruiBombActions>0)return;
+ const targetPoints=currentPoints(actedSide);
+ const highest=['vocal','rap','act'].sort((a,c)=>targetPoints[c]-targetPoints[a])[0];
+ const attackerSide=actedSide==='you'?'rival':'you';
+ const attackerPoints=currentPoints(attackerSide);
+ const reduced=reduceEnemyScore(attackerSide,highest,1500);
+ attackerPoints.act=Math.max(0,Number(attackerPoints.act||0)+1500);
+ b.ruiBombActions=0;
+ b.ruiBombOwner=null;
+ game.log.push(`<b>GRAND FINALE</b> detonated — ${highest.toUpperCase()} -${reduced.toLocaleString()} · Rui side ACT +1,500.`);
+}
+
 function applySkill(side,actor,i){
  const s=actor.skills[i],type=s[3],target=s[4],b=currentSideState(side); let value=s[2]||0,msg=`<b>${actor.name}</b> used ${s[0]}.`;
- if(type==='point'){let m=multiplier(side,target,actor);if(actor.id==='lumina'&&i===1&&Math.random()<.25)m*=1.3;const aiScale=(side==='rival'&&!game.remote)?.5:1;addScore(side,target,value*m*aiScale);if(b.selfActor===actor.id)b.self=0,b.selfActor=null;if(b.otherTurns>0&&actor.type!==b.otherSource)b.otherTurns--;if(b.allTurns>0)b.allTurns--;if(b.allTurns===0)b.all=0;}
- else if(type==='debuff'){const aiScale=(side==='rival'&&!game.remote)?.5:1;addScore(side,target,value*multiplier(side,target,actor)*aiScale);const enemy=side==='you'?game.enemy:game.points;enemy[target]=Math.max(0,enemy[target]-1100);msg+=' Enemy VOCAL -1,100.';setCd(side,actor,i,3);}
+ if(type==='point'){let m=multiplier(side,target,actor);if(actor.id==='lumina'&&i===1&&Math.random()<.25)m*=1.3;const aiScale=(side==='rival'&&!game.remote)?.5:1;addScore(side,target,value*m*aiScale);consumeScoreActionBuffs(side,target,actor);if(b.selfActor===actor.id)b.self=0,b.selfActor=null;if(b.otherTurns>0&&actor.type!==b.otherSource)b.otherTurns--;if(b.allTurns>0)b.allTurns--;if(b.allTurns===0)b.all=0;}
+ else if(type==='debuff'){const aiScale=(side==='rival'&&!game.remote)?.5:1;addScore(side,target,value*multiplier(side,target,actor)*aiScale);consumeScoreActionBuffs(side,target,actor);const reduced=reduceEnemyScore(side,target,1100);msg+=` Enemy VOCAL -${reduced.toLocaleString()}.`;setCd(side,actor,i,3);}
  else if(type==='teambuff'){b.all=30;b.allTurns=2;setCd(side,actor,i,2);msg+=' The next 2 allied scoring actions get +30%.';}
  else if(type==='teamBuff'){b.all=55;b.allTurns=1;setCd(side,actor,i,2);msg+=' The next allied scoring action gets +55%.';}
  else if(type==='selfbuff'){const aiScale=(side==='rival'&&!game.remote)?.5:1;addScore(side,target,value*multiplier(side,target,actor)*aiScale);b.self=15;b.selfActor=actor.id;msg+=' Next Miku scoring action +15%.';}
@@ -228,6 +355,25 @@ function applySkill(side,actor,i){
  else if(type==='otherbuff'){b.other=15;b.otherSource=actor.type;b.otherTurns=2;msg+=' Other-attribute allies next scoring action +15%.';}
  else if(type==='priority'){b.priority=1;msg+=' Team gets priority on the next turn.';}
  else if(type==='chooseNext'){ if(side==='you'){openMikuTurnPicker();return false;} }
+ else if(type==='shield'){b.shield=Math.max(Number(b.shield||0),2);setCd(side,actor,i,3);msg+=' The next 2 enemy score-reduction effects are blocked.';}
+ else if(type==='shotaEncore'){return openShotaEncorePicker(side,actor,i);}
+ else if(type==='ruiMark'){
+   const aiScale=(side==='rival'&&!game.remote)?.5:1;
+   addScore(side,'act',value*multiplier(side,'act',actor)*aiScale);
+   consumeScoreActionBuffs(side,'act',actor);
+   const enemyBuff=currentSideState(side==='you'?'rival':'you');
+   enemyBuff.ruiMarkTurns=2;
+   setCd(side,actor,i,2);
+   msg+=' Enemy is MARKED; the next score-reduction debuff against them is +25%.';
+ }
+ else if(type==='ruiJam'){return openRuiJamPicker(side,actor,i);}
+ else if(type==='ruiBomb'){
+   const enemyBuff=currentSideState(side==='you'?'rival':'you');
+   enemyBuff.ruiBombActions=2;
+   enemyBuff.ruiBombOwner=side;
+   setCd(side,actor,i,4);
+   msg+=' DELAYED BOMB armed for 2 enemy actions.';
+ }
  else if(type==='teamAdvance'){b.extraTurns=2;setCd(side,actor,i,3);msg+=' Miku advances the other two allied characters before the rival gets a turn.';}
  game[side==='you'?'specialEnergy':'enemySpecialEnergy']=Math.min(100,game[side==='you'?'specialEnergy':'enemySpecialEnergy']+10);game.log.push(msg);renderBattle();return true;
 }
@@ -245,6 +391,29 @@ function endTurn(){
  const actedBuff=game.buffs[actedSide];
  const team=game[actedSide==='you'?'you':'rival'];
  const actedActor=actorFor(actedSide);
+ processRuiBombAfterAction(actedSide);
+ const actedSideBuff=currentSideState(actedSide);
+ if(actedSideBuff.ruiMarkTurns>0){
+   actedSideBuff.ruiMarkTurns--;
+   if(actedSideBuff.ruiMarkTurns<0)actedSideBuff.ruiMarkTurns=0;
+ }
+
+ if(actedSide==='you'&&game._shotaEncoreQueued){
+   game._shotaEncoreQueued=false;
+   game.activeSide='you';
+   game.turn++;
+   if(game.turn>MAX_TURNS){finishBattle();return}
+   prepareTurn();
+   return;
+ }
+ if(actedSide==='rival'&&game._shotaEncoreQueuedRival){
+   game._shotaEncoreQueuedRival=false;
+   game.activeSide='rival';
+   game.turn++;
+   if(game.turn>MAX_TURNS){finishBattle();return}
+   prepareTurn();
+   return;
+ }
  if(actedSide==='you'&&game.mikuQueued){ game.mikuQueued=false; game.activeSide='you'; game.turn++; if(game.turn>MAX_TURNS){finishBattle();return} prepareTurn(); return; }
 
  // Akito Skill 2: the next TWO allied characters lose their turns.
