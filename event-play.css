@@ -1,0 +1,2328 @@
+
+*{box-sizing:border-box}body{margin:0;font-family:Nunito,Arial,sans-serif;background:#fff7fb;color:#392a32}.hidden{display:none!important}.ep-shell{min-height:100vh;background:linear-gradient(180deg,#fff8fb,#fff)}.ep-topbar{position:sticky;top:0;z-index:30;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:18px;padding:12px 18px;background:rgba(255,255,255,.92);backdrop-filter:blur(12px);border-bottom:1px solid #f0e0e8}.ep-topbar>div:nth-child(2){text-align:center}.ep-topbar small{display:block;font-size:9px;font-weight:900;letter-spacing:1.5px;color:#a58e99}.ep-topbar strong{display:block;font-size:17px}.ep-user{justify-self:end;text-align:right}.ep-user b{display:block;color:#ff5f9e}.ep-back,.ep-primary,.ep-secondary,.ep-mode,.ep-char-card,.ep-special-card,.ep-song,.ep-skill,.rps-buttons button{font:inherit;cursor:pointer}.ep-back{border:1px solid #eadde3;border-radius:12px;background:#fff;padding:9px 13px}.ep-main{width:min(1100px,94vw);margin:0 auto;padding:28px 0 60px}.ep-title{display:flex;justify-content:space-between;gap:20px;align-items:flex-end;margin-bottom:20px}.ep-title span,.ep-panel-head small{font-size:9px;font-weight:900;letter-spacing:1.8px;color:#ff5f9e}.ep-title h1{margin:5px 0;font-size:32px}.ep-title p{margin:0;color:#8f7d86}.ep-rules{padding:14px 18px;border-radius:16px;background:#fff;border:1px solid #f0e2e8;text-align:right}.ep-rules b,.ep-rules span{display:block}.ep-rules b{color:#ff5f9e}.ep-rules span{font-size:9px;font-weight:900;color:#a48f99}.ep-panel{margin:16px 0;padding:18px;border:1px solid #f0e2e8;border-radius:20px;background:#fff;box-shadow:0 10px 35px rgba(80,35,55,.05)}.ep-panel-head{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:14px}.ep-panel-head h2{margin:3px 0;font-size:18px}.ep-panel-head>span,.ep-panel-head>b{font-size:10px;color:#a48f99}.ep-song-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}.ep-song{padding:18px;border:1px solid #eadfe5;border-radius:16px;background:#fff;text-align:left}.ep-song.active{border-color:#ff8eb8;background:#fff2f7;box-shadow:0 0 0 2px rgba(255,95,158,.08)}.ep-song strong{display:block;font-size:18px}.ep-song span{display:block;color:#9a8791;font-size:10px;margin-top:4px}.ep-char-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}.ep-char-card,.ep-special-card{padding:12px;border:1px solid #eadfe5;border-radius:16px;background:#fff;text-align:center}.ep-char-card.selected,.ep-special-card.selected{border-color:#ff8eb8;background:#fff2f7;box-shadow:0 0 0 2px rgba(255,95,158,.08)}.ep-char-card img,.ep-special-card img{width:100%;height:130px;object-fit:contain;border-radius:12px;background:#fff6fa}.ep-char-card strong,.ep-special-card strong{display:block;margin-top:7px}.ep-char-card small,.ep-special-card small{display:block;color:#9a8791;font-size:9px;margin-top:3px}.ep-special-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}.ep-special-card img{height:170px}.ep-mode-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.ep-mode{padding:18px;border:1px solid #eadfe5;border-radius:16px;background:#fff;text-align:left}.ep-mode.active{border-color:#ff8eb8;background:#fff2f7}.ep-mode b,.ep-mode span{display:block}.ep-mode span{margin-top:4px;color:#9a8791;font-size:10px}.ep-energy-row{display:grid;grid-template-columns:1fr 180px 180px;gap:12px;align-items:center;margin:15px 0}.ep-energy-row select{padding:12px;border:1px solid #eadfe5;border-radius:12px;background:#fff}.ep-energy-row div{text-align:right}.ep-energy-row b,.ep-energy-row small{display:block}.ep-energy-row b{color:#ff5f9e;font-size:18px}.ep-energy-row small{font-size:8px;color:#a48f99}.ep-primary,.ep-secondary{border:0;border-radius:13px;padding:13px 18px;font-weight:900}.ep-primary{background:#ff5f9e;color:#fff;width:100%}.ep-secondary{background:#f5edf1;color:#6d5962}.ep-queue{text-align:center;padding:90px 20px}.ep-spinner{width:46px;height:46px;border:4px solid #f0dfe7;border-top-color:#ff5f9e;border-radius:50%;margin:0 auto 20px;animation:spin .8s linear infinite}@keyframes spin{to{transform:rotate(360deg)}}.ep-queue h1{font-size:28px}.ep-queue-vs{display:flex;justify-content:center;align-items:center;gap:35px;margin:30px}.ep-queue-vs>div{min-width:130px;padding:18px;border:1px solid #eee0e7;border-radius:18px;background:#fff}.ep-queue-vs b{display:block;font-size:30px;margin-top:8px}.ep-battle-head{display:flex;justify-content:space-between;align-items:center}.ep-battle-head h1{margin:4px 0}.ep-battle-head p{margin:0;color:#9a8791}.ep-turn{text-align:right}.ep-turn b{display:block;font-size:22px;color:#ff5f9e}.ep-scoreboard{display:grid;grid-template-columns:1fr auto 1fr;gap:14px;align-items:center;margin:18px 0}.ep-side{padding:16px;border-radius:18px;background:#fff;border:1px solid #eadfe5}.ep-side-head{display:flex;justify-content:space-between;margin-bottom:12px}.ep-side-head span{font-size:10px;color:#a48f99}.ep-bars>div{display:grid;grid-template-columns:65px 65px 1fr;gap:8px;align-items:center;margin:7px 0;font-size:10px}.ep-bars i{height:9px;border-radius:20px;background:#f1e7eb;overflow:hidden}.ep-bars em{display:block;height:100%;width:0;background:#ff8eb8;border-radius:20px}.rival .ep-bars em{background:#9f8ae9}.ep-vs{font-weight:900;color:#ff5f9e}.ep-active{padding:18px;border-radius:20px;background:#fff;border:1px solid #eadfe5}.ep-active-info small{font-size:9px;font-weight:900;color:#ff5f9e}.ep-active-info h2{margin:4px 0}.ep-active-info span{font-size:10px;color:#9a8791}.ep-skill-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:14px}.ep-skill{min-height:100px;padding:12px;border:1px solid #eadfe5;border-radius:15px;background:#fff;text-align:left}.ep-skill:disabled{opacity:.45;cursor:not-allowed}.ep-skill b,.ep-skill span,.ep-skill small{display:block}.ep-skill span{font-weight:900;margin:7px 0}.ep-skill small{font-size:9px;color:#9a8791}.ep-special-wrap{margin-top:12px}.ep-special-wrap button{width:100%;padding:13px;border:1px solid #e7d9e0;border-radius:14px;background:#fff7fb;font:inherit;cursor:pointer}.ep-special-wrap button:disabled{opacity:.5}.ep-special-wrap span{color:#ff5f9e;margin-right:8px}.ep-rps h2{margin:4px 0}.ep-rps p{margin:0;color:#9a8791;font-size:10px}.rps-buttons{display:flex;gap:10px;margin-top:14px}.rps-buttons button{flex:1;padding:13px;border:1px solid #eadfe5;border-radius:12px;background:#fff}.rps-buttons button:hover{border-color:#ff8eb8}.ep-rps>b{display:block;margin-top:10px;color:#ff5f9e}.ep-log{margin-top:16px;padding:18px;border:1px solid #eadfe5;border-radius:18px;background:#fff}.ep-log .ep-panel-head{margin-bottom:8px}.ep-log-line{font-size:11px;padding:7px 0;border-bottom:1px solid #f3e9ed}.ep-result{position:fixed;inset:0;z-index:50;display:flex;align-items:center;justify-content:center;padding:20px;background:rgba(35,20,28,.45);backdrop-filter:blur(8px)}.ep-result-card{width:min(600px,94vw);padding:30px;border-radius:24px;background:#fff;text-align:center;box-shadow:0 25px 90px rgba(50,20,35,.25)}.ep-result-card h1{font-size:40px;margin:6px}.ep-result-score{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:20px 0}.ep-result-score div,.ep-reward-box{padding:16px;border-radius:15px;background:#fff7fb}.ep-result-score span,.ep-reward-box span,.ep-reward-box small{display:block;font-size:9px;color:#9a8791}.ep-result-score b{font-size:25px}.ep-reward-box b{display:block;font-size:26px;color:#ff5f9e;margin:5px}.ep-result-card .ep-primary{margin-top:15px}@media(max-width:800px){.ep-topbar{grid-template-columns:auto 1fr auto}.ep-topbar>div:nth-child(2){text-align:left}.ep-main{width:94vw}.ep-title{display:block}.ep-rules{margin-top:12px;text-align:left}.ep-char-grid{grid-template-columns:repeat(2,1fr)}.ep-energy-row{grid-template-columns:1fr 1fr}.ep-energy-row label{grid-column:1/-1}.ep-mode-grid,.ep-song-grid{grid-template-columns:1fr}.ep-scoreboard{grid-template-columns:1fr}.ep-vs{text-align:center}.ep-skill-grid{grid-template-columns:1fr}.rps-buttons{flex-direction:column}.ep-battle-head{gap:10px}.ep-battle-head h1{font-size:22px}}
+
+.ep-special-card em{display:block;margin-top:8px;font-size:9px;line-height:1.45;color:#7d6872;font-style:normal;text-align:left;padding:8px;border-radius:10px;background:#fff7fb;border:1px solid #f1e3e9}
+
+.ep-rps{position:fixed;inset:0;z-index:9999;margin:0;padding:24px;display:flex;align-items:center;justify-content:center;background:rgba(30,18,25,.68);border:0;border-radius:0;backdrop-filter:blur(6px)}
+.ep-rps.hidden{display:none!important}
+.ep-rps-modal{width:min(560px,92vw);padding:30px;border-radius:26px;background:#fff;border:1px solid #f0dce5;box-shadow:0 25px 80px rgba(20,10,18,.28);text-align:center}
+.ep-rps-modal h2{font-size:26px;margin:7px 0}.ep-rps-modal p{margin:0;color:#9a8791;font-size:12px}.rps-buttons{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:24px}.rps-buttons button{border:1px solid #eadfe5;border-radius:16px;background:#fff;padding:18px 10px;font-weight:900;font-size:15px}.rps-buttons button:hover{border-color:#ff8eb8;background:#fff2f7;transform:translateY(-1px)}
+
+/* OPENING RPS POPUP — EVENT PLAY ONLY */
+#rpsView:not(.hidden){
+ position:fixed;inset:0;z-index:2000;margin:0;padding:24px;
+ background:rgba(35,20,28,.52);backdrop-filter:blur(10px);
+ display:flex;align-items:center;justify-content:center;
+}
+#rpsView .ep-rps-modal{
+ width:min(560px,94vw);padding:30px;border:1px solid #eadde5;
+ border-radius:26px;background:#fff;box-shadow:0 30px 100px rgba(40,15,30,.3);
+ text-align:center;
+}
+#rpsView .ep-rps-modal h2{font-size:28px;margin:7px 0}
+#rpsView .ep-rps-modal p{font-size:12px;color:#8f7d86;margin:0}
+#rpsView .rps-buttons{margin-top:22px}
+#rpsView .rps-buttons button{min-height:58px;font-weight:900}
+#rpsView .ep-rps-modal>b{display:block;margin-top:16px;color:#ff5f9e}
+
+
+/* FINAL RPS MODAL GUARANTEE */
+#rpsView.ep-rps:not(.hidden){position:fixed!important;inset:0!important;z-index:99999!important;width:100vw!important;height:100vh!important;margin:0!important;padding:24px!important;display:flex!important;align-items:center!important;justify-content:center!important;background:rgba(30,18,25,.68)!important;border:0!important;border-radius:0!important;backdrop-filter:blur(8px)!important}
+#rpsView.ep-rps:not(.hidden) .ep-rps-modal{width:min(560px,92vw)!important;max-height:90vh!important;overflow:auto!important}
+
+
+/* TURN CHARACTER CARD */
+.ep-turn-character-card{display:flex;align-items:center;gap:12px;width:min(100%,430px);margin:14px auto 0;padding:10px;border:1px solid #eadfe5;border-radius:16px;background:linear-gradient(135deg,#fffafd,#fff);box-shadow:0 8px 24px rgba(80,35,55,.06)}
+.ep-turn-character-art{position:relative;flex:0 0 86px;width:86px;height:86px;border-radius:13px;overflow:hidden;background:#fff3f8;border:1px solid #f0dce5}
+.ep-turn-character-art img{width:100%;height:100%;object-fit:cover;display:block}
+.ep-turn-character-wait{position:absolute;inset:auto 0 0;padding:5px 3px;background:rgba(45,25,35,.72);color:#fff;text-align:center;font-size:7px;font-weight:900;letter-spacing:.8px}
+.ep-turn-character-info{min-width:0;display:grid;gap:3px;text-align:left}
+.ep-turn-character-info strong{font-size:15px;letter-spacing:.7px}
+.ep-turn-character-info span{color:#c89a25;font-size:10px;letter-spacing:1px}
+.ep-turn-character-info b{font-size:12px;color:#ff5f9e}
+.ep-turn-character-info small{font-size:8px;color:#9a8791;font-weight:800}
+.ep-skill-wait{min-height:100px;display:grid;place-items:center;border:1px dashed #eadfe5;border-radius:15px;color:#9a8791;font-size:10px;font-weight:900;letter-spacing:1px}
+.ep-leave-overlay{position:fixed;inset:0;z-index:100000;background:rgba(30,18,25,.58);backdrop-filter:blur(8px);display:flex;align-items:center;justify-content:center;padding:20px}
+.ep-leave-overlay.hidden{display:none!important}
+.ep-leave-card{width:min(460px,92vw);padding:28px;border:1px solid #eadfe5;border-radius:24px;background:#fff;text-align:center;box-shadow:0 30px 100px rgba(40,15,30,.3)}
+.ep-leave-card>small{font-size:8px;letter-spacing:2px;color:#ff5f9e;font-weight:900}.ep-leave-card h2{margin:7px 0}.ep-leave-card p{font-size:11px;line-height:1.55;color:#8f7d86}.ep-leave-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:18px}.ep-leave-actions .ep-primary{width:100%}
+@media(max-width:800px){.ep-turn-character-card{width:100%;max-width:none}.ep-turn-character-art{flex-basis:72px;width:72px;height:72px}.ep-leave-actions{grid-template-columns:1fr}}
+
+.ep-turn-character-pair{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px}.ep-turn-character-card{display:flex;align-items:center;gap:12px;padding:12px;border:1px solid #eadfe5;border-radius:16px;background:#fff;min-width:0}.ep-turn-character-card.side-you{border-left:4px solid #ff8eb8}.ep-turn-character-card.side-rival{border-right:4px solid #9f8ae9;flex-direction:row-reverse;text-align:right}.ep-turn-character-art{position:relative;width:86px;height:100px;flex:0 0 86px;border-radius:14px;background:#fff6fa;overflow:hidden;display:flex;align-items:center;justify-content:center}.ep-turn-character-art img{width:100%;height:100%;object-fit:contain}.ep-turn-character-wait{position:absolute;left:5px;right:5px;bottom:5px;padding:4px 3px;border-radius:7px;background:rgba(255,255,255,.92);font-size:7px;font-weight:900;letter-spacing:.5px;color:#ff5f9e}.side-rival .ep-turn-character-wait{color:#7763bd}.ep-turn-character-info{min-width:0}.ep-turn-character-info strong,.ep-turn-character-info span,.ep-turn-character-info b,.ep-turn-character-info small{display:block}.ep-turn-character-info strong{font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.ep-turn-character-info span{color:#f0a83a;font-size:10px;margin:3px 0}.ep-turn-character-info b{font-size:11px}.ep-turn-character-info small{color:#9a8791;font-size:8px;margin-top:3px}.ep-person-icon{font-size:42px;color:#b7aab1;line-height:1}.side-rival .ep-person-icon{transform:scaleX(-1)}@media(max-width:700px){.ep-turn-character-pair{grid-template-columns:1fr}.ep-turn-character-card.side-rival{flex-direction:row;text-align:left}.ep-turn-character-art{width:72px;height:88px;flex-basis:72px}}
+
+
+/* =========================================================
+   EVENT BATTLE — MOBILE LANDSCAPE COMPACT V2
+   Goal: scoreboard + actors + 3 skills + special all visible
+   without vertical scrolling.
+========================================================= */
+html,body{
+  overscroll-behavior:none;
+}
+
+@media (orientation:landscape) and (max-height:700px){
+  body.ep-battle-mobile{
+    position:fixed;
+    inset:0;
+    width:100%;
+    height:var(--ep-vh,100dvh);
+    overflow:hidden !important;
+    touch-action:none;
+    background:#fff8fb;
+  }
+
+  body.ep-battle-mobile .ep-shell{
+    position:fixed;
+    inset:0;
+    width:100%;
+    height:var(--ep-vh,100dvh);
+    min-height:0;
+    overflow:hidden;
+  }
+
+  /* Very small header, but keep Event/back + player PT visible. */
+  body.ep-battle-mobile .ep-topbar{
+    position:absolute !important;
+    top:0;left:0;right:0;
+    z-index:60;
+    height:42px;
+    min-height:42px;
+    padding:
+      max(3px,env(safe-area-inset-top))
+      max(8px,env(safe-area-inset-right))
+      3px
+      max(8px,env(safe-area-inset-left));
+    display:grid;
+    grid-template-columns:80px minmax(0,1fr) 110px;
+    gap:6px;
+    backdrop-filter:none;
+  }
+  body.ep-battle-mobile .ep-back{
+    min-height:30px;
+    padding:4px 8px;
+    border-radius:9px;
+    font-size:14px;
+  }
+  body.ep-battle-mobile .ep-back small{display:inline;font-size:7px}
+  body.ep-battle-mobile .ep-topbar>div:nth-child(2) small{display:none}
+  body.ep-battle-mobile .ep-topbar>div:nth-child(2) strong{
+    font-size:11px;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+  }
+  body.ep-battle-mobile .ep-user span{font-size:7px}
+  body.ep-battle-mobile .ep-user b{font-size:9px}
+
+  /* Battle itself fills exactly the browser-visible area below header. */
+  body.ep-battle-mobile #battleView{
+    position:absolute !important;
+    top:42px;
+    left:max(5px,env(safe-area-inset-left));
+    right:max(5px,env(safe-area-inset-right));
+    bottom:max(4px,env(safe-area-inset-bottom));
+    width:auto !important;
+    height:auto !important;
+    margin:0 !important;
+    padding:4px 0 !important;
+    overflow:hidden !important;
+    display:grid !important;
+    grid-template-rows:34px 82px minmax(0,1fr);
+    gap:5px;
+  }
+
+  body.ep-battle-mobile #battleView.hidden{display:none!important}
+
+  /* Battle title becomes a tiny status strip. */
+  body.ep-battle-mobile .ep-battle-head{
+    min-height:0;
+    height:34px;
+    padding:0 7px;
+    border:1px solid #f0e2e8;
+    border-radius:10px;
+    background:#fff;
+    display:flex;
+    align-items:center;
+  }
+  body.ep-battle-mobile .ep-battle-head>div:first-child{
+    min-width:0;
+    display:flex;
+    align-items:center;
+    gap:7px;
+  }
+  body.ep-battle-mobile .ep-battle-head small{
+    font-size:6px;
+    white-space:nowrap;
+  }
+  body.ep-battle-mobile .ep-battle-head h1{
+    margin:0;
+    font-size:10px;
+    white-space:nowrap;
+  }
+  body.ep-battle-mobile .ep-battle-head p{
+    font-size:7px;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    max-width:24vw;
+  }
+  body.ep-battle-mobile .ep-turn small{font-size:6px}
+  body.ep-battle-mobile .ep-turn b{font-size:13px}
+
+  /* Both scoreboards stay side-by-side. */
+  body.ep-battle-mobile .ep-scoreboard{
+    height:82px;
+    margin:0;
+    display:grid !important;
+    grid-template-columns:minmax(0,1fr) 22px minmax(0,1fr) !important;
+    gap:5px;
+  }
+  body.ep-battle-mobile .ep-side{
+    min-width:0;
+    height:82px;
+    padding:6px 8px;
+    border-radius:11px;
+  }
+  body.ep-battle-mobile .ep-side-head{
+    margin-bottom:3px;
+    gap:5px;
+  }
+  body.ep-battle-mobile .ep-side-head strong{
+    max-width:50%;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+    font-size:8px;
+  }
+  body.ep-battle-mobile .ep-side-head span{font-size:6px}
+  body.ep-battle-mobile .ep-bars>div{
+    grid-template-columns:35px 46px minmax(40px,1fr);
+    gap:4px;
+    margin:2px 0;
+    font-size:7px;
+  }
+  body.ep-battle-mobile .ep-bars i{height:5px}
+  body.ep-battle-mobile .ep-vs{
+    display:grid;
+    place-items:center;
+    font-size:8px;
+  }
+
+  /* Main action area: actor status + two portraits + skills + special. */
+  body.ep-battle-mobile .ep-active{
+    min-height:0;
+    overflow:hidden;
+    padding:6px;
+    border-radius:12px;
+    display:grid;
+    grid-template-columns:150px minmax(0,1fr) 76px;
+    grid-template-rows:31px minmax(0,1fr);
+    grid-template-areas:
+      "info skills special"
+      "chars skills special";
+    gap:5px 7px;
+    align-items:stretch;
+  }
+
+  body.ep-battle-mobile .ep-active-info{
+    grid-area:info;
+    min-width:0;
+    display:grid;
+    grid-template-columns:auto minmax(0,1fr);
+    grid-template-rows:auto auto;
+    column-gap:5px;
+    align-content:center;
+  }
+  body.ep-battle-mobile .ep-active-info small{
+    grid-column:1;
+    grid-row:1 / 3;
+    align-self:center;
+    font-size:6px;
+    writing-mode:vertical-rl;
+    transform:rotate(180deg);
+  }
+  body.ep-battle-mobile .ep-active-info h2{
+    grid-column:2;
+    margin:0;
+    font-size:10px;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+  }
+  body.ep-battle-mobile .ep-active-info span{
+    grid-column:2;
+    font-size:6px;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+  }
+
+  body.ep-battle-mobile .ep-turn-character-pair{
+    grid-area:chars;
+    min-height:0;
+    margin:0;
+    display:grid !important;
+    grid-template-columns:1fr 1fr !important;
+    gap:4px;
+  }
+  body.ep-battle-mobile .ep-turn-character-card,
+  body.ep-battle-mobile .ep-turn-character-card.side-rival{
+    min-width:0;
+    width:auto;
+    height:100%;
+    max-height:74px;
+    margin:0;
+    padding:3px;
+    gap:4px;
+    border-radius:9px;
+    flex-direction:column !important;
+    text-align:center !important;
+    justify-content:center;
+  }
+  body.ep-battle-mobile .ep-turn-character-art{
+    width:42px;
+    height:42px;
+    flex:0 0 42px;
+    border-radius:8px;
+  }
+  body.ep-battle-mobile .ep-turn-character-wait{
+    left:2px;right:2px;bottom:2px;
+    padding:2px 1px;
+    font-size:4.5px;
+    border-radius:4px;
+  }
+  body.ep-battle-mobile .ep-turn-character-info{
+    min-width:0;
+    width:100%;
+    text-align:center;
+    display:block;
+  }
+  body.ep-battle-mobile .ep-turn-character-info strong{
+    display:block;
+    font-size:6.5px;
+    line-height:1.1;
+  }
+  body.ep-battle-mobile .ep-turn-character-info span,
+  body.ep-battle-mobile .ep-turn-character-info small{
+    display:none;
+  }
+  body.ep-battle-mobile .ep-turn-character-info b{
+    display:block;
+    margin:1px 0 0;
+    font-size:5.5px;
+  }
+  body.ep-battle-mobile .ep-person-icon{font-size:24px}
+
+  /* 3 skills permanently visible, side-by-side, no scrolling. */
+  body.ep-battle-mobile .ep-skill-grid{
+    grid-area:skills;
+    min-width:0;
+    min-height:0;
+    margin:0;
+    display:grid !important;
+    grid-template-columns:repeat(3,minmax(0,1fr)) !important;
+    gap:5px;
+  }
+  body.ep-battle-mobile .ep-skill{
+    min-width:0;
+    min-height:0 !important;
+    height:100%;
+    max-height:none;
+    padding:6px;
+    border-radius:10px;
+    overflow:hidden;
+    touch-action:manipulation;
+  }
+  body.ep-battle-mobile .ep-skill b{
+    font-size:6px;
+    letter-spacing:.4px;
+  }
+  body.ep-battle-mobile .ep-skill span{
+    margin:4px 0 3px;
+    font-size:8px;
+    line-height:1.05;
+    overflow-wrap:anywhere;
+  }
+  body.ep-battle-mobile .ep-skill small{
+    font-size:6px;
+    line-height:1.18;
+    display:block;
+  }
+  body.ep-battle-mobile .ep-skill-wait{
+    grid-column:1 / -1;
+    min-height:0;
+    height:100%;
+    border-radius:10px;
+    font-size:8px;
+  }
+
+  /* Special energy always visible at far right. */
+  body.ep-battle-mobile .ep-special-wrap{
+    grid-area:special;
+    margin:0;
+    min-width:0;
+  }
+  body.ep-battle-mobile .ep-special-wrap button{
+    width:100%;
+    height:100%;
+    min-height:0;
+    padding:5px 3px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    gap:3px;
+    border-radius:10px;
+    touch-action:manipulation;
+  }
+  body.ep-battle-mobile .ep-special-wrap span{
+    margin:0;
+    font-size:18px;
+  }
+  body.ep-battle-mobile .ep-special-wrap b{font-size:7px}
+  body.ep-battle-mobile .ep-special-wrap small{
+    font-size:13px;
+    font-weight:900;
+    color:#ff5f9e;
+  }
+
+  /* Battle log is non-essential during mobile combat; hiding it saves a full
+     vertical section. State still remains in game.log and appears normally
+     on desktop. */
+  body.ep-battle-mobile .ep-log{
+    display:none !important;
+  }
+
+  /* Overlays remain usable and can scroll independently. */
+  body.ep-battle-mobile .ep-rps,
+  body.ep-battle-mobile .ep-leave-overlay,
+  .ep-result{
+    height:var(--ep-vh,100dvh) !important;
+    max-height:var(--ep-vh,100dvh);
+  }
+  body.ep-battle-mobile #rpsView .ep-rps-modal{
+    max-height:calc(var(--ep-vh,100dvh) - 16px) !important;
+    padding:14px !important;
+  }
+  body.ep-battle-mobile #rpsView .ep-rps-modal h2{font-size:17px}
+  body.ep-battle-mobile #rpsView .rps-buttons{
+    grid-template-columns:repeat(3,1fr);
+    gap:7px;
+    margin-top:10px;
+  }
+  body.ep-battle-mobile #rpsView .rps-buttons button{
+    min-height:40px;
+    padding:7px 5px;
+    font-size:10px;
+  }
+}
+
+/* Tiny phones / Chrome address bar still visible */
+@media (orientation:landscape) and (max-height:460px){
+  body.ep-battle-mobile .ep-topbar{
+    height:36px;
+    min-height:36px;
+  }
+  body.ep-battle-mobile #battleView{
+    top:36px;
+    grid-template-rows:29px 70px minmax(0,1fr);
+    gap:3px;
+  }
+  body.ep-battle-mobile .ep-battle-head{height:29px}
+  body.ep-battle-mobile .ep-scoreboard,
+  body.ep-battle-mobile .ep-side{height:70px}
+  body.ep-battle-mobile .ep-bars>div{margin:1px 0}
+  body.ep-battle-mobile .ep-active{
+    grid-template-columns:132px minmax(0,1fr) 64px;
+    gap:3px 5px;
+    padding:4px;
+  }
+  body.ep-battle-mobile .ep-turn-character-card,
+  body.ep-battle-mobile .ep-turn-character-card.side-rival{
+    max-height:60px;
+  }
+  body.ep-battle-mobile .ep-turn-character-art{
+    width:34px;height:34px;flex-basis:34px;
+  }
+  body.ep-battle-mobile .ep-skill{padding:4px}
+  body.ep-battle-mobile .ep-skill span{font-size:7px;margin:2px 0}
+  body.ep-battle-mobile .ep-skill small{font-size:5.5px}
+}
+
+/* V15 equipment/critical system is computed in JS; battle log displays CRITICAL activations. */
+
+.ep-match-actions{display:grid;grid-template-columns:.72fr 1.28fr;gap:10px;margin-top:12px}.ep-match-actions .ep-primary,.ep-match-actions .ep-secondary{width:100%;margin:0}.ep-team-check{position:fixed;inset:0;z-index:120000;background:rgba(35,22,29,.55);backdrop-filter:blur(10px);display:grid;place-items:center;padding:18px}.ep-team-check.hidden{display:none!important}.ep-team-check-card{position:relative;width:min(1080px,96vw);max-height:90vh;overflow:auto;padding:27px;border:1px solid #ead7e0;border-radius:26px;background:#fff;box-shadow:0 28px 100px rgba(42,23,31,.25)}.ep-team-check-x{position:absolute;right:14px;top:14px;width:36px;height:36px;border:0;border-radius:50%;background:#fff1f6;color:#d74b7e;font-size:21px}.ep-team-check-card>h2{margin:5px 0;font-family:'Quicksand','Nunito',sans-serif}.ep-team-check-card>p{font-size:10px;color:#927e87}.ep-team-check-content{display:grid;grid-template-columns:repeat(3,1fr);gap:11px;margin-top:16px}.ep-team-stat-card{padding:14px;border:1px solid #eadce2;border-radius:18px;background:linear-gradient(145deg,#fff,#fff8fb);box-shadow:0 8px 25px rgba(75,42,55,.045)}.ep-team-stat-head{display:grid;grid-template-columns:66px 1fr;gap:10px;align-items:center}.ep-team-stat-head img{width:66px;height:76px;object-fit:contain;border-radius:12px;background:#fff1f6}.ep-team-stat-head small,.ep-team-stat-head strong,.ep-team-stat-head b{display:block}.ep-team-stat-head strong{font-size:13px}.ep-team-stat-head b{font-size:16px;color:#e64e84;margin-top:3px}.ep-team-stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:11px}.ep-team-stat-grid span{padding:7px;border-radius:9px;background:#fff1f6;font-size:7px;font-weight:900;color:#997784}.ep-team-stat-grid b{display:block;color:#db4d80;margin-top:2px}.ep-team-skill-list{margin-top:10px;display:grid;gap:6px}.ep-team-skill-list>div{display:grid;grid-template-columns:22px 1fr;gap:7px;padding:8px;border:1px solid #f1e3e9;border-radius:10px}.ep-team-skill-list em{width:22px;height:22px;display:grid;place-items:center;border-radius:7px;background:#f1548b;color:#fff;font-size:8px;font-style:normal;font-weight:900}.ep-team-skill-list p{margin:0}.ep-team-skill-list strong,.ep-team-skill-list span{display:block}.ep-team-skill-list strong{font-size:8px}.ep-team-skill-list span{margin-top:2px;font-size:7.5px;line-height:1.35;color:#8d7982}.ep-team-special{grid-column:1/-1;padding:12px;border-radius:13px;background:#352d31;color:#fff}.ep-team-special small,.ep-team-special strong,.ep-team-special span{display:block}.ep-team-special span{font-size:8px;line-height:1.5;color:#eadce2;margin-top:4px}
+@media(max-width:800px){.ep-team-check-content{grid-template-columns:1fr 1fr}.ep-match-actions{grid-template-columns:1fr}.ep-team-check-card{padding:18px}}
+@media(max-width:560px){.ep-team-check-content{grid-template-columns:1fr}}
+
+/* V19 · Team check inside active Event battle */
+.ep-battle-check-btn{border:1px solid #efc6d5;background:#fff5f8;color:#d84c7f;border-radius:10px;padding:7px 10px;font-size:8px;font-weight:900;letter-spacing:.8px;box-shadow:0 4px 12px rgba(95,46,66,.05)}
+@media(max-width:800px){.ep-battle-check-btn{padding:6px 8px;font-size:7px}}
+
+/* V20 · stable battle header CHECK TEAM placement */
+.ep-battle-tools{margin-left:auto;display:flex;align-items:center;gap:9px}.ep-battle-tools .ep-turn{margin-left:0}.ep-battle-check-btn{white-space:nowrap}
+@media(max-width:800px){.ep-battle-tools{gap:5px}.ep-battle-check-btn{padding:6px 7px}}
+
+
+/* V20 · Android event portraits stay visible */
+@media (orientation:landscape) and (max-height:700px){
+ body.ep-battle-mobile .ep-turn-character-pair{display:grid!important;grid-template-columns:1fr 1fr!important;gap:8px!important;margin:4px 0 6px!important}
+ body.ep-battle-mobile .ep-turn-character-card,body.ep-battle-mobile .ep-turn-character-card.side-rival{display:grid!important;grid-template-columns:70px minmax(0,1fr)!important;max-height:none!important;min-height:78px!important;padding:6px!important;gap:7px!important;flex-direction:initial!important;text-align:left!important;overflow:visible!important}
+ body.ep-battle-mobile .ep-turn-character-art{display:flex!important;width:70px!important;height:70px!important;min-height:70px!important;flex-basis:70px!important;overflow:hidden!important;border-radius:10px!important}
+ body.ep-battle-mobile .ep-turn-character-art img{display:block!important;width:100%!important;height:100%!important;object-fit:contain!important;visibility:visible!important;opacity:1!important}
+ body.ep-battle-mobile .ep-turn-character-wait{left:3px!important;right:3px!important;bottom:3px!important;padding:3px 2px!important;font-size:6px!important;line-height:1.05!important}
+ body.ep-battle-mobile .ep-turn-character-info{display:block!important;min-width:0!important}
+ body.ep-battle-mobile .ep-turn-character-info strong{display:block!important;font-size:9px!important}.ep-turn-character-info b{font-size:8px!important}
+}
+@media (orientation:landscape) and (max-height:460px){body.ep-battle-mobile .ep-turn-character-card,body.ep-battle-mobile .ep-turn-character-card.side-rival{min-height:64px!important;max-height:none!important}body.ep-battle-mobile .ep-turn-character-art{width:58px!important;height:58px!important;min-height:58px!important;flex-basis:58px!important}body.ep-battle-mobile .ep-turn-character-card{grid-template-columns:58px minmax(0,1fr)!important}}
+
+/* =========================================================
+   EVENT SETUP MOBILE V3 — team selection stays INSIDE Event Play.
+   Desktop remains unchanged.
+========================================================= */
+@media (orientation:landscape) and (max-height:700px) and (pointer:coarse){
+  body:not(.ep-battle-mobile){overflow:hidden!important}
+  body:not(.ep-battle-mobile) .ep-shell{height:var(--ep-vh,100dvh)!important;overflow:hidden!important}
+  body:not(.ep-battle-mobile) .ep-topbar{height:42px!important;min-height:42px!important;padding:4px 10px!important;grid-template-columns:70px 1fr 100px!important;gap:5px!important}
+  body:not(.ep-battle-mobile) .ep-back{padding:5px 8px!important;font-size:10px!important}.ep-topbar small{font-size:5px!important}.ep-topbar strong{font-size:9px!important}.ep-user span{font-size:5px!important}.ep-user b{font-size:7px!important}
+  body:not(.ep-battle-mobile) #setupView{width:calc(100% - 16px)!important;height:calc(var(--ep-vh,100dvh) - 42px)!important;margin:0 auto!important;padding:6px 0 8px!important;display:grid!important;grid-template-columns:minmax(180px,.72fr) minmax(330px,1.28fr)!important;grid-template-rows:auto minmax(0,1fr) auto!important;gap:6px!important;overflow:hidden!important}
+  body:not(.ep-battle-mobile) #setupView>.ep-title{grid-column:1/-1!important;margin:0!important;min-height:26px!important;align-items:center!important}
+  body:not(.ep-battle-mobile) #setupView>.ep-title span,body:not(.ep-battle-mobile) #setupView>.ep-title p{display:none!important}
+  body:not(.ep-battle-mobile) #setupView>.ep-title h1{font-size:13px!important;margin:0!important}.ep-rules{padding:4px 8px!important;border-radius:8px!important}.ep-rules b{font-size:7px!important}.ep-rules span{font-size:4px!important}
+  body:not(.ep-battle-mobile) #setupView>.ep-panel{margin:0!important;padding:7px!important;border-radius:11px!important;min-height:0!important;overflow:hidden!important}
+  body:not(.ep-battle-mobile) #setupView>.ep-panel:nth-of-type(1){grid-column:1!important;grid-row:2!important;display:flex!important;flex-direction:column!important}
+  body:not(.ep-battle-mobile) #setupView>.ep-panel:nth-of-type(2){grid-column:2!important;grid-row:2!important;display:flex!important;flex-direction:column!important}
+  body:not(.ep-battle-mobile) #setupView>.ep-panel:nth-of-type(3){grid-column:1!important;grid-row:3!important}
+  body:not(.ep-battle-mobile) #setupView>.ep-panel:nth-of-type(4){grid-column:2!important;grid-row:3!important}
+  body:not(.ep-battle-mobile) .ep-panel-head{margin-bottom:5px!important;gap:5px!important}.ep-panel-head small{font-size:4.5px!important}.ep-panel-head h2{font-size:8px!important;margin:1px 0!important}.ep-panel-head>span,.ep-panel-head>b{font-size:5px!important}
+  body:not(.ep-battle-mobile) .ep-song-grid{display:flex!important;flex-direction:column!important;gap:5px!important;overflow-y:auto!important;min-height:0!important;padding-right:2px!important}
+  body:not(.ep-battle-mobile) .ep-song{padding:7px!important;border-radius:8px!important;min-height:42px!important}.ep-song strong{font-size:8px!important}.ep-song span{font-size:4.5px!important;margin-top:2px!important}
+  body:not(.ep-battle-mobile) .ep-char-grid{grid-template-columns:repeat(4,minmax(74px,1fr))!important;gap:5px!important;overflow-y:auto!important;min-height:0!important;padding-right:2px!important}
+  body:not(.ep-battle-mobile) .ep-char-card{padding:5px!important;border-radius:8px!important}.ep-char-card img{height:54px!important;border-radius:7px!important}.ep-char-card strong{font-size:6px!important;margin-top:3px!important}.ep-char-card small{font-size:4.5px!important;margin-top:1px!important}
+  body:not(.ep-battle-mobile) .ep-special-grid{grid-template-columns:1fr 1fr!important;gap:5px!important}.ep-special-card{padding:5px!important;border-radius:8px!important;display:grid!important;grid-template-columns:42px 1fr!important;grid-template-rows:auto auto!important;text-align:left!important;column-gap:6px!important}.ep-special-card img{grid-row:1/3;width:42px!important;height:48px!important}.ep-special-card strong{font-size:6px!important;margin:2px 0 0!important}.ep-special-card small{font-size:4px!important}.ep-special-card em{display:none!important}
+  body:not(.ep-battle-mobile) .ep-mode-grid{gap:5px!important}.ep-mode{padding:6px!important;border-radius:8px!important}.ep-mode b{font-size:6px!important}.ep-mode span{font-size:4px!important;margin-top:1px!important}
+  body:not(.ep-battle-mobile) .ep-energy-row{grid-template-columns:1fr 90px 90px!important;gap:5px!important;margin:5px 0!important}.ep-energy-row label{font-size:5px!important}.ep-energy-row select{padding:5px!important;font-size:6px!important;border-radius:7px!important}.ep-energy-row b{font-size:8px!important}.ep-energy-row small{font-size:4px!important}
+  body:not(.ep-battle-mobile) #saveTeam{padding:7px!important;border-radius:8px!important;font-size:6px!important}
+}
+
+/* Visible Event skill cooldown states */
+.ep-skill.on-cooldown{opacity:.52!important;filter:saturate(.55)}
+.ep-skill.on-cooldown b{color:#a78495!important}
+.ep-skill b{white-space:normal}
+@media (orientation:landscape) and (max-height:700px){
+ body.ep-battle-mobile .ep-skill b{font-size:5.6px!important;line-height:1.12!important}
+}
+
+/* =========================================================
+   EVENT SETUP MOBILE V4
+   LEFT  = Event Special -> Matchmaking
+   RIGHT = Songs -> Main Team
+========================================================= */
+@media (orientation:landscape) and (pointer:coarse){
+  body:not(.ep-battle-mobile){overflow:hidden!important}
+  body:not(.ep-battle-mobile) .ep-shell{height:var(--ep-vh,100dvh)!important;overflow:hidden!important}
+  body:not(.ep-battle-mobile) .ep-topbar{height:42px!important;min-height:42px!important;padding:4px 10px!important;grid-template-columns:72px minmax(0,1fr) 110px!important;gap:5px!important}
+  body:not(.ep-battle-mobile) .ep-back{padding:5px 8px!important;font-size:10px!important}
+  body:not(.ep-battle-mobile) .ep-topbar small{font-size:5px!important}
+  body:not(.ep-battle-mobile) .ep-topbar strong{font-size:9px!important}
+  body:not(.ep-battle-mobile) .ep-user span{font-size:5px!important}
+  body:not(.ep-battle-mobile) .ep-user b{font-size:7px!important}
+
+  body:not(.ep-battle-mobile) #setupView{
+    width:calc(100% - 16px)!important;
+    height:calc(var(--ep-vh,100dvh) - 42px)!important;
+    margin:0 auto!important;
+    padding:5px 0 7px!important;
+    display:grid!important;
+    grid-template-columns:minmax(300px,.72fr) minmax(520px,1.28fr)!important;
+    grid-template-rows:28px minmax(0,.78fr) minmax(0,1.22fr)!important;
+    gap:6px!important;
+    overflow:hidden!important;
+  }
+  body:not(.ep-battle-mobile) #setupView>.ep-title{grid-column:1/-1!important;grid-row:1!important;margin:0!important;min-height:0!important;height:28px!important;align-items:center!important}
+  body:not(.ep-battle-mobile) #setupView>.ep-title span,body:not(.ep-battle-mobile) #setupView>.ep-title p{display:none!important}
+  body:not(.ep-battle-mobile) #setupView>.ep-title h1{font-size:13px!important;margin:0!important}
+  body:not(.ep-battle-mobile) .ep-rules{padding:4px 8px!important;border-radius:8px!important}
+  body:not(.ep-battle-mobile) .ep-rules b{font-size:7px!important}
+  body:not(.ep-battle-mobile) .ep-rules span{display:none!important}
+
+  body:not(.ep-battle-mobile) #setupView>.ep-panel{margin:0!important;padding:7px!important;border-radius:11px!important;min-height:0!important;overflow:hidden!important}
+  body:not(.ep-battle-mobile) #setupView>.ep-panel:nth-of-type(1){grid-column:2!important;grid-row:2!important;display:flex!important;flex-direction:column!important}
+  body:not(.ep-battle-mobile) #setupView>.ep-panel:nth-of-type(2){grid-column:2!important;grid-row:3!important;display:flex!important;flex-direction:column!important}
+  body:not(.ep-battle-mobile) #setupView>.ep-panel:nth-of-type(3){grid-column:1!important;grid-row:2!important;display:flex!important;flex-direction:column!important}
+  body:not(.ep-battle-mobile) #setupView>.ep-panel:nth-of-type(4){grid-column:1!important;grid-row:3!important;display:flex!important;flex-direction:column!important}
+
+  body:not(.ep-battle-mobile) .ep-panel-head{margin-bottom:4px!important;gap:5px!important;flex:0 0 auto!important}
+  body:not(.ep-battle-mobile) .ep-panel-head small{font-size:4.5px!important}
+  body:not(.ep-battle-mobile) .ep-panel-head h2{font-size:8px!important;margin:1px 0!important}
+  body:not(.ep-battle-mobile) .ep-panel-head>span,body:not(.ep-battle-mobile) .ep-panel-head>b{font-size:5px!important}
+
+  body:not(.ep-battle-mobile) .ep-song-grid{flex:1 1 0!important;min-height:0!important;display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:5px!important;overflow-y:auto!important;-webkit-overflow-scrolling:touch!important;touch-action:pan-y!important;padding-right:2px!important}
+  body:not(.ep-battle-mobile) .ep-song{min-height:38px!important;padding:6px!important;border-radius:8px!important}
+  body:not(.ep-battle-mobile) .ep-song strong{font-size:7.5px!important}
+  body:not(.ep-battle-mobile) .ep-song span{font-size:4px!important;margin-top:1px!important}
+
+  body:not(.ep-battle-mobile) .ep-char-grid{flex:1 1 0!important;min-height:0!important;display:grid!important;grid-template-columns:repeat(5,minmax(0,1fr))!important;align-content:start!important;gap:5px!important;overflow-y:auto!important;-webkit-overflow-scrolling:touch!important;touch-action:pan-y!important;padding-right:2px!important}
+  body:not(.ep-battle-mobile) .ep-char-card{min-width:0!important;padding:4px!important;border-radius:8px!important}
+  body:not(.ep-battle-mobile) .ep-char-card img{height:46px!important;border-radius:6px!important}
+  body:not(.ep-battle-mobile) .ep-char-card strong{font-size:5.5px!important;margin-top:2px!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important}
+  body:not(.ep-battle-mobile) .ep-char-card small{font-size:4px!important;margin-top:1px!important}
+
+  body:not(.ep-battle-mobile) .ep-special-grid{flex:1 1 0!important;min-height:0!important;display:grid!important;grid-template-columns:1fr 1fr!important;gap:5px!important;align-content:start!important}
+  body:not(.ep-battle-mobile) .ep-special-card{min-width:0!important;padding:5px!important;border-radius:8px!important;display:grid!important;grid-template-columns:42px minmax(0,1fr)!important;grid-template-rows:auto auto!important;column-gap:6px!important;text-align:left!important;align-items:center!important}
+  body:not(.ep-battle-mobile) .ep-special-card img{grid-row:1/3!important;width:42px!important;height:44px!important;border-radius:6px!important}
+  body:not(.ep-battle-mobile) .ep-special-card strong{font-size:6px!important;margin:0!important}
+  body:not(.ep-battle-mobile) .ep-special-card small{font-size:4px!important}
+  body:not(.ep-battle-mobile) .ep-special-card em{display:none!important}
+
+  body:not(.ep-battle-mobile) .ep-mode-grid{grid-template-columns:1fr 1fr!important;gap:5px!important}
+  body:not(.ep-battle-mobile) .ep-mode{padding:6px!important;border-radius:8px!important}
+  body:not(.ep-battle-mobile) .ep-mode b{font-size:6px!important}
+  body:not(.ep-battle-mobile) .ep-mode span{font-size:4px!important;margin-top:1px!important;line-height:1.2!important}
+  body:not(.ep-battle-mobile) .ep-energy-row{grid-template-columns:1fr 74px 84px!important;gap:4px!important;margin:4px 0!important}
+  body:not(.ep-battle-mobile) .ep-energy-row label{font-size:4.5px!important}
+  body:not(.ep-battle-mobile) .ep-energy-row select{padding:4px!important;font-size:5.5px!important;border-radius:6px!important}
+  body:not(.ep-battle-mobile) .ep-energy-row b{font-size:7px!important}
+  body:not(.ep-battle-mobile) .ep-energy-row small{font-size:3.7px!important}
+  body:not(.ep-battle-mobile) #saveTeam{margin-top:auto!important;padding:6px!important;border-radius:7px!important;font-size:5.5px!important}
+}
+
+/* =========================================================
+   EVENT MOBILE SETUP + BATTLE FIX V5
+========================================================= */
+@media (orientation:landscape) and (pointer:coarse){
+  body:not(.ep-battle-mobile){overflow:hidden!important}
+  body:not(.ep-battle-mobile) .ep-shell{height:var(--ep-vh,100dvh)!important;overflow:hidden!important}
+  body:not(.ep-battle-mobile) #setupView{
+    width:calc(100% - 14px)!important;height:calc(var(--ep-vh,100dvh) - 42px)!important;margin:0 auto!important;padding:5px 0 6px!important;
+    display:grid!important;grid-template-columns:minmax(300px,.78fr) minmax(500px,1.22fr)!important;
+    grid-template-rows:26px repeat(12,minmax(0,1fr))!important;gap:5px!important;overflow:hidden!important;
+  }
+  body:not(.ep-battle-mobile) #setupView>.ep-title{grid-column:1/-1!important;grid-row:1!important;height:26px!important;margin:0!important}
+  body:not(.ep-battle-mobile) #setupView>.ep-title h1{font-size:12px!important}
+
+  /* Desired placement:
+     LEFT: SONG (small) / MATCHMAKING (large)
+     RIGHT: MAIN TEAM (large) / EVENT SPECIAL (small)
+  */
+  body:not(.ep-battle-mobile) #setupView>.ep-panel:nth-of-type(1){grid-column:1!important;grid-row:2/6!important;display:flex!important;flex-direction:column!important}
+  body:not(.ep-battle-mobile) #setupView>.ep-panel:nth-of-type(4){grid-column:1!important;grid-row:6/14!important;display:flex!important;flex-direction:column!important}
+  body:not(.ep-battle-mobile) #setupView>.ep-panel:nth-of-type(2){grid-column:2!important;grid-row:2/10!important;display:flex!important;flex-direction:column!important}
+  body:not(.ep-battle-mobile) #setupView>.ep-panel:nth-of-type(3){grid-column:2!important;grid-row:10/14!important;display:flex!important;flex-direction:column!important}
+  body:not(.ep-battle-mobile) #setupView>.ep-panel{margin:0!important;padding:6px!important;border-radius:10px!important;min-height:0!important;overflow:hidden!important}
+  body:not(.ep-battle-mobile) .ep-panel-head{margin-bottom:3px!important;flex:0 0 auto!important}
+  body:not(.ep-battle-mobile) .ep-panel-head small{font-size:4.2px!important}.ep-panel-head h2{font-size:7.5px!important;margin:1px 0!important}
+  body:not(.ep-battle-mobile) .ep-panel-head>span,body:not(.ep-battle-mobile) .ep-panel-head>b{font-size:4.5px!important}
+
+  /* songs: small compact cards */
+  body:not(.ep-battle-mobile) .ep-song-grid{flex:1 1 0!important;min-height:0!important;grid-template-columns:1fr!important;gap:4px!important;overflow-y:auto!important;touch-action:pan-y!important}
+  body:not(.ep-battle-mobile) .ep-song{min-height:30px!important;padding:5px 6px!important;border-radius:7px!important}
+  body:not(.ep-battle-mobile) .ep-song strong{font-size:6.5px!important}.ep-song span{font-size:3.8px!important;margin-top:1px!important}
+
+  /* main team gets most of right side */
+  body:not(.ep-battle-mobile) .ep-char-grid{flex:1 1 0!important;min-height:0!important;grid-template-columns:repeat(5,minmax(0,1fr))!important;gap:5px!important;overflow-y:auto!important;touch-action:pan-y!important;align-content:start!important}
+  body:not(.ep-battle-mobile) .ep-char-card{padding:4px!important;border-radius:8px!important;min-width:0!important}
+  body:not(.ep-battle-mobile) .ep-char-card img{height:48px!important;object-fit:cover!important;border-radius:7px!important}
+  body:not(.ep-battle-mobile) .ep-char-card strong{font-size:5.5px!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important}.ep-char-card small{font-size:4px!important}
+
+  /* matchmaking has enough vertical room, no clipped buttons */
+  body:not(.ep-battle-mobile) .ep-mode-grid{grid-template-columns:1fr 1fr!important;gap:5px!important}
+  body:not(.ep-battle-mobile) .ep-mode{padding:7px!important;border-radius:8px!important;min-height:44px!important}
+  body:not(.ep-battle-mobile) .ep-mode b{font-size:6px!important}.ep-mode span{font-size:4.2px!important;line-height:1.25!important;margin-top:2px!important}
+  body:not(.ep-battle-mobile) .ep-energy-row{grid-template-columns:1fr 82px 90px!important;gap:5px!important;margin:6px 0!important}
+  body:not(.ep-battle-mobile) .ep-energy-row label{font-size:4.5px!important}.ep-energy-row select{padding:5px!important;font-size:5px!important}.ep-energy-row b{font-size:7px!important}.ep-energy-row small{font-size:3.8px!important}
+  body:not(.ep-battle-mobile) #saveTeam{margin-top:auto!important;min-height:30px!important;padding:6px!important;font-size:5.5px!important}
+
+  /* event special is intentionally smaller; tapping a char opens one-line skill popup */
+  body:not(.ep-battle-mobile) .ep-special-grid{flex:1 1 0!important;min-height:0!important;grid-template-columns:1fr 1fr!important;gap:5px!important;align-content:start!important}
+  body:not(.ep-battle-mobile) .ep-special-card{padding:4px!important;grid-template-columns:44px minmax(0,1fr)!important;grid-template-rows:auto auto!important;column-gap:6px!important;border-radius:8px!important;text-align:left!important}
+  body:not(.ep-battle-mobile) .ep-special-card img{grid-row:1/3!important;width:44px!important;height:44px!important;border-radius:7px!important;object-fit:cover!important}
+  body:not(.ep-battle-mobile) .ep-special-card strong{font-size:6px!important;margin:0!important}.ep-special-card small{font-size:4px!important}.ep-special-card em{display:none!important}
+
+  .ep-special-info{position:fixed!important;inset:0!important;z-index:10050!important;display:grid!important;place-items:center!important;padding:10px!important;background:rgba(35,20,28,.28)!important}
+  .ep-special-info.hidden{display:none!important}
+  .ep-special-info-card{position:relative!important;width:min(430px,82vw)!important;padding:11px 36px 11px 12px!important;border-radius:12px!important;background:#fff!important;border:1px solid #efdfe6!important;box-shadow:0 14px 45px rgba(60,25,42,.18)!important}
+  .ep-special-info-card small{font-size:4.5px!important;color:#ff5f9e!important;font-weight:900!important;letter-spacing:1px!important}.ep-special-info-card strong{display:block!important;margin:2px 0!important;font-size:10px!important}.ep-special-info-card p{margin:2px 0 0!important;font-size:6px!important;line-height:1.35!important;color:#6e5a64!important}
+  .ep-special-info-x{position:absolute!important;right:6px!important;top:6px!important;width:25px!important;height:25px!important;border:0!important;border-radius:7px!important;background:#fff0f6!important;color:#ee3f83!important;font-size:17px!important}
+
+  /* Battle: portraits at outer edges, special moved left of rival. */
+  body.ep-battle-mobile .ep-scoreboard{height:90px!important}
+  body.ep-battle-mobile .ep-side{height:90px!important;padding:7px 9px!important}
+  body.ep-battle-mobile .ep-side-head strong{font-size:9px!important}.ep-side-head span{font-size:7px!important}
+  body.ep-battle-mobile .ep-bars>div{grid-template-columns:43px 54px minmax(45px,1fr)!important;gap:5px!important;margin:3px 0!important;font-size:8px!important}
+  body.ep-battle-mobile .ep-bars>div span{font-size:8px!important;font-weight:900!important}.ep-bars>div b{font-size:8px!important}.ep-bars i{height:7px!important}
+
+  body.ep-battle-mobile .ep-active{
+    display:grid!important;grid-template-columns:112px minmax(0,1fr) 62px 112px!important;grid-template-rows:27px minmax(0,1fr)!important;
+    grid-template-areas:"info info info info" "you skills special rival"!important;gap:5px 7px!important;padding:5px!important;overflow:hidden!important;
+  }
+  body.ep-battle-mobile .ep-active-info{grid-area:info!important;display:flex!important;align-items:center!important;gap:7px!important}
+  body.ep-battle-mobile .ep-active-info small{writing-mode:initial!important;transform:none!important;font-size:6px!important}.ep-active-info h2{font-size:9px!important}.ep-active-info span{font-size:6px!important}
+  body.ep-battle-mobile .ep-turn-character-pair{display:contents!important}
+  body.ep-battle-mobile .ep-turn-character-card.side-you{grid-area:you!important}
+  body.ep-battle-mobile .ep-turn-character-card.side-rival{grid-area:rival!important}
+  body.ep-battle-mobile .ep-turn-character-card,body.ep-battle-mobile .ep-turn-character-card.side-rival{
+    width:100%!important;height:100%!important;min-height:0!important;max-height:none!important;padding:3px!important;margin:0!important;
+    display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:flex-start!important;gap:2px!important;text-align:center!important;border-width:1px!important;overflow:hidden!important;
+  }
+  body.ep-battle-mobile .ep-turn-character-info{order:1!important;width:100%!important;text-align:center!important;display:block!important}
+  body.ep-battle-mobile .ep-turn-character-info strong{font-size:6px!important;line-height:1.05!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important}
+  body.ep-battle-mobile .ep-turn-character-info span{display:none!important}.ep-turn-character-info small{display:none!important}
+  body.ep-battle-mobile .ep-turn-character-info b{display:block!important;font-size:5.5px!important;margin:1px 0!important}
+  body.ep-battle-mobile .ep-turn-character-art{order:2!important;width:72px!important;height:72px!important;min-height:72px!important;flex:0 0 72px!important;border-radius:50%!important;border:2px solid #ffd1e1!important;background:#fff!important;overflow:hidden!important}
+  body.ep-battle-mobile .side-rival .ep-turn-character-art{border-color:#d9d0ff!important}
+  body.ep-battle-mobile .ep-turn-character-art img{width:100%!important;height:100%!important;object-fit:cover!important;object-position:center 22%!important;transform:scale(1.25)!important}
+  body.ep-battle-mobile .ep-turn-character-wait{order:3!important;position:static!important;width:58px!important;margin-top:2px!important;padding:3px 2px!important;border-radius:999px!important;font-size:4.6px!important;line-height:1.05!important;background:#fff7fb!important;color:#ee3f83!important}
+  body.ep-battle-mobile .side-rival .ep-turn-character-wait{color:#725fc0!important;background:#f8f5ff!important}
+  body.ep-battle-mobile .ep-skill-grid{grid-area:skills!important}
+  body.ep-battle-mobile .ep-special-wrap{grid-area:special!important;margin:0!important}
+  body.ep-battle-mobile .ep-special-wrap button{border-radius:11px!important}
+}
+
+
+/* =========================================================
+   EVENT MOBILE V24 — FINAL OVERRIDE
+========================================================= */
+@media (orientation:landscape) and (pointer:coarse){
+
+  /* ---------- SETUP: exact requested diagram ----------
+     LEFT  TOP    SONG
+     LEFT  BOTTOM MATCHMAKING
+     RIGHT TOP    EVENT SPECIAL
+     RIGHT BOTTOM MAIN TEAM
+  ------------------------------------------------------ */
+  body:not(.ep-battle-mobile){
+    overflow:hidden!important;
+  }
+  body:not(.ep-battle-mobile) .ep-shell{
+    position:fixed!important;
+    inset:0!important;
+    height:var(--ep-vh,100dvh)!important;
+    overflow:hidden!important;
+  }
+  body:not(.ep-battle-mobile) .ep-topbar{
+    position:absolute!important;
+    top:0;left:0;right:0;
+    height:42px!important;
+    min-height:42px!important;
+    padding:4px 10px!important;
+    z-index:70!important;
+  }
+
+  body:not(.ep-battle-mobile) #setupView{
+    position:absolute!important;
+    top:42px!important;left:0!important;right:0!important;bottom:0!important;
+    width:auto!important;
+    height:auto!important;
+    max-height:none!important;
+    margin:0!important;
+    padding:5px 8px 7px!important;
+    display:grid!important;
+    grid-template-columns:minmax(255px,28%) minmax(0,72%)!important;
+    grid-template-rows:26px repeat(12,minmax(0,1fr))!important;
+    gap:6px!important;
+    overflow:hidden!important;
+  }
+
+  body:not(.ep-battle-mobile) #setupView>.ep-title{
+    grid-column:1/-1!important;
+    grid-row:1!important;
+    height:26px!important;
+    min-height:26px!important;
+    margin:0!important;
+    align-items:center!important;
+  }
+  body:not(.ep-battle-mobile) #setupView>.ep-title span,
+  body:not(.ep-battle-mobile) #setupView>.ep-title p{
+    display:none!important;
+  }
+  body:not(.ep-battle-mobile) #setupView>.ep-title h1{
+    margin:0!important;
+    font-size:12px!important;
+  }
+  body:not(.ep-battle-mobile) #setupView .ep-rules{
+    padding:4px 8px!important;
+    border-radius:8px!important;
+  }
+  body:not(.ep-battle-mobile) #setupView .ep-rules b{font-size:6px!important}
+  body:not(.ep-battle-mobile) #setupView .ep-rules span{display:none!important}
+
+  /* 01 SONG: left top, intentionally short */
+  body:not(.ep-battle-mobile) #setupView>.ep-panel:nth-of-type(1){
+    grid-column:1!important;
+    grid-row:2/6!important;
+    display:flex!important;
+    flex-direction:column!important;
+  }
+
+  /* 04 MATCHMAKING: left bottom, intentionally tall */
+  body:not(.ep-battle-mobile) #setupView>.ep-panel:nth-of-type(4){
+    grid-column:1!important;
+    grid-row:6/14!important;
+    display:flex!important;
+    flex-direction:column!important;
+  }
+
+  /* 03 EVENT SPECIAL: right top */
+  body:not(.ep-battle-mobile) #setupView>.ep-panel:nth-of-type(3){
+    grid-column:2!important;
+    grid-row:2/7!important;
+    display:flex!important;
+    flex-direction:column!important;
+  }
+
+  /* 02 MAIN TEAM: right bottom and larger */
+  body:not(.ep-battle-mobile) #setupView>.ep-panel:nth-of-type(2){
+    grid-column:2!important;
+    grid-row:7/14!important;
+    display:flex!important;
+    flex-direction:column!important;
+  }
+
+  body:not(.ep-battle-mobile) #setupView>.ep-panel{
+    min-width:0!important;
+    min-height:0!important;
+    margin:0!important;
+    padding:7px!important;
+    border-radius:11px!important;
+    overflow:hidden!important;
+  }
+  body:not(.ep-battle-mobile) #setupView .ep-panel-head{
+    flex:0 0 auto!important;
+    min-height:22px!important;
+    margin:0 0 4px!important;
+  }
+  body:not(.ep-battle-mobile) #setupView .ep-panel-head small{font-size:4.5px!important}
+  body:not(.ep-battle-mobile) #setupView .ep-panel-head h2{
+    margin:1px 0!important;
+    font-size:7.5px!important;
+  }
+  body:not(.ep-battle-mobile) #setupView .ep-panel-head>span,
+  body:not(.ep-battle-mobile) #setupView .ep-panel-head>b{
+    font-size:4.5px!important;
+  }
+
+  /* SONG */
+  body:not(.ep-battle-mobile) #setupView .ep-song-grid{
+    flex:1 1 0!important;
+    min-height:0!important;
+    display:grid!important;
+    grid-template-columns:1fr!important;
+    grid-auto-rows:minmax(31px,1fr)!important;
+    gap:4px!important;
+    overflow-y:auto!important;
+    touch-action:pan-y!important;
+  }
+  body:not(.ep-battle-mobile) #setupView .ep-song{
+    min-height:31px!important;
+    padding:5px 6px!important;
+    border-radius:7px!important;
+  }
+  body:not(.ep-battle-mobile) #setupView .ep-song strong{font-size:6.5px!important}
+  body:not(.ep-battle-mobile) #setupView .ep-song span{
+    margin-top:1px!important;
+    font-size:3.8px!important;
+    white-space:nowrap!important;
+    overflow:hidden!important;
+    text-overflow:ellipsis!important;
+  }
+
+  /* MATCHMAKING — no clipped buttons */
+  body:not(.ep-battle-mobile) #setupView .ep-mode-grid{
+    flex:0 0 auto!important;
+    display:grid!important;
+    grid-template-columns:1fr!important;
+    gap:5px!important;
+  }
+  body:not(.ep-battle-mobile) #setupView .ep-mode{
+    min-height:36px!important;
+    padding:6px!important;
+    border-radius:8px!important;
+  }
+  body:not(.ep-battle-mobile) #setupView .ep-mode b{font-size:6px!important}
+  body:not(.ep-battle-mobile) #setupView .ep-mode span{
+    margin-top:1px!important;
+    font-size:4px!important;
+    line-height:1.2!important;
+  }
+  body:not(.ep-battle-mobile) #setupView .ep-energy-row{
+    flex:0 0 auto!important;
+    display:grid!important;
+    grid-template-columns:minmax(0,1fr) 78px 82px!important;
+    gap:4px!important;
+    margin:5px 0!important;
+  }
+  body:not(.ep-battle-mobile) #setupView .ep-energy-row label{font-size:4px!important}
+  body:not(.ep-battle-mobile) #setupView .ep-energy-row select{
+    min-width:0!important;
+    padding:4px!important;
+    border-radius:6px!important;
+    font-size:5px!important;
+  }
+  body:not(.ep-battle-mobile) #setupView .ep-energy-row b{font-size:7px!important}
+  body:not(.ep-battle-mobile) #setupView .ep-energy-row small{font-size:3.5px!important}
+  body:not(.ep-battle-mobile) #setupView #saveTeam{
+    flex:0 0 30px!important;
+    min-height:30px!important;
+    height:30px!important;
+    margin-top:auto!important;
+    padding:5px!important;
+    border-radius:8px!important;
+    font-size:5.5px!important;
+  }
+
+  /* EVENT SPECIAL */
+  body:not(.ep-battle-mobile) #setupView .ep-special-grid{
+    flex:1 1 0!important;
+    min-height:0!important;
+    display:grid!important;
+    grid-template-columns:1fr 1fr!important;
+    gap:6px!important;
+    align-content:stretch!important;
+  }
+  body:not(.ep-battle-mobile) #setupView .ep-special-card{
+    min-width:0!important;
+    min-height:0!important;
+    height:100%!important;
+    padding:6px!important;
+    display:grid!important;
+    grid-template-columns:64px minmax(0,1fr)!important;
+    grid-template-rows:auto auto!important;
+    column-gap:8px!important;
+    align-items:center!important;
+    text-align:left!important;
+    border-radius:9px!important;
+  }
+  body:not(.ep-battle-mobile) #setupView .ep-special-card img{
+    grid-row:1/3!important;
+    width:64px!important;
+    height:64px!important;
+    object-fit:cover!important;
+    border-radius:10px!important;
+  }
+  body:not(.ep-battle-mobile) #setupView .ep-special-card strong{
+    margin:0!important;
+    font-size:7px!important;
+  }
+  body:not(.ep-battle-mobile) #setupView .ep-special-card small{
+    font-size:4.5px!important;
+  }
+  body:not(.ep-battle-mobile) #setupView .ep-special-card em{
+    display:none!important;
+  }
+
+  /* MAIN TEAM */
+  body:not(.ep-battle-mobile) #setupView .ep-char-grid{
+    flex:1 1 0!important;
+    min-height:0!important;
+    display:grid!important;
+    grid-template-columns:repeat(5,minmax(0,1fr))!important;
+    grid-auto-rows:minmax(78px,1fr)!important;
+    gap:5px!important;
+    align-content:start!important;
+    overflow-y:auto!important;
+    overflow-x:hidden!important;
+    touch-action:pan-y!important;
+  }
+  body:not(.ep-battle-mobile) #setupView .ep-char-card{
+    min-width:0!important;
+    min-height:78px!important;
+    padding:4px!important;
+    border-radius:8px!important;
+  }
+  body:not(.ep-battle-mobile) #setupView .ep-char-card img{
+    width:100%!important;
+    height:48px!important;
+    object-fit:cover!important;
+    border-radius:6px!important;
+  }
+  body:not(.ep-battle-mobile) #setupView .ep-char-card strong{
+    margin-top:2px!important;
+    font-size:5.3px!important;
+    white-space:nowrap!important;
+    overflow:hidden!important;
+    text-overflow:ellipsis!important;
+  }
+  body:not(.ep-battle-mobile) #setupView .ep-char-card small{
+    margin-top:1px!important;
+    font-size:3.8px!important;
+  }
+
+  /* Small Event Special skill popup */
+  .ep-special-info{
+    position:fixed!important;
+    inset:0!important;
+    z-index:11000!important;
+    display:grid!important;
+    place-items:center!important;
+    padding:10px!important;
+    background:rgba(35,20,28,.28)!important;
+  }
+  .ep-special-info.hidden{display:none!important}
+  .ep-special-info-card{
+    position:relative!important;
+    width:min(440px,82vw)!important;
+    padding:11px 38px 11px 12px!important;
+    border-radius:12px!important;
+    background:#fff!important;
+    border:1px solid #efdfe6!important;
+    box-shadow:0 14px 45px rgba(60,25,42,.18)!important;
+  }
+  .ep-special-info-card small{
+    font-size:4.5px!important;
+    color:#ff5f9e!important;
+    font-weight:900!important;
+    letter-spacing:1px!important;
+  }
+  .ep-special-info-card strong{
+    display:block!important;
+    margin:2px 0!important;
+    font-size:10px!important;
+  }
+  .ep-special-info-card p{
+    margin:2px 0 0!important;
+    font-size:6px!important;
+    line-height:1.35!important;
+    color:#6e5a64!important;
+  }
+  .ep-special-info-x{
+    position:absolute!important;
+    right:6px!important;top:6px!important;
+    width:25px!important;height:25px!important;
+    border:0!important;
+    border-radius:7px!important;
+    background:#fff0f6!important;
+    color:#ee3f83!important;
+    font-size:17px!important;
+  }
+
+  /* ---------- BATTLE ---------- */
+  body.ep-battle-mobile #battleView{
+    overflow:hidden!important;
+  }
+
+  body.ep-battle-mobile .ep-scoreboard{
+    height:94px!important;
+    min-height:94px!important;
+  }
+  body.ep-battle-mobile .ep-side{
+    height:94px!important;
+    padding:7px 9px!important;
+  }
+  body.ep-battle-mobile .ep-side-head strong{font-size:9px!important}
+  body.ep-battle-mobile .ep-side-head span{font-size:7px!important}
+  body.ep-battle-mobile .ep-bars>div{
+    grid-template-columns:47px 58px minmax(55px,1fr)!important;
+    gap:6px!important;
+    margin:3px 0!important;
+    font-size:8.5px!important;
+  }
+  body.ep-battle-mobile .ep-bars>div span{
+    font-size:8.5px!important;
+    font-weight:900!important;
+  }
+  body.ep-battle-mobile .ep-bars>div b{
+    font-size:8.5px!important;
+  }
+  body.ep-battle-mobile .ep-bars i{
+    height:8px!important;
+  }
+
+  body.ep-battle-mobile .ep-active{
+    display:grid!important;
+    grid-template-columns:108px minmax(0,1fr) 62px 108px!important;
+    grid-template-rows:27px minmax(0,1fr)!important;
+    grid-template-areas:
+      "info info info info"
+      "you skills special rival"!important;
+    gap:5px 7px!important;
+    padding:5px!important;
+    overflow:hidden!important;
+  }
+
+  body.ep-battle-mobile .ep-active-info{
+    grid-area:info!important;
+    min-width:0!important;
+    display:flex!important;
+    align-items:center!important;
+    gap:7px!important;
+  }
+  body.ep-battle-mobile .ep-active-info small{
+    writing-mode:initial!important;
+    transform:none!important;
+    font-size:6px!important;
+  }
+  body.ep-battle-mobile .ep-active-info h2{
+    margin:0!important;
+    font-size:9px!important;
+  }
+  body.ep-battle-mobile .ep-active-info span{
+    font-size:6px!important;
+  }
+
+  body.ep-battle-mobile .ep-turn-character-pair{
+    display:contents!important;
+  }
+  body.ep-battle-mobile .ep-turn-character-card.side-you{grid-area:you!important}
+  body.ep-battle-mobile .ep-turn-character-card.side-rival{grid-area:rival!important}
+
+  body.ep-battle-mobile .ep-turn-character-card,
+  body.ep-battle-mobile .ep-turn-character-card.side-rival{
+    width:100%!important;
+    height:100%!important;
+    min-height:0!important;
+    max-height:none!important;
+    margin:0!important;
+    padding:3px!important;
+    display:flex!important;
+    flex-direction:column!important;
+    align-items:center!important;
+    justify-content:flex-start!important;
+    gap:2px!important;
+    text-align:center!important;
+    overflow:hidden!important;
+  }
+
+  body.ep-battle-mobile .ep-turn-character-info{
+    width:100%!important;
+    text-align:center!important;
+  }
+  body.ep-battle-mobile .ep-turn-character-info strong{
+    display:block!important;
+    font-size:6px!important;
+    line-height:1.05!important;
+    white-space:nowrap!important;
+    overflow:hidden!important;
+    text-overflow:ellipsis!important;
+  }
+  body.ep-battle-mobile .ep-turn-character-info span,
+  body.ep-battle-mobile .ep-turn-character-info small{
+    display:none!important;
+  }
+  body.ep-battle-mobile .ep-turn-character-info b{
+    display:block!important;
+    margin:1px 0!important;
+    font-size:5.5px!important;
+  }
+
+  /* Same frame size, but portrait itself is zoomed much more. */
+  body.ep-battle-mobile .ep-turn-character-art{
+    position:relative!important;
+    width:76px!important;
+    height:76px!important;
+    min-height:76px!important;
+    flex:0 0 76px!important;
+    margin-top:2px!important;
+    border-radius:50%!important;
+    border:2px solid #ffd1e1!important;
+    background:#fff!important;
+    overflow:hidden!important;
+  }
+  body.ep-battle-mobile .side-rival .ep-turn-character-art{
+    border-color:#d9d0ff!important;
+  }
+  body.ep-battle-mobile .ep-turn-character-art img{
+    position:absolute!important;
+    inset:0!important;
+    display:block!important;
+    width:100%!important;
+    height:100%!important;
+    max-width:none!important;
+    max-height:none!important;
+    object-fit:cover!important;
+    object-position:50% 18%!important;
+    transform:scale(1.55)!important;
+    transform-origin:50% 22%!important;
+  }
+  body.ep-battle-mobile .ep-turn-character-art .ep-person-icon{
+    position:absolute!important;
+    inset:0!important;
+    display:grid!important;
+    place-items:center!important;
+  }
+
+  /* Keep turn badge over the portrait; it no longer steals image height. */
+  body.ep-battle-mobile .ep-turn-character-wait{
+    position:absolute!important;
+    z-index:5!important;
+    left:7px!important;
+    right:7px!important;
+    bottom:4px!important;
+    width:auto!important;
+    margin:0!important;
+    padding:3px 2px!important;
+    border-radius:999px!important;
+    background:rgba(255,255,255,.90)!important;
+    color:#e84a83!important;
+    font-size:4.3px!important;
+    line-height:1!important;
+    box-shadow:0 2px 8px rgba(40,20,30,.08)!important;
+  }
+  body.ep-battle-mobile .side-rival .ep-turn-character-wait{
+    color:#705fc3!important;
+  }
+
+  body.ep-battle-mobile .ep-skill-grid{
+    grid-area:skills!important;
+    min-width:0!important;
+  }
+  body.ep-battle-mobile .ep-special-wrap{
+    grid-area:special!important;
+    margin:0!important;
+    min-width:0!important;
+  }
+  body.ep-battle-mobile .ep-special-wrap button{
+    height:100%!important;
+    border-radius:11px!important;
+  }
+}
+
+
+/* ================= EVENT MOBILE V25 FINAL ================= */
+@media (orientation:landscape) and (pointer:coarse){
+
+  body:not(.ep-battle-mobile) #setupView{
+    position:absolute!important;top:42px!important;left:0!important;right:0!important;bottom:0!important;
+    width:auto!important;height:auto!important;margin:0!important;padding:5px 8px 7px!important;
+    display:grid!important;
+    grid-template-columns:minmax(250px,28%) minmax(0,72%)!important;
+    grid-template-rows:25px repeat(12,minmax(0,1fr))!important;
+    gap:6px!important;overflow:hidden!important;
+  }
+  body:not(.ep-battle-mobile) #setupView>.ep-title{
+    grid-column:1/-1!important;grid-row:1!important;height:25px!important;min-height:25px!important;margin:0!important;
+  }
+
+  /* exact requested diagram */
+  body:not(.ep-battle-mobile) #eventSongPanel{grid-column:1!important;grid-row:2/6!important}
+  body:not(.ep-battle-mobile) #eventMatchPanel{grid-column:1!important;grid-row:6/14!important}
+  body:not(.ep-battle-mobile) #eventSpecialPanel{grid-column:2!important;grid-row:2/7!important}
+  body:not(.ep-battle-mobile) #eventMainTeamPanel{grid-column:2!important;grid-row:7/14!important}
+
+  body:not(.ep-battle-mobile) #eventSongPanel,
+  body:not(.ep-battle-mobile) #eventMatchPanel,
+  body:not(.ep-battle-mobile) #eventSpecialPanel,
+  body:not(.ep-battle-mobile) #eventMainTeamPanel{
+    min-width:0!important;min-height:0!important;margin:0!important;padding:7px!important;
+    display:flex!important;flex-direction:column!important;overflow:hidden!important;border-radius:11px!important;
+  }
+
+  body:not(.ep-battle-mobile) #eventSongPanel .ep-song-grid{
+    flex:1 1 0!important;min-height:0!important;display:grid!important;grid-template-columns:1fr!important;
+    grid-auto-rows:30px!important;gap:4px!important;overflow-y:auto!important;
+  }
+  body:not(.ep-battle-mobile) #eventSongPanel .ep-song{
+    min-height:30px!important;height:30px!important;padding:4px 6px!important;
+  }
+
+  body:not(.ep-battle-mobile) #eventMatchPanel .ep-mode-grid{
+    display:grid!important;grid-template-columns:1fr!important;gap:5px!important;flex:0 0 auto!important;
+  }
+  body:not(.ep-battle-mobile) #eventMatchPanel .ep-mode{
+    min-height:36px!important;height:auto!important;padding:6px!important;
+  }
+  body:not(.ep-battle-mobile) #eventMatchPanel .ep-energy-row{
+    flex:0 0 auto!important;margin:5px 0!important;grid-template-columns:1fr 76px 82px!important;
+  }
+  body:not(.ep-battle-mobile) #eventMatchPanel #saveTeam{
+    flex:0 0 30px!important;height:30px!important;min-height:30px!important;margin-top:auto!important;
+    display:block!important;visibility:visible!important;
+  }
+
+  body:not(.ep-battle-mobile) #eventSpecialPanel .ep-special-grid{
+    flex:1 1 0!important;min-height:0!important;display:grid!important;grid-template-columns:1fr 1fr!important;gap:6px!important;
+  }
+  body:not(.ep-battle-mobile) #eventSpecialPanel .ep-special-card{
+    height:100%!important;min-height:0!important;grid-template-columns:68px minmax(0,1fr)!important;
+  }
+  body:not(.ep-battle-mobile) #eventSpecialPanel .ep-special-card img{
+    width:68px!important;height:68px!important;object-fit:cover!important;
+  }
+
+  body:not(.ep-battle-mobile) #eventMainTeamPanel .ep-char-grid{
+    flex:1 1 0!important;min-height:0!important;display:grid!important;
+    grid-template-columns:repeat(5,minmax(0,1fr))!important;gap:5px!important;overflow-y:auto!important;
+  }
+}
+/* ================= END EVENT MOBILE V25 FINAL ================= */
+
+
+/* =========================================================
+   EVENT SETUP MOBILE V26 — FINAL / NATIVE-SAFE
+   EXACT STRUCTURE:
+        LEFT                    RIGHT
+   ┌──────────────┐    ┌─────────────────────────┐
+   │ SONG         │    │ EVENT SPECIAL           │
+   └──────────────┘    └─────────────────────────┘
+   ┌──────────────┐    ┌─────────────────────────┐
+   │ MATCHMAKING  │    │ MAIN TEAM               │
+   │              │    │                         │
+   └──────────────┘    └─────────────────────────┘
+========================================================= */
+
+html.realyze-event-mobile body:not(.ep-battle-mobile){
+    overflow:hidden!important;
+}
+
+html.realyze-event-mobile body:not(.ep-battle-mobile) .ep-shell{
+    position:fixed!important;
+    inset:0!important;
+    height:var(--ep-vh,100dvh)!important;
+    overflow:hidden!important;
+}
+
+html.realyze-event-mobile body:not(.ep-battle-mobile) #setupView{
+    position:absolute!important;
+    top:42px!important;
+    left:0!important;
+    right:0!important;
+    bottom:0!important;
+
+    width:auto!important;
+    height:auto!important;
+    max-height:none!important;
+    margin:0!important;
+    padding:5px 8px 7px!important;
+
+    display:grid!important;
+    grid-template-columns:minmax(270px,30%) minmax(0,70%)!important;
+    grid-template-rows:26px repeat(12,minmax(0,1fr))!important;
+    gap:6px!important;
+
+    overflow:hidden!important;
+}
+
+/* Title row */
+html.realyze-event-mobile body:not(.ep-battle-mobile) #setupView>.ep-title{
+    grid-column:1 / -1!important;
+    grid-row:1!important;
+    height:26px!important;
+    min-height:26px!important;
+    margin:0!important;
+    padding:0!important;
+    align-items:center!important;
+}
+
+/* LEFT TOP = SONG */
+html.realyze-event-mobile body:not(.ep-battle-mobile) #eventSongPanel{
+    grid-column:1!important;
+    grid-row:2 / 5!important;
+}
+
+/* LEFT BOTTOM = MATCHMAKING */
+html.realyze-event-mobile body:not(.ep-battle-mobile) #eventMatchPanel{
+    grid-column:1!important;
+    grid-row:5 / 14!important;
+}
+
+/* RIGHT TOP = EVENT SPECIAL — RIGHT ABOVE MAIN TEAM */
+html.realyze-event-mobile body:not(.ep-battle-mobile) #eventSpecialPanel{
+    grid-column:2!important;
+    grid-row:2 / 6!important;
+}
+
+/* RIGHT BOTTOM = MAIN TEAM — largest right panel */
+html.realyze-event-mobile body:not(.ep-battle-mobile) #eventMainTeamPanel{
+    grid-column:2!important;
+    grid-row:6 / 14!important;
+}
+
+/* Force all 4 panels back on-screen even if an older mobile rule exists. */
+html.realyze-event-mobile body:not(.ep-battle-mobile) #eventSongPanel,
+html.realyze-event-mobile body:not(.ep-battle-mobile) #eventMatchPanel,
+html.realyze-event-mobile body:not(.ep-battle-mobile) #eventSpecialPanel,
+html.realyze-event-mobile body:not(.ep-battle-mobile) #eventMainTeamPanel{
+    position:relative!important;
+    inset:auto!important;
+    width:auto!important;
+    height:auto!important;
+
+    min-width:0!important;
+    min-height:0!important;
+
+    margin:0!important;
+    padding:7px!important;
+
+    display:flex!important;
+    visibility:visible!important;
+    opacity:1!important;
+    flex-direction:column!important;
+
+    overflow:hidden!important;
+    border-radius:11px!important;
+}
+
+/* ---------- SONG: small / 1 song per row ---------- */
+html.realyze-event-mobile body:not(.ep-battle-mobile) #eventSongPanel .ep-panel-head{
+    flex:0 0 20px!important;
+    min-height:20px!important;
+    margin-bottom:3px!important;
+}
+html.realyze-event-mobile body:not(.ep-battle-mobile) #eventSongPanel .ep-song-grid{
+    flex:1 1 0!important;
+    min-height:0!important;
+    display:grid!important;
+    grid-template-columns:1fr!important;
+    grid-auto-rows:30px!important;
+    gap:4px!important;
+    overflow-y:auto!important;
+    overflow-x:hidden!important;
+    touch-action:pan-y!important;
+    -webkit-overflow-scrolling:touch!important;
+}
+html.realyze-event-mobile body:not(.ep-battle-mobile) #eventSongPanel .ep-song{
+    min-height:30px!important;
+    height:30px!important;
+    padding:4px 6px!important;
+    border-radius:7px!important;
+}
+html.realyze-event-mobile body:not(.ep-battle-mobile) #eventSongPanel .ep-song strong{
+    font-size:6px!important;
+}
+html.realyze-event-mobile body:not(.ep-battle-mobile) #eventSongPanel .ep-song span{
+    font-size:3.6px!important;
+    margin-top:1px!important;
+    white-space:nowrap!important;
+    overflow:hidden!important;
+    text-overflow:ellipsis!important;
+}
+
+/* ---------- MATCHMAKING: all controls fully visible ---------- */
+html.realyze-event-mobile body:not(.ep-battle-mobile) #eventMatchPanel .ep-mode-grid{
+    flex:0 0 auto!important;
+    display:grid!important;
+    grid-template-columns:1fr!important;
+    gap:5px!important;
+}
+html.realyze-event-mobile body:not(.ep-battle-mobile) #eventMatchPanel .ep-mode{
+    min-height:38px!important;
+    height:auto!important;
+    padding:6px!important;
+    border-radius:8px!important;
+}
+html.realyze-event-mobile body:not(.ep-battle-mobile) #eventMatchPanel .ep-mode b{
+    font-size:6px!important;
+}
+html.realyze-event-mobile body:not(.ep-battle-mobile) #eventMatchPanel .ep-mode span{
+    font-size:4px!important;
+    line-height:1.2!important;
+}
+html.realyze-event-mobile body:not(.ep-battle-mobile) #eventMatchPanel .ep-energy-row{
+    flex:0 0 auto!important;
+    display:grid!important;
+    grid-template-columns:minmax(0,1fr) 78px 88px!important;
+    gap:4px!important;
+    margin:6px 0!important;
+}
+html.realyze-event-mobile body:not(.ep-battle-mobile) #eventMatchPanel #saveTeam{
+    display:block!important;
+    visibility:visible!important;
+    opacity:1!important;
+
+    flex:0 0 31px!important;
+    min-height:31px!important;
+    height:31px!important;
+
+    margin-top:auto!important;
+    padding:5px!important;
+    border-radius:8px!important;
+    font-size:5.5px!important;
+}
+
+/* ---------- EVENT SPECIAL: always directly above main team ---------- */
+html.realyze-event-mobile body:not(.ep-battle-mobile) #eventSpecialPanel .ep-panel-head{
+    flex:0 0 21px!important;
+    min-height:21px!important;
+    margin-bottom:4px!important;
+}
+html.realyze-event-mobile body:not(.ep-battle-mobile) #eventSpecialPanel .ep-special-grid{
+    flex:1 1 0!important;
+    min-height:0!important;
+
+    display:grid!important;
+    grid-template-columns:1fr 1fr!important;
+    gap:6px!important;
+
+    overflow:hidden!important;
+}
+html.realyze-event-mobile body:not(.ep-battle-mobile) #eventSpecialPanel .ep-special-card{
+    min-width:0!important;
+    min-height:0!important;
+    height:100%!important;
+
+    display:grid!important;
+    grid-template-columns:70px minmax(0,1fr)!important;
+    grid-template-rows:auto auto!important;
+    column-gap:8px!important;
+
+    padding:6px!important;
+    align-items:center!important;
+    text-align:left!important;
+    border-radius:9px!important;
+}
+html.realyze-event-mobile body:not(.ep-battle-mobile) #eventSpecialPanel .ep-special-card img{
+    grid-row:1 / 3!important;
+    width:70px!important;
+    height:70px!important;
+    object-fit:cover!important;
+    border-radius:9px!important;
+}
+html.realyze-event-mobile body:not(.ep-battle-mobile) #eventSpecialPanel .ep-special-card strong{
+    margin:0!important;
+    font-size:6.5px!important;
+}
+html.realyze-event-mobile body:not(.ep-battle-mobile) #eventSpecialPanel .ep-special-card small{
+    font-size:4px!important;
+}
+html.realyze-event-mobile body:not(.ep-battle-mobile) #eventSpecialPanel .ep-special-card em{
+    display:none!important;
+}
+
+/* ---------- MAIN TEAM: big lower-right area ---------- */
+html.realyze-event-mobile body:not(.ep-battle-mobile) #eventMainTeamPanel .ep-panel-head{
+    flex:0 0 22px!important;
+    min-height:22px!important;
+    margin-bottom:4px!important;
+}
+html.realyze-event-mobile body:not(.ep-battle-mobile) #eventMainTeamPanel .ep-char-grid{
+    flex:1 1 0!important;
+    min-height:0!important;
+
+    display:grid!important;
+    grid-template-columns:repeat(5,minmax(0,1fr))!important;
+    grid-auto-rows:82px!important;
+    align-content:start!important;
+    gap:5px!important;
+
+    overflow-y:auto!important;
+    overflow-x:hidden!important;
+    touch-action:pan-y!important;
+    -webkit-overflow-scrolling:touch!important;
+}
+html.realyze-event-mobile body:not(.ep-battle-mobile) #eventMainTeamPanel .ep-char-card{
+    min-width:0!important;
+    min-height:82px!important;
+    height:82px!important;
+    padding:4px!important;
+    border-radius:8px!important;
+}
+html.realyze-event-mobile body:not(.ep-battle-mobile) #eventMainTeamPanel .ep-char-card img{
+    width:100%!important;
+    height:50px!important;
+    object-fit:cover!important;
+    border-radius:6px!important;
+}
+html.realyze-event-mobile body:not(.ep-battle-mobile) #eventMainTeamPanel .ep-char-card strong{
+    margin-top:2px!important;
+    font-size:5px!important;
+    white-space:nowrap!important;
+    overflow:hidden!important;
+    text-overflow:ellipsis!important;
+}
+html.realyze-event-mobile body:not(.ep-battle-mobile) #eventMainTeamPanel .ep-char-card small{
+    margin-top:1px!important;
+    font-size:3.7px!important;
+}
+
+/* Extra-short Android landscape screens */
+@media (orientation:landscape) and (max-height:560px){
+    html.realyze-event-mobile body:not(.ep-battle-mobile) #setupView{
+        grid-template-columns:minmax(250px,30%) minmax(0,70%)!important;
+    }
+
+    html.realyze-event-mobile body:not(.ep-battle-mobile) #eventSpecialPanel .ep-special-card{
+        grid-template-columns:58px minmax(0,1fr)!important;
+    }
+    html.realyze-event-mobile body:not(.ep-battle-mobile) #eventSpecialPanel .ep-special-card img{
+        width:58px!important;
+        height:58px!important;
+    }
+
+    html.realyze-event-mobile body:not(.ep-battle-mobile) #eventMainTeamPanel .ep-char-grid{
+        grid-auto-rows:72px!important;
+    }
+    html.realyze-event-mobile body:not(.ep-battle-mobile) #eventMainTeamPanel .ep-char-card{
+        height:72px!important;
+        min-height:72px!important;
+    }
+    html.realyze-event-mobile body:not(.ep-battle-mobile) #eventMainTeamPanel .ep-char-card img{
+        height:42px!important;
+    }
+}
+/* =========================================================
+   END EVENT SETUP MOBILE V26
+========================================================= */
+
+
+/* =========================================================
+   EVENT MOBILE V27 — DOM COLUMN LAYOUT
+   This intentionally overrides ALL previous setup positioning.
+========================================================= */
+html.realyze-event-mobile body:not(.ep-battle-mobile) #setupView.ep-mobile-layout-built{
+    position:absolute!important;
+    top:42px!important;
+    left:0!important;
+    right:0!important;
+    bottom:0!important;
+
+    width:auto!important;
+    height:auto!important;
+    max-height:none!important;
+    margin:0!important;
+    padding:5px 8px 7px!important;
+
+    display:grid!important;
+    grid-template-columns:1fr!important;
+    grid-template-rows:26px minmax(0,1fr)!important;
+    gap:6px!important;
+    overflow:hidden!important;
+}
+
+html.realyze-event-mobile body:not(.ep-battle-mobile)
+#setupView.ep-mobile-layout-built > .ep-title{
+    grid-column:1!important;
+    grid-row:1!important;
+    min-height:26px!important;
+    height:26px!important;
+    margin:0!important;
+}
+
+html.realyze-event-mobile body:not(.ep-battle-mobile)
+#setupView.ep-mobile-layout-built > .ep-mobile-setup-columns{
+    grid-column:1!important;
+    grid-row:2!important;
+
+    min-width:0!important;
+    min-height:0!important;
+
+    display:grid!important;
+    grid-template-columns:minmax(270px,30%) minmax(0,70%)!important;
+    gap:6px!important;
+
+    overflow:hidden!important;
+}
+
+html.realyze-event-mobile body:not(.ep-battle-mobile)
+.ep-mobile-setup-column{
+    min-width:0!important;
+    min-height:0!important;
+    display:grid!important;
+    gap:6px!important;
+    overflow:hidden!important;
+}
+
+/* LEFT: SONG smaller, MATCHMAKING larger */
+html.realyze-event-mobile body:not(.ep-battle-mobile)
+.ep-mobile-setup-left{
+    grid-template-rows:minmax(105px,.32fr) minmax(0,.68fr)!important;
+}
+
+/* RIGHT: EVENT SPECIAL directly above MAIN TEAM */
+html.realyze-event-mobile body:not(.ep-battle-mobile)
+.ep-mobile-setup-right{
+    grid-template-rows:minmax(118px,.36fr) minmax(0,.64fr)!important;
+}
+
+/* Kill every older absolute/grid placement rule on the four panels. */
+html.realyze-event-mobile body:not(.ep-battle-mobile)
+.ep-mobile-setup-column > #eventSongPanel,
+html.realyze-event-mobile body:not(.ep-battle-mobile)
+.ep-mobile-setup-column > #eventMatchPanel,
+html.realyze-event-mobile body:not(.ep-battle-mobile)
+.ep-mobile-setup-column > #eventSpecialPanel,
+html.realyze-event-mobile body:not(.ep-battle-mobile)
+.ep-mobile-setup-column > #eventMainTeamPanel{
+    position:relative!important;
+    inset:auto!important;
+    top:auto!important;
+    left:auto!important;
+    right:auto!important;
+    bottom:auto!important;
+
+    grid-column:auto!important;
+    grid-row:auto!important;
+
+    width:100%!important;
+    height:100%!important;
+    min-width:0!important;
+    min-height:0!important;
+    max-width:none!important;
+    max-height:none!important;
+
+    margin:0!important;
+    padding:7px!important;
+
+    display:flex!important;
+    flex-direction:column!important;
+    visibility:visible!important;
+    opacity:1!important;
+
+    overflow:hidden!important;
+    border-radius:11px!important;
+}
+
+/* ----- SONG ----- */
+html.realyze-event-mobile body:not(.ep-battle-mobile)
+#eventSongPanel .ep-panel-head{
+    flex:0 0 21px!important;
+    min-height:21px!important;
+    margin-bottom:3px!important;
+}
+
+html.realyze-event-mobile body:not(.ep-battle-mobile)
+#eventSongPanel .ep-song-grid{
+    flex:1 1 0!important;
+    min-height:0!important;
+
+    display:grid!important;
+    grid-template-columns:1fr!important;
+    grid-auto-rows:31px!important;
+    gap:4px!important;
+
+    overflow-y:auto!important;
+    overflow-x:hidden!important;
+    touch-action:pan-y!important;
+    -webkit-overflow-scrolling:touch!important;
+}
+
+html.realyze-event-mobile body:not(.ep-battle-mobile)
+#eventSongPanel .ep-song{
+    min-height:31px!important;
+    height:31px!important;
+    padding:4px 6px!important;
+    border-radius:7px!important;
+}
+
+/* ----- MATCHMAKING ----- */
+html.realyze-event-mobile body:not(.ep-battle-mobile)
+#eventMatchPanel .ep-mode-grid{
+    flex:0 0 auto!important;
+    display:grid!important;
+    grid-template-columns:1fr!important;
+    gap:5px!important;
+}
+
+html.realyze-event-mobile body:not(.ep-battle-mobile)
+#eventMatchPanel .ep-mode{
+    min-height:40px!important;
+    height:auto!important;
+    padding:6px!important;
+}
+
+html.realyze-event-mobile body:not(.ep-battle-mobile)
+#eventMatchPanel .ep-energy-row{
+    flex:0 0 auto!important;
+    margin:6px 0!important;
+    display:grid!important;
+    grid-template-columns:minmax(0,1fr) 78px 86px!important;
+    gap:4px!important;
+}
+
+html.realyze-event-mobile body:not(.ep-battle-mobile)
+#eventMatchPanel #saveTeam{
+    flex:0 0 32px!important;
+    min-height:32px!important;
+    height:32px!important;
+
+    display:block!important;
+    visibility:visible!important;
+    opacity:1!important;
+
+    margin-top:auto!important;
+}
+
+/* ----- EVENT SPECIAL ----- */
+html.realyze-event-mobile body:not(.ep-battle-mobile)
+#eventSpecialPanel .ep-panel-head{
+    flex:0 0 22px!important;
+    min-height:22px!important;
+    margin-bottom:4px!important;
+}
+
+html.realyze-event-mobile body:not(.ep-battle-mobile)
+#eventSpecialPanel .ep-special-grid{
+    flex:1 1 0!important;
+    min-height:0!important;
+
+    display:grid!important;
+    grid-template-columns:1fr 1fr!important;
+    gap:6px!important;
+
+    overflow:hidden!important;
+}
+
+html.realyze-event-mobile body:not(.ep-battle-mobile)
+#eventSpecialPanel .ep-special-card{
+    min-width:0!important;
+    min-height:0!important;
+    height:100%!important;
+
+    display:grid!important;
+    grid-template-columns:72px minmax(0,1fr)!important;
+    grid-template-rows:auto auto!important;
+    column-gap:8px!important;
+    align-items:center!important;
+
+    padding:6px!important;
+    text-align:left!important;
+    border-radius:9px!important;
+}
+
+html.realyze-event-mobile body:not(.ep-battle-mobile)
+#eventSpecialPanel .ep-special-card img{
+    grid-row:1/3!important;
+    width:72px!important;
+    height:72px!important;
+    object-fit:cover!important;
+    border-radius:9px!important;
+}
+
+html.realyze-event-mobile body:not(.ep-battle-mobile)
+#eventSpecialPanel .ep-special-card em{
+    display:none!important;
+}
+
+/* ----- MAIN TEAM ----- */
+html.realyze-event-mobile body:not(.ep-battle-mobile)
+#eventMainTeamPanel .ep-panel-head{
+    flex:0 0 22px!important;
+    min-height:22px!important;
+    margin-bottom:4px!important;
+}
+
+html.realyze-event-mobile body:not(.ep-battle-mobile)
+#eventMainTeamPanel .ep-char-grid{
+    flex:1 1 0!important;
+    min-height:0!important;
+
+    display:grid!important;
+    grid-template-columns:repeat(5,minmax(0,1fr))!important;
+    grid-auto-rows:82px!important;
+    align-content:start!important;
+    gap:5px!important;
+
+    overflow-y:auto!important;
+    overflow-x:hidden!important;
+    touch-action:pan-y!important;
+    -webkit-overflow-scrolling:touch!important;
+}
+
+html.realyze-event-mobile body:not(.ep-battle-mobile)
+#eventMainTeamPanel .ep-char-card{
+    min-width:0!important;
+    min-height:82px!important;
+    height:82px!important;
+    padding:4px!important;
+}
+
+html.realyze-event-mobile body:not(.ep-battle-mobile)
+#eventMainTeamPanel .ep-char-card img{
+    width:100%!important;
+    height:50px!important;
+    object-fit:cover!important;
+}
+
+/* Short landscape phones */
+@media (orientation:landscape) and (max-height:560px){
+    html.realyze-event-mobile body:not(.ep-battle-mobile)
+    #setupView.ep-mobile-layout-built > .ep-mobile-setup-columns{
+        grid-template-columns:minmax(250px,30%) minmax(0,70%)!important;
+    }
+
+    html.realyze-event-mobile body:not(.ep-battle-mobile)
+    .ep-mobile-setup-left{
+        grid-template-rows:minmax(92px,.29fr) minmax(0,.71fr)!important;
+    }
+
+    html.realyze-event-mobile body:not(.ep-battle-mobile)
+    .ep-mobile-setup-right{
+        grid-template-rows:minmax(105px,.34fr) minmax(0,.66fr)!important;
+    }
+
+    html.realyze-event-mobile body:not(.ep-battle-mobile)
+    #eventSpecialPanel .ep-special-card{
+        grid-template-columns:58px minmax(0,1fr)!important;
+    }
+
+    html.realyze-event-mobile body:not(.ep-battle-mobile)
+    #eventSpecialPanel .ep-special-card img{
+        width:58px!important;
+        height:58px!important;
+    }
+
+    html.realyze-event-mobile body:not(.ep-battle-mobile)
+    #eventMainTeamPanel .ep-char-grid{
+        grid-auto-rows:72px!important;
+    }
+
+    html.realyze-event-mobile body:not(.ep-battle-mobile)
+    #eventMainTeamPanel .ep-char-card{
+        height:72px!important;
+        min-height:72px!important;
+    }
+
+    html.realyze-event-mobile body:not(.ep-battle-mobile)
+    #eventMainTeamPanel .ep-char-card img{
+        height:42px!important;
+    }
+}
+/* =========================================================
+   END EVENT MOBILE V27
+========================================================= */
+
+
+/* =========================================================
+   EVENT MOBILE V28 — FULL HEIGHT + KEEP MATCH BUTTON VISIBLE
+   Fixes the large unused blank space below V27.
+========================================================= */
+html.realyze-event-mobile body:not(.ep-battle-mobile),
+html.realyze-event-mobile body:not(.ep-battle-mobile) .ep-shell{
+    height:100dvh!important;
+    min-height:100dvh!important;
+    max-height:100dvh!important;
+}
+
+html.realyze-event-mobile body:not(.ep-battle-mobile)
+#setupView.ep-mobile-layout-built{
+    top:42px!important;
+    bottom:0!important;
+    height:calc(100dvh - 42px)!important;
+    min-height:calc(100dvh - 42px)!important;
+    max-height:calc(100dvh - 42px)!important;
+    overflow:hidden!important;
+}
+
+html.realyze-event-mobile body:not(.ep-battle-mobile)
+#setupView.ep-mobile-layout-built > .ep-mobile-setup-columns{
+    height:100%!important;
+    min-height:0!important;
+    align-self:stretch!important;
+}
+
+/* Stretch both columns all the way to the real bottom. */
+html.realyze-event-mobile body:not(.ep-battle-mobile)
+.ep-mobile-setup-column{
+    height:100%!important;
+    min-height:0!important;
+}
+
+/* LEFT: song stays compact; matchmaking receives most lower space. */
+html.realyze-event-mobile body:not(.ep-battle-mobile)
+.ep-mobile-setup-left{
+    grid-template-rows:minmax(100px,29%) minmax(0,71%)!important;
+}
+
+/* RIGHT: special on top, main team gets the large lower section. */
+html.realyze-event-mobile body:not(.ep-battle-mobile)
+.ep-mobile-setup-right{
+    grid-template-rows:minmax(112px,31%) minmax(0,69%)!important;
+}
+
+/* MATCHMAKING: explicit rows so SAVE TEAM & MATCHMAKE can never be swallowed. */
+html.realyze-event-mobile body:not(.ep-battle-mobile)
+.ep-mobile-setup-column > #eventMatchPanel{
+    display:grid!important;
+    grid-template-rows:auto auto auto 34px!important;
+    align-content:stretch!important;
+    min-height:0!important;
+    overflow:hidden!important;
+}
+
+html.realyze-event-mobile body:not(.ep-battle-mobile)
+#eventMatchPanel .ep-panel-head{
+    grid-row:1!important;
+    min-height:22px!important;
+    margin-bottom:4px!important;
+}
+
+html.realyze-event-mobile body:not(.ep-battle-mobile)
+#eventMatchPanel .ep-mode-grid{
+    grid-row:2!important;
+    min-height:0!important;
+    align-content:start!important;
+}
+
+html.realyze-event-mobile body:not(.ep-battle-mobile)
+#eventMatchPanel .ep-energy-row{
+    grid-row:3!important;
+    min-height:32px!important;
+    margin:5px 0!important;
+    align-items:center!important;
+}
+
+html.realyze-event-mobile body:not(.ep-battle-mobile)
+#eventMatchPanel #saveTeam{
+    grid-row:4!important;
+    align-self:end!important;
+    justify-self:stretch!important;
+    width:100%!important;
+
+    min-height:34px!important;
+    height:34px!important;
+    margin:0!important;
+    padding:6px 8px!important;
+
+    display:block!important;
+    visibility:visible!important;
+    opacity:1!important;
+    pointer-events:auto!important;
+
+    position:relative!important;
+    inset:auto!important;
+    z-index:4!important;
+}
+
+/* Give the main-team scroller the extra space that was blank before. */
+html.realyze-event-mobile body:not(.ep-battle-mobile)
+#eventMainTeamPanel .ep-char-grid{
+    height:100%!important;
+    min-height:0!important;
+    grid-auto-rows:78px!important;
+    padding-bottom:2px!important;
+}
+
+/* Event Special keeps its full top block, directly above Main Team. */
+html.realyze-event-mobile body:not(.ep-battle-mobile)
+#eventSpecialPanel .ep-special-grid{
+    height:100%!important;
+    min-height:0!important;
+}
+
+/* Extra-short Android landscape. Still preserve the button row. */
+@media (orientation:landscape) and (max-height:560px){
+    html.realyze-event-mobile body:not(.ep-battle-mobile)
+    .ep-mobile-setup-left{
+        grid-template-rows:minmax(88px,27%) minmax(0,73%)!important;
+    }
+
+    html.realyze-event-mobile body:not(.ep-battle-mobile)
+    .ep-mobile-setup-right{
+        grid-template-rows:minmax(96px,29%) minmax(0,71%)!important;
+    }
+
+    html.realyze-event-mobile body:not(.ep-battle-mobile)
+    #eventMatchPanel .ep-mode{
+        min-height:35px!important;
+        padding:5px 6px!important;
+    }
+
+    html.realyze-event-mobile body:not(.ep-battle-mobile)
+    #eventMatchPanel #saveTeam{
+        min-height:32px!important;
+        height:32px!important;
+    }
+
+    html.realyze-event-mobile body:not(.ep-battle-mobile)
+    #eventMainTeamPanel .ep-char-grid{
+        grid-auto-rows:68px!important;
+    }
+
+    html.realyze-event-mobile body:not(.ep-battle-mobile)
+    #eventMainTeamPanel .ep-char-card{
+        min-height:68px!important;
+        height:68px!important;
+    }
+
+    html.realyze-event-mobile body:not(.ep-battle-mobile)
+    #eventMainTeamPanel .ep-char-card img{
+        height:39px!important;
+    }
+}
+/* =========================================================
+   END EVENT MOBILE V28
+========================================================= */
+
+
+/* =========================================================
+   EVENT QUEUE / MATCHMAKING LAYER FIX V45
+   V27/V28 mobile setup uses display:grid!important on #setupView.
+   That rule was stronger than .hidden, so after pressing MATCHMAKE
+   the Setup screen stayed visible and the queue screen rendered
+   underneath it. Force hidden state to actually hide each view.
+========================================================= */
+
+/* Most important fix: when show('queueView') adds .hidden to setup,
+   the mobile setup MUST disappear. */
+html.realyze-event-mobile body:not(.ep-battle-mobile)
+#setupView.ep-mobile-layout-built.hidden{
+    display:none!important;
+    visibility:hidden!important;
+    pointer-events:none!important;
+}
+
+/* Hidden queue/battle views should never leak under another screen. */
+html.realyze-event-mobile #queueView.hidden,
+html.realyze-event-mobile #battleView.hidden{
+    display:none!important;
+    visibility:hidden!important;
+    pointer-events:none!important;
+}
+
+/* Queue becomes its own top layer directly below the Event header. */
+html.realyze-event-mobile body:not(.ep-battle-mobile)
+#queueView:not(.hidden){
+    position:fixed!important;
+    top:42px!important;
+    left:0!important;
+    right:0!important;
+    bottom:0!important;
+
+    z-index:24!important;
+
+    width:auto!important;
+    height:auto!important;
+    max-width:none!important;
+    max-height:none!important;
+    margin:0!important;
+    padding:10px!important;
+
+    display:flex!important;
+    align-items:center!important;
+    justify-content:center!important;
+
+    overflow:auto!important;
+    background:
+        radial-gradient(circle at 50% 42%,rgba(255,239,247,.78),rgba(255,255,255,.98) 58%),
+        #fff!important;
+
+    visibility:visible!important;
+    opacity:1!important;
+    pointer-events:auto!important;
+}
+
+/* Keep topbar above the queue layer. */
+html.realyze-event-mobile .ep-topbar{
+    z-index:30!important;
+}
+
+/* Queue itself becomes a clean centered card instead of text floating
+   behind setup panels. */
+html.realyze-event-mobile body:not(.ep-battle-mobile)
+#queueView:not(.hidden) .ep-queue{
+    width:min(620px,88vw)!important;
+    max-width:620px!important;
+
+    margin:auto!important;
+    padding:24px 26px!important;
+
+    text-align:center!important;
+
+    border:1px solid #efdfe7!important;
+    border-radius:20px!important;
+    background:rgba(255,255,255,.97)!important;
+    box-shadow:0 18px 55px rgba(81,38,59,.10)!important;
+}
+
+html.realyze-event-mobile
+#queueView .ep-spinner{
+    width:42px!important;
+    height:42px!important;
+    margin:0 auto 12px!important;
+}
+
+html.realyze-event-mobile
+#queueView .ep-queue h1{
+    margin:7px 0 5px!important;
+    font-size:22px!important;
+    line-height:1.1!important;
+}
+
+html.realyze-event-mobile
+#queueView .ep-queue p{
+    margin:0 auto!important;
+    max-width:480px!important;
+    color:#927f88!important;
+    font-size:10px!important;
+}
+
+html.realyze-event-mobile
+#queueView .ep-queue-vs{
+    margin:15px 0!important;
+    gap:12px!important;
+}
+
+html.realyze-event-mobile
+#queueView .ep-queue-vs > div{
+    min-width:110px!important;
+    padding:10px 14px!important;
+    border-radius:13px!important;
+}
+
+html.realyze-event-mobile
+#queueView .ep-queue-vs b{
+    margin-top:3px!important;
+    font-size:20px!important;
+}
+
+html.realyze-event-mobile
+#queueView #cancelQueue{
+    min-width:150px!important;
+    min-height:34px!important;
+    padding:7px 15px!important;
+}
+
+/* Short Android landscape: compact enough to fit without scrolling. */
+@media (orientation:landscape) and (max-height:560px){
+    html.realyze-event-mobile body:not(.ep-battle-mobile)
+    #queueView:not(.hidden){
+        top:42px!important;
+        padding:6px!important;
+    }
+
+    html.realyze-event-mobile body:not(.ep-battle-mobile)
+    #queueView:not(.hidden) .ep-queue{
+        width:min(570px,78vw)!important;
+        padding:13px 18px!important;
+        border-radius:15px!important;
+    }
+
+    html.realyze-event-mobile #queueView .ep-spinner{
+        width:31px!important;
+        height:31px!important;
+        border-width:3px!important;
+        margin-bottom:7px!important;
+    }
+
+    html.realyze-event-mobile #queueView .ep-queue h1{
+        margin:4px 0 3px!important;
+        font-size:15px!important;
+    }
+
+    html.realyze-event-mobile #queueView .ep-queue p{
+        font-size:6.5px!important;
+    }
+
+    html.realyze-event-mobile #queueView .ep-queue-vs{
+        margin:8px 0!important;
+        gap:8px!important;
+    }
+
+    html.realyze-event-mobile #queueView .ep-queue-vs > div{
+        min-width:88px!important;
+        padding:6px 9px!important;
+    }
+
+    html.realyze-event-mobile #queueView .ep-queue-vs b{
+        font-size:14px!important;
+    }
+
+    html.realyze-event-mobile #queueView #cancelQueue{
+        min-width:110px!important;
+        min-height:27px!important;
+        padding:5px 11px!important;
+        font-size:7px!important;
+    }
+}
+
+/* =========================================================
+   END EVENT QUEUE / MATCHMAKING LAYER FIX V45
+========================================================= */
+
+
+/* =========================================================
+   RPS WAIT / LEAVE V46
+========================================================= */
+.ep-rps-wait-timer{
+    display:block!important;
+    min-height:14px;
+    margin-top:9px;
+    color:#a58b96;
+    font-size:8px;
+    font-weight:900;
+    letter-spacing:.7px;
+    text-align:center;
+}
+
+.ep-rps-leave-wait{
+    display:block;
+    width:min(220px,70%);
+    min-height:34px;
+    margin:8px auto 0;
+    padding:7px 14px;
+
+    border:1px solid #efb5ca;
+    border-radius:10px;
+    background:#fff;
+    color:#d9427a;
+
+    font-size:8px;
+    font-weight:900;
+    letter-spacing:.7px;
+
+    cursor:pointer;
+    pointer-events:auto!important;
+}
+
+.ep-rps-leave-wait:hover{
+    background:#fff0f6;
+}
+
+.ep-rps-leave-wait.hidden{
+    display:none!important;
+}
+
+@media (orientation:landscape) and (max-height:560px){
+    .ep-rps-wait-timer{
+        min-height:9px;
+        margin-top:5px;
+        font-size:5.5px;
+    }
+
+    .ep-rps-leave-wait{
+        width:min(150px,62%);
+        min-height:27px;
+        margin-top:5px;
+        padding:5px 9px;
+        border-radius:8px;
+        font-size:5.5px;
+    }
+}
+/* =========================================================
+   END RPS WAIT / LEAVE V46
+========================================================= */
+
+
+/* =========================================================
+   DANCE ATTRIBUTE · V49
+========================================================= */
+.ep-char-card[data-id="shiho"]{
+    border-color:#bddd83!important;
+    background:linear-gradient(135deg,#f5ffe7,#fff)!important;
+}
+
+.ep-char-card[data-id="shiho"] small{
+    color:#79a83a!important;
+}
+/* =========================================================
+   END DANCE ATTRIBUTE · V49
+========================================================= */
+
+
+/* DANCE V50 — lime identity */
+.ep-char-card[data-id="shiho"]{
+    border-color:#addb62!important;
+    background:
+      linear-gradient(135deg,#edffd1,#fbfff4 62%,#fff)!important;
+    box-shadow:
+      inset 0 0 0 1px rgba(151,205,69,.12),
+      0 7px 18px rgba(111,158,43,.08)!important;
+}
+
+.ep-char-card[data-id="shiho"] strong,
+.ep-char-card[data-id="shiho"] small{
+    color:#649923!important;
+}
+
+
+/* NENE · DANCE BREAKER V51 */
+.ep-char-card[data-id="nene"]{
+    border-color:#9ed957!important;
+    background:
+      radial-gradient(circle at 100% 0,rgba(181,241,89,.18),transparent 40%),
+      linear-gradient(135deg,#f2ffd9,#fff)!important;
+}
+
+.ep-char-card[data-id="nene"] strong,
+.ep-char-card[data-id="nene"] small{
+    color:#5d941d!important;
+}

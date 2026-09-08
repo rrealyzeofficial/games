@@ -1,0 +1,35 @@
+TEIKOKU SHOUJO — VANI & EBI
+Audio: assets/ts.mp3
+Cover: assets/ts.jpg
+Duration: 124.848s
+Analyzed tempo: ~117.45 BPM
+
+Difficulty:
+EASY   3★   — unchanged
+NORMAL 4★ — unchanged
+HARD   5★   — 470 normal notes
+
+HARD V10 REMAP:
+- Uses a dense 1/8-note backbone aligned to the detected beat grid.
+- Adds selected 1/16 notes only where strong real audio onsets support them.
+- Adds occasional 2-note chords on strong accented beats.
+- Intro/outro remain slightly lighter for readability.
+- No hold notes.
+
+
+V12 INTRO FIX:
+- Silent opening is protected.
+- Normal notes with hit time before 6.55s were removed from EASY/NORMAL/HARD.
+- Because notes travel for 1.75s, the first remaining note will not appear until about 4.80s.
+- This prevents notes from being visible during the ~4.7s silent opening.
+- Implemented NORMAL/HARD modes no longer display LOCKED.
+
+Counts after intro cleanup:
+EASY: 208 -> 205
+NORMAL: 259 -> 255
+HARD: 470 -> 453
+
+V13 UI FIX:
+- Teikoku difficulty buttons now display only EASY / NORMAL / HARD once.
+- VIRTUAL TO LIVE and BOUNCE NORMAL/HARD reverted to LOCKED as before.
+- Only TEIKOKU SHOUJO has EASY/NORMAL/HARD unlocked for now.

@@ -1,0 +1,3640 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+
+    <title>REALYZE!! — The Joyful Song of Complete Liberation</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Quicksand:wght@500;600;700&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="style.css?v=60">
+    <link rel="stylesheet" href="night-stage.css?v=66">
+
+<style id="card-info-styles">
+.card-info-overlay{position:fixed;inset:0;z-index:1000;display:flex;align-items:center;justify-content:center;padding:18px;background:rgba(35,20,28,.38);backdrop-filter:blur(7px)}
+.card-info-overlay.hidden{display:none}
+.card-info-modal{position:relative;width:min(560px,94vw);max-height:92vh;overflow:auto;padding:26px;border:1px solid #f0e6eb;border-radius:22px;background:#fff;box-shadow:0 25px 80px rgba(60,25,42,.2);font-family:Nunito,Arial,sans-serif}
+.card-info-close{position:absolute;right:14px;top:12px;width:36px;height:36px;border:1px solid #eadfe4;border-radius:50%;background:#fff;color:#999;font-size:23px;line-height:1;cursor:pointer}
+.card-info-close:hover{color:#ff5f9e;border-color:#ffb7d1}
+.card-info-header{display:flex;align-items:center;gap:18px;padding-right:38px}
+.card-info-art-wrap{width:116px;height:146px;flex:0 0 116px;border:1px solid #f0e2e8;border-radius:16px;background:#fff8fb;overflow:hidden}
+.card-info-art{width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:32px;font-weight:900;color:#ff5f9e}
+.card-info-art img{width:100%;height:100%;object-fit:cover;display:block}
+.card-info-title small{font-size:8px;letter-spacing:2px;color:#aaa;font-weight:900}
+.card-info-title h2{margin:5px 0 7px;font-size:28px;line-height:1.05}
+.card-info-rank-line{display:flex;align-items:center;gap:10px}
+.card-info-rank-line span{font-size:13px;letter-spacing:2px;color:#e4b23d}
+.card-info-rank-line strong{padding:5px 9px;border-radius:7px;background:#fff1f7;color:#ff5f9e;font-size:9px;letter-spacing:1px}
+.card-info-level{margin-top:22px;padding:15px;border:1px solid #eee5e9;border-radius:13px}
+.card-info-level-head{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.card-info-level-head span{display:block;color:#999;font-size:8px;letter-spacing:1.5px;font-weight:900}
+.card-info-level-head strong{display:block;margin-top:4px;font-size:16px}
+.card-info-upgrade{min-width:125px;border:1px solid #ff9fc1;border-radius:9px;background:#fff1f7;color:#ff5f9e;padding:8px 11px;cursor:pointer;font-weight:900}
+.card-info-upgrade:disabled{opacity:.45;cursor:not-allowed}
+.card-info-upgrade span,.card-info-upgrade small{display:block}
+.card-info-upgrade span{font-size:9px;letter-spacing:1px}
+.card-info-upgrade small{margin-top:3px;font-size:8px}
+.card-info-level-bar{height:7px;margin-top:13px;border-radius:99px;background:#eee}
+.card-info-level-bar div{height:100%;width:0;border-radius:99px;background:#ff5f9e;transition:width .2s}
+.card-info-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:12px}
+.card-info-stat{padding:13px 8px;border:1px solid #eee5e9;border-radius:11px;text-align:center}
+.card-info-stat span{display:block;font-size:8px;letter-spacing:1px;font-weight:900;color:#999}
+.card-info-stat strong{display:block;margin-top:6px;font-size:17px}
+.card-info-stat.vocal strong{color:#ef557f}
+.card-info-stat.rap strong{color:#4d8df7}
+.card-info-stat.act strong{color:#e6b83f}
+.card-info-stat.total{background:#fff8fb}
+.card-info-stat.total strong{color:#ff5f9e}
+.card-info-main-skill{margin-top:12px;border:1px solid #eee5e9;border-radius:13px;overflow:hidden}
+.card-info-skill-heading{display:flex;justify-content:space-between;align-items:center;padding:12px 14px;background:#fff8fb;border-bottom:1px solid #f1e7eb}
+.card-info-skill-heading span{font-size:8px;letter-spacing:1.5px;color:#999;font-weight:900}
+.card-info-skill-heading strong{font-size:10px}
+.card-info-skill-body{padding:14px}
+.card-info-skill-body strong{font-size:12px;letter-spacing:.5px}
+.card-info-skill-body p{margin:7px 0 0;color:#666;font-size:11px;line-height:1.55}
+.my-card{cursor:pointer}
+.my-card:focus{outline:2px solid #ffb7d1;outline-offset:3px}
+@media(max-width:600px){
+ .card-info-modal{padding:20px;border-radius:18px}
+ .card-info-header{gap:12px}
+ .card-info-art-wrap{width:88px;height:112px;flex-basis:88px}
+ .card-info-title h2{font-size:23px}
+ .card-info-stats{grid-template-columns:repeat(2,1fr)}
+ .card-info-level-head{align-items:flex-start}
+ .card-info-upgrade{min-width:112px}
+}
+</style>
+
+</head>
+
+<body>
+
+<!-- =========================================================
+     BACKGROUND
+========================================================= -->
+
+<div class="pink-dots">
+    <span></span><span></span><span></span><span></span><span></span>
+    <span></span><span></span><span></span><span></span><span></span>
+    <span></span><span></span><span></span><span></span><span></span>
+</div>
+
+
+<!-- =========================================================
+     REALYZE!! STARTUP SPLASH
+========================================================= -->
+
+<section id="startupSplash" class="screen startup-splash">
+    <div class="startup-splash-logo-wrap">
+        <img
+            class="startup-splash-logo"
+            src="assets/lg.png"
+            alt="REALYZE!!"
+            draggable="false"
+        >
+    </div>
+</section>
+
+
+<!-- =========================================================
+     REALYZE!! TITLE / START SCREEN
+========================================================= -->
+
+<section id="titleScreen" class="screen title-screen hidden">
+    <div class="title-screen-bg" aria-hidden="true"></div>
+    <div class="title-screen-shade" aria-hidden="true"></div>
+
+    <div class="title-frame">
+        <div class="title-version">Ver 1.0</div>
+
+        <div class="title-center">
+            <div class="title-logo-wrap">
+                <img
+                    id="titleLogoImage"
+                    class="title-logo-image"
+                    src="assets/lg.png"
+                    alt="REALYZE!!"
+                    draggable="false"
+                    onerror="this.classList.add('image-missing'); document.getElementById('titleLogoFallback')?.classList.remove('hidden');"
+                >
+                <div id="titleLogoFallback" class="title-logo-fallback hidden">REALYZE!!</div>
+            </div>
+
+            <button id="titlePlayButton" class="title-click-play" type="button">
+                <span>CLICK FOR PLAY!!!!</span>
+            </button>
+        </div>
+
+        <button id="titleAuthButton" class="title-corner-button title-login-button" type="button">
+            Login/Register
+        </button>
+
+        <div class="title-copyright">ⓒ 2026-2027 REALYZE!!</div>
+
+        <button id="titleLogoutButton" class="title-corner-button title-logout-button" type="button">
+            Log out
+        </button>
+    </div>
+</section>
+
+
+<!-- V57: NEW TITLE LOGIN POPUP PRESERVED; cache-busted CSS/JS -->
+
+<!-- =========================================================
+     TITLE LOGIN / REGISTER POPUP
+========================================================= -->
+
+<section id="authScreen" class="auth-popup-layer hidden" aria-hidden="true">
+
+    <div class="title-auth-backdrop" data-close-auth></div>
+
+    <div class="title-auth-modal" role="dialog" aria-modal="true" aria-labelledby="titleAuthHeading">
+
+        <button
+            id="authPopupClose"
+            class="title-auth-close"
+            type="button"
+            aria-label="Close"
+        >×</button>
+
+        <div class="title-auth-heading">
+            <small>REALYZE!! ACCOUNT</small>
+            <h2 id="titleAuthHeading">LOGIN / REGISTER</h2>
+            <p>Sign in to continue your performance.</p>
+        </div>
+
+        <div class="title-auth-tabs">
+            <button id="loginTab" class="auth-tab active" type="button">
+                LOGIN
+            </button>
+
+            <button id="registerTab" class="auth-tab" type="button">
+                REGISTER
+            </button>
+        </div>
+
+        <form id="authForm" class="title-auth-form">
+
+            <div class="title-auth-field">
+                <label for="username">ID NAME</label>
+                <input
+                    id="username"
+                    type="text"
+                    autocomplete="username"
+                    placeholder="Enter ID name"
+                    required
+                >
+            </div>
+
+            <div class="title-auth-field">
+                <label for="password">PASSWORD</label>
+
+                <div class="title-password-wrap">
+                    <input
+                        id="password"
+                        type="password"
+                        autocomplete="current-password"
+                        placeholder="Enter password"
+                        required
+                    >
+
+                    <button
+                        type="button"
+                        id="togglePassword"
+                        class="title-eye-button"
+                        aria-label="Show password"
+                    >◉</button>
+                </div>
+            </div>
+
+            <div id="registerFields" class="register-fields hidden">
+                <div class="title-auth-field">
+                    <label for="confirmPassword">CONFIRM PASSWORD</label>
+                    <input
+                        id="confirmPassword"
+                        type="password"
+                        autocomplete="new-password"
+                        placeholder="Enter password again"
+                    >
+                </div>
+            </div>
+
+            <div id="message" class="title-auth-message"></div>
+
+            <button
+                id="submitButton"
+                class="title-auth-submit"
+                type="submit"
+            >
+                LOGIN
+            </button>
+
+        </form>
+
+        <button id="switchButton" class="title-auth-switch" type="button">
+            Don't have an account? <b>REGISTER</b>
+        </button>
+
+    </div>
+
+</section>
+
+
+<!-- =========================================================
+     LOADING
+========================================================= -->
+
+<section id="loadingScreen" class="screen loading-screen hidden">
+
+    <div class="loading-content">
+
+        <div class="loading-logo">R!</div>
+
+        <h2>REALYZE<span>!!</span></h2>
+
+        <p id="loadingText">
+            TRUY CẬP CÂY THẾ GIỚI...
+        </p>
+
+        <div class="loading-bar">
+            <div id="loadingProgress"></div>
+        </div>
+
+        <span class="loading-small">
+            ĐỢI XÍU...
+        </span>
+
+    </div>
+
+</section>
+
+
+
+<!-- =========================================================
+     LOBBY
+========================================================= -->
+
+<section id="lobbyScreen" class="game-screen lobby-screen hidden">
+
+    <!-- TOP BAR -->
+
+    <header class="top-bar">
+
+        <div class="mini-logo">
+            R!
+        </div>
+
+        <div class="player-info">
+
+            <div class="avatar-wrap">
+
+                <img
+                    id="avatarImage"
+                    src=""
+                    alt="Avatar"
+                >
+
+                <div id="avatarPlaceholder">
+                    ?
+                </div>
+
+                <label for="avatarUpload" class="avatar-edit">
+                    +
+                </label>
+
+                <input
+                    id="avatarUpload"
+                    type="file"
+                    accept="image/*"
+                    hidden
+                >
+
+            </div>
+
+            <div class="player-text">
+
+                <strong id="lobbyUsername">
+                    PLAYER
+                </strong>
+
+                <span>
+                    RANK <b id="playerRank">1</b>
+                </span>
+                <div class="player-rank-xp-mini" title="Player Rank EXP">
+                    <div class="player-rank-xp-track"><i id="playerRankXpFill"></i></div>
+                    <small id="playerRankXpText">0 / 850 XP</small>
+                </div>
+
+            </div>
+
+        </div>
+
+        <button id="logoutButton" class="lobby-logout-button" type="button" aria-label="Đăng xuất">
+            <span>↪</span>
+            <b>LOG OUT</b>
+        </button>
+
+        <div class="lobby-top-choice-buttons">
+            <button id="lobbyMusicButton" class="lobby-music-button" type="button" aria-label="Chọn nhạc sảnh chờ">
+                <span class="lobby-music-icon">♫</span>
+                <span class="lobby-music-text">
+                    <small>NHẠC SẢNH</small>
+                    <strong id="lobbyMusicButtonName">VIRTUAL TO LIVE</strong>
+                </span>
+            </button>
+            <button id="lobbyCharacterButton" class="lobby-character-button" type="button" aria-label="Chọn background sảnh">
+                <span class="lobby-character-button-icon">♢</span>
+                <span class="lobby-music-text">
+                    <small>BACKGROUND</small>
+                    <strong id="lobbyCharacterButtonName">CHARACTER</strong>
+                </span>
+            </button>
+        </div>
+
+        <div class="resource-area">
+
+            <div class="resource">
+    <span class="resource-icon gem">◆</span>
+    <span id="gemCount">5000</span>
+    <button class="resource-plus resource-plus-locked" id="gemPlus" type="button" disabled aria-label="Gems locked">🔒</button>
+</div>
+
+           <div class="resource">
+    <span class="resource-icon coin">●</span>
+    <span id="coinCount">10000</span>
+    <button class="resource-plus resource-plus-locked" id="coinPlus" type="button" disabled aria-label="Gold locked">🔒</button>
+</div>
+
+            <div class="resource energy-resource">
+                <span class="resource-icon energy">⚡</span>
+                <span id="lobbyEnergyCount">100</span>
+                <small id="lobbyEnergyTimer" class="resource-timer">FULL</small>
+                <button class="resource-plus" id="energyPlus">+</button>
+            </div>
+
+            <div class="resource">
+                <span class="resource-icon ticket">◇</span>
+                <span id="ticketCount">10</span>
+                <button class="resource-plus">+</button>
+            </div>
+
+        </div>
+
+    </header>
+
+    <!-- =====================================================
+     GEM SHOP POPUP
+===================================================== -->
+
+<div class="gem-popup-overlay hidden" id="gemPopup">
+
+    <div class="gem-popup">
+
+        <button
+            class="gem-popup-close"
+            id="closeGemPopup"
+            type="button"
+        >
+            ×
+        </button>
+
+        <div class="gem-popup-deco deco-one">✦</div>
+        <div class="gem-popup-deco deco-two">✧</div>
+        <div class="gem-popup-deco deco-three">✦</div>
+
+        <div class="gem-popup-header">
+
+            <span class="gem-popup-icon">
+                ◆
+            </span>
+
+            <div>
+                <small>CỬA HÀNG TÀI NGUYÊN</small>
+
+                <h2>
+                    MUA THÊM
+                    <em>GEMS</em>
+                </h2>
+
+                <p>
+                    Choose a gem pack to add to your account.
+                </p>
+            </div>
+
+        </div>
+
+
+        <div class="gem-current">
+
+            <span>KIM CƯƠNG HIỆN CÓ</span>
+
+            <strong>
+                ◆
+                <b id="gemPopupCurrent">
+                    5000
+                </b>
+            </strong>
+
+        </div>
+
+
+        <div class="gem-pack-list">
+
+            <!-- +500 -->
+
+            <button
+                class="gem-pack"
+                data-gems="500"
+                type="button"
+            >
+
+                <div class="gem-pack-icon">
+                    ◆
+                </div>
+
+                <div class="gem-pack-info">
+
+                    <span>SMALL PACK</span>
+
+                    <strong>
+                        +500
+                    </strong>
+
+                    <small>
+                        GEMS
+                    </small>
+
+                </div>
+
+                <div class="gem-pack-arrow">
+                    +
+                </div>
+
+            </button>
+
+
+            <!-- +1500 -->
+
+            <button
+                class="gem-pack featured"
+                data-gems="1500"
+                type="button"
+            >
+
+                <div class="gem-pack-badge">
+                    POPULAR
+                </div>
+
+                <div class="gem-pack-icon">
+                    ◆
+                </div>
+
+                <div class="gem-pack-info">
+
+                    <span>MEDIUM PACK</span>
+
+                    <strong>
+                        +1,500
+                    </strong>
+
+                    <small>
+                        GEMS
+                    </small>
+
+                </div>
+
+                <div class="gem-pack-arrow">
+                    +
+                </div>
+
+            </button>
+
+
+            <!-- +3000 -->
+
+            <button
+                class="gem-pack premium"
+                data-gems="3000"
+                type="button"
+            >
+
+                <div class="gem-pack-icon">
+                    ◆
+                </div>
+
+                <div class="gem-pack-info">
+
+                    <span>LARGE PACK</span>
+
+                    <strong>
+                        +3,000
+                    </strong>
+
+                    <small>
+                        GEMS
+                    </small>
+
+                </div>
+
+                <div class="gem-pack-arrow">
+                    +
+                </div>
+
+            </button>
+
+        </div>
+
+
+        <div
+            class="gem-popup-success"
+            id="gemPopupSuccess"
+        >
+            <span>✓</span>
+            <strong>ĐÃ CỘNG KIM CƯƠNG!</strong>
+            <small id="gemPopupSuccessText">
+                +500 GEMS
+            </small>
+        </div>
+
+    </div>
+
+</div>
+
+<!-- =====================================================
+     GOLD SHOP POPUP
+===================================================== -->
+
+<div class="gem-popup-overlay hidden" id="coinPopup">
+
+    <div class="gem-popup">
+
+        <button
+            class="gem-popup-close"
+            id="closeCoinPopup"
+            type="button"
+        >
+            ×
+        </button>
+
+        <div class="gem-popup-deco deco-one">✦</div>
+        <div class="gem-popup-deco deco-two">✧</div>
+        <div class="gem-popup-deco deco-three">✦</div>
+
+        <div class="gem-popup-header">
+
+            <span class="gem-popup-icon">
+                ●
+            </span>
+
+            <div>
+                <small>CỬA HÀNG TÀI NGUYÊN</small>
+
+                <h2>
+                    MUA THÊM
+                    <em>GOLD</em>
+                </h2>
+
+                <p>
+                    Choose a gold pack to add to your account.
+                </p>
+            </div>
+
+        </div>
+
+        <div class="gem-current">
+
+            <span>VÀNG HIỆN CÓ</span>
+
+            <strong>
+                ●
+                <b id="coinPopupCurrent">
+                    10000
+                </b>
+            </strong>
+
+        </div>
+
+        <div class="gem-pack-list">
+
+            <button
+                class="gem-pack"
+                data-coins="50000"
+                type="button"
+            >
+                <div class="gem-pack-icon">
+                    ●
+                </div>
+
+                <div class="gem-pack-info">
+                    <span>SMALL PACK</span>
+
+                    <strong>
+                        +50,000
+                    </strong>
+
+                    <small>
+                        GOLD
+                    </small>
+                </div>
+
+                <div class="gem-pack-arrow">
+                    +
+                </div>
+            </button>
+
+
+            <button
+                class="gem-pack featured"
+                data-coins="100000"
+                type="button"
+            >
+                <div class="gem-pack-icon">
+                    ●
+                </div>
+
+                <div class="gem-pack-info">
+                    <span>MEDIUM PACK</span>
+
+                    <strong>
+                        +100,000
+                    </strong>
+
+                    <small>
+                        GOLD
+                    </small>
+                </div>
+
+                <div class="gem-pack-arrow">
+                    +
+                </div>
+            </button>
+
+
+            <button
+                class="gem-pack"
+                data-coins="1000000"
+                type="button"
+            >
+                <div class="gem-pack-icon">
+                    ●
+                </div>
+
+                <div class="gem-pack-info">
+                    <span>MEGA PACK</span>
+
+                    <strong>
+                        +1,000,000
+                    </strong>
+
+                    <small>
+                        GOLD
+                    </small>
+                </div>
+
+                <div class="gem-pack-arrow">
+                    +
+                </div>
+            </button>
+
+        </div>
+
+        <div
+            class="gem-popup-success"
+            id="coinPopupSuccess"
+        >
+            <strong>ĐÃ CỘNG VÀNG</strong>
+            <span id="coinPopupSuccessText">
+                +50,000 GOLD
+            </span>
+        </div>
+
+    </div>
+
+</div>
+    <!-- ENERGY SHOP -->
+    <div id="energyPopup" class="gem-popup-overlay hidden">
+      <div class="gem-popup energy-popup">
+        <button class="gem-popup-close" id="closeEnergyPopup" type="button">×</button>
+        <div class="gem-popup-deco deco-one">✦</div><div class="gem-popup-deco deco-two">✧</div><div class="gem-popup-deco deco-three">✦</div>
+        <div class="gem-popup-header"><span class="gem-popup-icon">⚡</span><div><span>ENERGY SHOP</span><h2>REFILL <em>ENERGY</em></h2><p>Energy naturally recovers up to 100.</p></div></div>
+        <div class="gem-current"><span>ENERGY HIỆN CÓ</span><strong>⚡ <b id="energyPopupCurrent">100</b></strong></div>
+        <div class="gem-pack-list energy-pack-list">
+          <button class="gem-pack" data-energy-pack="50"><div class="gem-pack-icon">⚡</div><div class="gem-pack-info"><span>SMALL PACK</span><strong>+50</strong><small>ENERGY · 100 GEMS</small></div><div class="gem-pack-arrow">+</div></button>
+          <button class="gem-pack" data-energy-pack="100"><div class="gem-pack-icon">⚡</div><div class="gem-pack-info"><span>MEDIUM PACK</span><strong>+100</strong><small>ENERGY · 220 GEMS</small></div><div class="gem-pack-arrow">+</div></button>
+          <button class="gem-pack premium" data-energy-pack="200"><div class="gem-pack-icon">⚡</div><div class="gem-pack-info"><span>MEGA PACK</span><strong>+200</strong><small>ENERGY · 360 GEMS</small></div><div class="gem-pack-arrow">+</div></button>
+        </div>
+        <div class="gem-popup-success" id="energyPopupSuccess"><span>✓</span><strong>ĐÃ CỘNG ENERGY!</strong><small id="energyPopupSuccessText">+50 ENERGY</small></div>
+      </div>
+    </div>
+
+    <!-- =====================================================
+         LOBBY MUSIC SELECT
+    ===================================================== -->
+    <div id="lobbyMusicOverlay" class="lobby-music-overlay hidden">
+        <div class="lobby-music-modal" role="dialog" aria-modal="true" aria-labelledby="lobbyMusicTitle">
+            <button id="closeLobbyMusic" class="lobby-music-close" type="button" aria-label="Đóng">×</button>
+            <div class="lobby-music-header">
+                <span class="lobby-music-header-icon">♫</span>
+                <div>
+                    <small>NHẠC NỀN SẢNH</small>
+                    <h2 id="lobbyMusicTitle">CHỌN NHẠC</h2>
+                    <p>Chọn 1 trong 3 bài nhạc cho sảnh chờ.</p>
+                </div>
+            </div>
+            <div id="lobbyMusicList" class="lobby-music-list"></div>
+        </div>
+    </div>
+
+    <!-- LOBBY CHARACTER SELECT -->
+    <div id="lobbyCharacterOverlay" class="lobby-character-overlay hidden">
+        <div class="lobby-character-modal" role="dialog" aria-modal="true" aria-labelledby="lobbyCharacterTitle">
+            <button id="closeLobbyCharacter" class="lobby-character-close" type="button" aria-label="Đóng">×</button>
+            <div class="lobby-character-header">
+                <span class="lobby-character-header-icon">♢</span>
+                <div>
+                    <small>LOBBY BACKGROUND</small>
+                    <h2 id="lobbyCharacterTitle">CHỌN NHÂN VẬT</h2>
+                    <p>Chọn một character bạn đã sở hữu làm background sảnh.</p>
+                </div>
+            </div>
+            <div id="lobbyCharacterList" class="lobby-character-list"></div>
+        </div>
+    </div>
+
+    <!-- MAIN LOBBY -->
+
+    <main class="lobby-main">
+
+        <div class="lobby-title">
+
+            <span>WELCOME BACK</span>
+
+            <h1 id="welcomeName">
+                PLAYER
+            </h1>
+
+        </div>
+
+        <!-- LOBBY UTILITY BUTTONS -->
+        <div class="lobby-utility-stack">
+
+        <!-- DAILY ATTENDANCE MINI CARD -->
+        <button id="dailyAttendanceMini" class="daily-attendance-mini compact" type="button">
+            <span class="daily-attendance-mini-icon">✓</span>
+            <span class="daily-attendance-mini-info">
+                <small>DAILY CHECK-IN</small>
+                <strong id="dailyAttendanceMiniTitle">ĐIỂM DANH HÔM NAY</strong>
+                <span id="dailyAttendanceMiniReward">ĐANG TẢI...</span>
+            </span>
+            <span class="daily-attendance-mini-arrow">›</span>
+        </button>
+
+        <!-- SETTINGS -->
+        <button id="lobbySettingsButton" class="lobby-settings-button" type="button" aria-label="Settings">
+            <span class="lobby-settings-icon">⚙</span>
+            <span class="lobby-settings-info">
+                <small>ACCOUNT</small>
+                <strong>SETTINGS</strong>
+            </span>
+            <span class="lobby-settings-arrow">›</span>
+        </button>
+
+        <!-- INVENTORY -->
+        <button id="lobbyInventoryButton" class="lobby-inventory-button" type="button" aria-label="Túi đồ">
+            <span class="lobby-inventory-icon">🎒</span>
+            <span class="lobby-inventory-info">
+                <small>ITEMS</small>
+                <strong>TÚI ĐỒ</strong>
+            </span>
+            <b id="lobbyInventoryBadge" class="lobby-inventory-badge">0</b>
+            <span class="lobby-inventory-arrow">›</span>
+        </button>
+
+        <!-- EVENT MAILBOX -->
+        <button id="eventMailboxButton" class="event-mailbox-button" type="button">
+            <span class="event-mailbox-icon">✉</span>
+            <span class="event-mailbox-info">
+                <small>EVENT MAIL</small>
+                <strong>HÒM THƯ</strong>
+            </span>
+            <b id="eventMailboxBadge" class="event-mailbox-badge">0</b>
+            <span class="event-mailbox-arrow">›</span>
+        </button>
+
+        </div>
+
+        <!-- CHARACTER -->
+
+        <div class="character-stage">
+
+            <div class="character-glow"></div>
+
+            <img
+                id="characterImage"
+                src="assets/character.png"
+                alt="Character"
+                onerror="this.style.display='none'; document.getElementById('characterFallback').style.display='flex';"
+            >
+
+            <div id="characterFallback" class="character-fallback">
+                <span>YOUR</span>
+                <strong>CHARACTER</strong>
+                <small>assets/character.png</small>
+            </div>
+
+        </div>
+
+
+
+        <!-- MENU -->
+
+        <div class="lobby-menu">
+
+            <button class="lobby-menu-button" id="storyButton">
+
+                <span class="menu-icon">✦</span>
+
+                <span class="menu-text">
+                    <small>NOW</small>
+                    PLAY
+                </span>
+
+            </button>
+
+
+            <button class="lobby-menu-button gacha-button" id="gachaButton">
+
+                <span class="menu-icon">✧</span>
+
+                <span class="menu-text">
+                    <small>GET NEW</small>
+                    GACHA
+                </span>
+
+            </button>
+
+
+            <button class="lobby-menu-button" id="cardButton">
+
+                <span class="menu-icon">▣</span>
+
+                <span class="menu-text">
+                    MY
+                    CARD
+                </span>
+
+            </button>
+
+
+            <button class="lobby-menu-button" id="characterButton">
+
+                <span class="menu-icon">♢</span>
+
+                <span class="menu-text">
+                    MY
+                    CHARACTERS
+                </span>
+
+            </button>
+
+
+            <button class="lobby-menu-button friends-button" id="friendsButton">
+
+                <span class="menu-icon friends-icon">👥</span>
+
+                <span class="menu-text">
+                    MY
+                    FRIENDS
+                </span>
+
+            </button>
+
+
+            <button class="lobby-menu-button" id="rankButton">
+
+                <span class="menu-icon">♛</span>
+
+                <span class="menu-text">
+                    WORLD
+                    RANK
+                </span>
+
+            </button>
+
+            <button class="lobby-menu-button trials-button" id="trialsButton">
+                <span class="menu-icon">✦</span>
+                <span class="menu-text">
+                    <small>BUILD TEAM</small>
+                    STAGE TRIALS
+                </span>
+            </button>
+
+            <button class="lobby-menu-button daily-live-button" id="dailyLiveButton" type="button">
+                <span class="menu-icon">☀</span>
+                <span class="menu-text">
+                    <small>480 GEMS · 200K GOLD</small>
+                    DAILY LIVE
+                </span>
+            </button>
+
+        </div>
+
+
+        <!-- EVENT -->
+
+
+        <!-- NIGHT STAGE · LONG-TERM CAMPAIGN -->
+        <button id="nightStageEntry" class="night-stage-entry" type="button" aria-label="Mở Night Stage">
+            <span class="night-stage-entry-frame"></span>
+            <span class="night-stage-entry-label">CAMPAIGN</span>
+            <span class="night-stage-entry-inner">
+                <img src="assets/ns.png" alt="NIGHT STAGE" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                <b>NIGHT STAGE</b>
+            </span>
+        </button>
+
+        <div class="event-banner">
+
+            <div class="event-badge">
+                EVENT
+            </div>
+
+            <div class="event-info">
+
+                <strong>
+                    SHINE WITHOUT END
+                </strong>
+
+                <span>
+                    Climb the event score · Earn the exclusive card
+                </span>
+
+            </div>
+
+            <button id="eventButton">
+                VIEW
+            </button>
+
+        </div>
+
+    </main>
+
+
+    <div id="lobbyToast" class="lobby-toast">
+        <strong id="lobbyToastTitle">COMING SOON</strong>
+        <span id="lobbyToastText">
+            This feature is not available yet.
+        </span>
+    </div>
+
+
+
+    </main>
+
+</section>
+
+
+
+<!-- =========================================================
+     NIGHT STAGE · LONG-TERM CAMPAIGN
+========================================================= -->
+<section id="nightStageScreen" class="game-screen night-stage-screen hidden">
+    <div class="ns-stage-shell">
+
+        <aside class="ns-left-rail">
+            <button id="nightStageBack" class="ns-back-button" type="button">
+                <span>‹</span>
+                <b>QUAY LẠI</b>
+            </button>
+
+            <div class="ns-rail-rounds">
+                <button id="nightStageGuideButton" class="ns-round-button" type="button">
+                    <span>?</span>
+                    <small>HƯỚNG DẪN</small>
+                </button>
+
+                <button id="nightStageRewardButton" class="ns-round-button reward" type="button">
+                    <span>✦</span>
+                    <small>PHẦN THƯỞNG</small>
+                </button>
+            </div>
+
+            <div class="ns-event-category">
+                <small>EVENT CATEGORY</small>
+                <strong>SỰ KIỆN DÀI HẠN</strong>
+            </div>
+
+            <button class="ns-campaign-mini active" type="button" aria-label="Night Stage campaign">
+                <img class="ns-campaign-poster" src="assets/night-stage-start.png" alt="NIGHT STAGE · Tháng 9 Ngày 15: Bắt Đầu">
+            </button>
+
+            <button id="nightStageOtherEvents" class="ns-other-events" type="button">
+                CÁC SỰ KIỆN KHÁC
+                <span>›</span>
+            </button>
+        </aside>
+
+        <section class="ns-hero-zone">
+            <div class="ns-hero-backdrop" aria-hidden="true">
+                <div class="ns-hero-slide ns-hero-akito"></div>
+                <div class="ns-hero-slide ns-hero-an"></div>
+                <div class="ns-hero-slide ns-hero-saki"></div>
+            </div>
+
+            <div class="ns-hero-logo">
+                <img src="assets/ns.png" alt="NIGHT STAGE" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                <strong>NIGHT STAGE</strong>
+            </div>
+
+            <div class="ns-event-period">
+                <strong>Bắt đầu: 10/09/2026</strong>
+                <span>SỰ KIỆN DÀI HẠN · KHÔNG GIỚI HẠN NGÀY KẾT THÚC</span>
+            </div>
+
+            <article class="ns-description-card">
+                <small>THÔNG TIN SỰ KIỆN</small>
+                <h3>BUỔI DIỄN ĐÊM BẮT ĐẦU.</h3>
+                <p>
+                    Trộn lẫn biểu diễn sân khấu và suy luận xã hội.
+                    Hãy tìm ra kẻ săn mồi trước khi LIVE INTEGRITY bị phá hủy hoàn toàn.
+                </p>
+                <div class="ns-description-chips">
+                    <span>8–10 NGƯỜI</span>
+                    <span>TRAINING CÓ SẴN</span>
+                    <span>VIỆT HÓA</span>
+                </div>
+            </article>
+        </section>
+
+        <section class="ns-ranking-panel">
+            <header class="ns-ranking-head">
+                <div>
+                    <small>REALYZE!! · LONG-TERM MODE</small>
+                    <h1>NIGHT STAGE</h1>
+                    <p>TOP NGƯỜI CHƠI · ĐIỂM PT</p>
+                </div>
+                <span class="ns-live-chip">LIVE</span>
+            </header>
+
+            <div id="nightStageTop3" class="ns-top3"></div>
+
+            <div class="ns-my-score-card">
+                <div id="nightStageMyAvatar" class="ns-my-avatar">
+                    <span>?</span>
+                </div>
+                <div>
+                    <small>ĐIỂM NIGHT STAGE CỦA BẠN</small>
+                    <strong id="nightStagePlayerName">CHƯA CHỌN PHE</strong>
+                    <b id="nightStageMyPoints">0 PT</b>
+                </div>
+                <em id="nightStageMyRank"># --</em>
+            </div>
+
+            <div class="ns-main-actions">
+                <button id="nightStageRankingButton" class="ns-secondary-action" type="button">
+                    <span>♛</span>
+                    <div>
+                        <small>XẾP HẠNG</small>
+                        <strong>BẢNG XẾP HẠNG ĐIỂM</strong>
+                    </div>
+                </button>
+
+                <button id="nightStageStartButton" class="ns-primary-action" type="button">
+                    <span>▶</span>
+                    <div>
+                        <small>HUNT OR BE HUNTED</small>
+                        <strong>BẮT ĐẦU BUỔI ĐI SĂN!!</strong>
+                    </div>
+                </button>
+            </div>
+        </section>
+    </div>
+
+    <!-- MODE SELECT · V62 -->
+    <div id="nightStageModeOverlay" class="ns-modal-layer hidden" aria-hidden="true">
+        <section class="ns-modal-card ns-mode-card ns-v61-mode-card">
+            <button class="ns-modal-close" type="button" data-ns-close="nightStageModeOverlay">×</button>
+
+            <header class="ns-v61-mode-brand">
+                <small>REALYZE!! · NIGHT STAGE</small>
+                <h2>WHO KILLED THE LIVE?</h2>
+                <p>CHARACTER = SUPPORT KIT · ROLE = SECRET IDENTITY</p>
+            </header>
+
+            <div class="ns-v61-mode-grid">
+                <button id="nightStageTrainingMode" class="ns-v61-mode-tile training" type="button">
+                    <div class="ns-v61-mode-art" aria-hidden="true">
+                        <span class="a"></span><span class="b"></span><span class="c"></span>
+                    </div>
+                    <div class="ns-v61-mode-copy">
+                        <small>10 PLAYERS · YOU + 9 AI</small>
+                        <strong>TRAINING</strong>
+                        <p>Test luật mới: đề cử → 30s bào chữa → THA / BẮN.</p>
+                        <b>START TRAINING <i>›</i></b>
+                    </div>
+                </button>
+
+                <button id="nightStagePlayerMode" class="ns-v61-mode-tile online" type="button">
+                    <div class="ns-v61-online-silhouette" aria-hidden="true">♟ ♟ ♟ ♟ ♟ ♟ ♟ ♟ ♟ ♟</div>
+                    <div class="ns-v61-mode-copy">
+                        <small>8–10 PLAYERS · VOICE + CHAT</small>
+                        <strong>ONLINE</strong>
+                        <p>Public Matchmaking hoặc phòng bạn bè bằng mã phòng.</p>
+                        <b>OPEN ONLINE <i>›</i></b>
+                    </div>
+                </button>
+            </div>
+
+            <div id="nightStageModeFactionLock" class="ns-v63-faction-lock"></div>
+
+            <footer class="ns-v61-mode-features">
+                <span><b>8–10</b><small>PLAYERS</small></span>
+                <span><b>🎙</b><small>VOICE + CHAT</small></span>
+                <span><b>◈</b><small>SOCIAL DEDUCTION × LIVE</small></span>
+            </footer>
+        </section>
+    </div>
+
+
+    <!-- IDOL FACTION SELECT -->
+    <div id="nightStageFactionOverlay" class="ns-modal-layer hidden" aria-hidden="true">
+        <section class="ns-modal-card ns-faction-card">
+            <button class="ns-modal-close" type="button" data-ns-close="nightStageFactionOverlay">×</button>
+
+            <div class="ns-modal-kicker">NIGHT STAGE · CHỌN PHE IDOL</div>
+            <h2>BẠN SẼ ĐỨNG VỀ PHÍA AI?</h2>
+            <p class="ns-modal-intro">
+                Đây chỉ là phe đại diện của bạn trong NIGHT STAGE, không tạo skill hay lợi thế chiến đấu.
+                Phe chỉ được chọn <b>một lần</b>; sau khi xác nhận sẽ khóa vĩnh viễn cho tài khoản này.
+            </p>
+
+            <div id="nightStageFactionGrid" class="ns-faction-grid">
+                <button class="ns-faction-option an" type="button" data-night-faction="an">
+                    <img src="assets/an2.png" alt="AN" onerror="this.style.display='none'">
+                    <div>
+                        <small>FACTION 01 · RAP</small>
+                        <strong>AN</strong>
+                        <span>SHIRAISHI AN</span>
+                    </div>
+                    <b>CHỌN AN</b>
+                </button>
+
+                <button class="ns-faction-option akito" type="button" data-night-faction="akito">
+                    <img src="assets/akito2.png" alt="AKITO" onerror="this.style.display='none'">
+                    <div>
+                        <small>FACTION 02 · VOCAL</small>
+                        <strong>AKITO</strong>
+                        <span>SHINONOME AKITO</span>
+                    </div>
+                    <b>CHỌN AKITO</b>
+                </button>
+
+                <button class="ns-faction-option saki" type="button" data-night-faction="saki">
+                    <img src="assets/saki2.png" alt="SAKI" onerror="this.style.display='none'">
+                    <div>
+                        <small>FACTION 03 · ACT</small>
+                        <strong>SAKI</strong>
+                        <span>TENMA SAKI</span>
+                    </div>
+                    <b>CHỌN SAKI</b>
+                </button>
+            </div>
+
+            <div class="ns-faction-note">
+                <span>●</span>
+                <p>Sau khi chọn phe, lần sau bấm <b>BẮT ĐẦU</b> sẽ đi thẳng tới màn hình chọn chế độ.</p>
+            </div>
+        </section>
+    </div>
+
+
+    <!-- GUIDE -->
+    <div id="nightStageGuideOverlay" class="ns-modal-layer hidden" aria-hidden="true">
+        <section class="ns-modal-card ns-guide-card">
+            <button class="ns-modal-close" type="button" data-ns-close="nightStageGuideOverlay">×</button>
+            <div class="ns-modal-kicker">HƯỚNG DẪN · VIỆT HÓA</div>
+            <h2>LUẬT NIGHT STAGE</h2>
+
+            <div class="ns-rule-grid">
+                <article><b>01</b><strong>THÂN PHẬN BÍ MẬT</strong><p>Character không quyết định phe. Bạn có thể là PERFORMER, role đặc biệt hoặc WOLF.</p></article>
+                <article><b>02</b><strong>BACKSTAGE · BAN ĐÊM</strong><p>Role dùng kỹ năng. Sói có thể săn người hoặc phá VOCAL / RAP / ACT và hệ thống sân khấu.</p></article>
+                <article><b>03</b><strong>LIVE PERFORMANCE</strong><p>Mọi người chọn VOCAL / RAP / ACT / SUPPORT. Kết quả LIVE tạo manh mối về sabotage.</p></article>
+                <article><b>04</b><strong>INVESTIGATION</strong><p>Một số role nhận evidence riêng. Evidence có thể không chắc chắn 100% và có thể bị làm giả.</p></article>
+                <article><b>05</b><strong>ĐỀ CỬ · BÀO CHỮA · PHÁN QUYẾT</strong><p>Vote chọn một người lên dàn. Người đó có 30 giây bào chữa, sau đó những người còn lại chọn THA hoặc BẮN.</p></article>
+                <article><b>06</b><strong>ĐIỀU KIỆN THẮNG</strong><p>PERFORMER loại hết Wolf. Wolf thắng khi áp đảo số người còn sống hoặc phá LIVE INTEGRITY về 0%.</p></article>
+            </div>
+
+            <div class="ns-guide-bottom">
+                <span>Người bị loại trở thành <b>AUDIENCE</b> và vẫn có thể CHEER trong LIVE.</span>
+                <button id="nightStageGuideToTraining" type="button">CHƠI TRAINING</button>
+            </div>
+        </section>
+    </div>
+
+    <!-- REWARDS -->
+    <div id="nightStageRewardOverlay" class="ns-modal-layer hidden" aria-hidden="true">
+        <section class="ns-modal-card ns-reward-card">
+            <button class="ns-modal-close" type="button" data-ns-close="nightStageRewardOverlay">×</button>
+            <div class="ns-modal-kicker">NIGHT STAGE · MỐC ĐIỂM</div>
+            <h2>PHẦN THƯỞNG DÀI HẠN</h2>
+            <p class="ns-modal-intro">
+                30 mốc từ 100.000 đến 3.000.000 PT. Có 15 HỘP LỰA CHỌN xen kẽ với Gold, Gems và Bình Energy +60.
+            </p>
+            <div id="nightStageRewardList" class="ns-reward-list"></div>
+        </section>
+    </div>
+
+    <!-- RANKING -->
+    <div id="nightStageRankingOverlay" class="ns-modal-layer hidden" aria-hidden="true">
+        <section class="ns-modal-card ns-ranking-modal">
+            <button class="ns-modal-close" type="button" data-ns-close="nightStageRankingOverlay">×</button>
+            <div class="ns-modal-kicker">NIGHT STAGE · SUPABASE RANKING</div>
+            <h2>BẢNG XẾP HẠNG ĐIỂM</h2>
+            <p class="ns-modal-intro">
+                Top người chơi được lấy từ Supabase theo NIGHT STAGE PT. Dữ liệu tự cập nhật từ tài khoản đã đăng nhập.
+            </p>
+            <div id="nightStageRankingList" class="ns-ranking-list"></div>
+        </section>
+    </div>
+
+    <!-- ONLINE MATCHMAKING · V63 -->
+    <div id="nightStagePlayerPreview" class="ns-modal-layer hidden" aria-hidden="true">
+        <section class="ns-modal-card ns-v63-online-setup-card">
+            <button id="nightStageOnlineSetupClose" class="ns-modal-close" type="button">×</button>
+            <div id="nightStageOnlineContent" class="ns-v63-online-content"></div>
+        </section>
+    </div>
+
+    <!-- TRAINING AI · V62 FULL MATCH UI -->
+    <div id="nightStageTrainingOverlay" class="ns-modal-layer ns-v61-training-layer hidden" aria-hidden="true">
+        <section class="ns-modal-card ns-v61-training-card">
+            <button id="nightStageTrainingExit" class="ns-v61-exit" type="button" aria-label="Thoát Training">×</button>
+
+            <div id="nightStageTrainingContent" class="ns-v61-training-root"></div>
+
+            <!-- Legacy hooks kept hidden so older bindings never break. -->
+            <div id="nightStageTrainingActionPanel" class="ns-v61-legacy-hook" aria-hidden="true"></div>
+            <button id="nightStageTrainingPrev" class="ns-v61-legacy-hook" type="button" tabindex="-1">NEW</button>
+            <button id="nightStageTrainingNext" class="ns-v61-legacy-hook" type="button" tabindex="-1">NEXT</button>
+        </section>
+    </div>
+
+    <!-- ONLINE MATCH · V63 BETA -->
+    <div id="nightStageOnlineMatchOverlay" class="ns-modal-layer ns-v63-online-match-layer hidden" aria-hidden="true">
+        <section class="ns-modal-card ns-v63-online-match-card">
+            <button id="nightStageOnlineExit" class="ns-v61-exit" type="button" aria-label="Thoát trận Online">×</button>
+            <div id="nightStageOnlineMatchContent" class="ns-v63-online-match-content"></div>
+        </section>
+    </div>
+
+    <!-- EXIT CONFIRM -->
+    <div id="nightStageExitConfirmOverlay" class="ns-modal-layer hidden" aria-hidden="true">
+        <section class="ns-modal-card ns-v63-exit-card">
+            <div class="ns-modal-kicker">NIGHT STAGE · LEAVE MATCH</div>
+            <h2>RỜI TRẬN?</h2>
+            <p id="nightStageExitConfirmText" class="ns-modal-intro">Bạn muốn tiếp tục hay dừng?</p>
+            <div class="ns-v63-exit-actions">
+                <button id="nightStageExitContinue" type="button">TIẾP TỤC</button>
+                <button id="nightStageExitStop" class="danger" type="button">DỪNG / RỜI TRẬN</button>
+            </div>
+        </section>
+    </div>
+
+    <div id="nightStageToast" class="ns-toast">
+        <strong id="nightStageToastTitle">NIGHT STAGE</strong>
+        <span id="nightStageToastText"></span>
+    </div>
+</section>
+
+
+<!-- WORLD RANK -->
+<div id="worldRankOverlay" class="world-rank-overlay hidden" aria-hidden="true">
+  <div class="world-rank-modal">
+    <button id="closeWorldRank" class="world-rank-close" type="button">×</button>
+    <div class="world-rank-head"><div><small>REALYZE!! · GLOBAL</small><h2>WORLD RANK</h2><p>TOP 100 · EVENT POINTS</p></div><button id="refreshWorldRank" class="world-rank-refresh" type="button">↻ REFRESH</button></div>
+    <div class="world-rank-table-head"><span>#</span><span>ID</span><span>LVL</span><span>EVENT POINTS</span></div>
+    <div id="worldRankList" class="world-rank-list"><div class="world-rank-empty">LOADING WORLD RANK...</div></div>
+  </div>
+</div>
+
+<!-- =========================================================
+     EVENT — SHINE WITHOUT END
+========================================================= -->
+<section id="eventScreen" class="game-screen event-screen hidden">
+    <header class="event-topbar">
+        <button id="eventBack" class="play-back-button" type="button"><span>‹</span><small>BACK</small></button>
+        <div class="event-brand"><span>REALYZE!!</span><strong>EVENT</strong></div>
+        <div class="event-player-resources">
+            <div><small>ID</small><b id="eventPlayerId">PLAYER</b></div>
+            <div><small>EVENT LV.</small><b id="eventLevel">1</b></div>
+            <div><small>GEMS</small><b id="eventGems">0</b></div>
+            <div><small>GOLD</small><b id="eventCoins">0</b></div>
+            <div><small>ENERGY</small><b id="eventEnergy">100</b></div>
+        </div>
+    </header>
+
+    <main class="event-main">
+        <section class="event-hero-card">
+            <div class="event-hero-copy">
+                <span class="event-kicker">LIMITED EVENT · SEASON 01</span>
+                <h1>SHINE WITHOUT END</h1>
+                <p>Keep playing, climb the event score, and unlock an exclusive event card.</p>
+                <div class="event-progress-wrap">
+                    <div class="event-progress-meta"><span>EVENT POINTS</span><strong id="eventPointsLabel">0 / 1,000,000</strong></div>
+                    <div class="event-progress-track"><i id="eventProgressBar"></i></div>
+                    <div class="event-level-note">EVENT LEVEL <b id="eventLevelHero">1</b></div>
+                </div>
+            </div>
+
+            <div class="event-feature-visual">
+                <div class="event-character-square">
+                    <span class="six-star">★ ★ ★ ★ ★ ★</span>
+                    <img src="assets/kohane.png" alt="Kohane" onerror="this.style.display='none';">
+                    <div class="event-character-caption"><small>EVENT CHARACTER</small><strong>KOHANE</strong><b>RAP · 21,034</b></div>
+                </div>
+                <div class="event-limited-card">
+                    <span class="six-star">★ ★ ★ ★ ★ ★</span>
+                    <img src="assets/event1.png" alt="SHINING MOMENT" onerror="this.style.display='none';">
+                    <div><small>EVENT LIMITED CARD</small><strong>SHINING MOMENT</strong><em>UNLOCK FROM EVENT SCORE</em></div>
+                </div>
+            </div>
+        </section>
+
+        <section class="event-action-grid">
+            <button id="eventRewardsButton" class="event-action-card" type="button"><span>♛</span><div><small>EVENT TRACK</small><strong>REWARDS</strong><em>View milestone rewards</em></div><b>›</b></button>
+            <button id="eventShopButton" class="event-action-card" type="button"><span>◇</span><div><small>EXCHANGE</small><strong>EVENT SHOP</strong><em>Spend Event Points</em></div><b>›</b></button>
+            <button id="eventGachaButton" class="event-action-card" type="button"><span>✦</span><div><small>LIMITED</small><strong>GACHA</strong><em>AKITO Limited Banner</em></div><b>›</b></button>
+            <button id="eventPlayButton" class="event-action-card event-play-card" type="button"><span>▶</span><div><small>SHINE WITHOUT END</small><strong>PLAY EVENT</strong><em>Team · Matchmaking · Battle</em></div><b>›</b></button>
+        </section>
+
+        <div id="eventRewardsPanel" class="event-modal-overlay hidden" aria-hidden="true">
+            <section class="event-modal-card" role="dialog" aria-modal="true" aria-labelledby="eventRewardsTitle">
+                <div class="event-panel-head"><div><small>MILESTONE TRACK</small><h2 id="eventRewardsTitle">EVENT REWARDS</h2></div><button id="closeEventRewards" type="button">×</button></div>
+                <div id="eventRewardsList" class="event-rewards-list"></div>
+            </section>
+        </div>
+
+        <div id="eventShopPanel" class="event-modal-overlay hidden" aria-hidden="true">
+            <section class="event-modal-card" role="dialog" aria-modal="true" aria-labelledby="eventShopTitle">
+                <div class="event-panel-head"><div><small>EVENT POINT EXCHANGE</small><h2 id="eventShopTitle">EVENT SHOP</h2></div><button id="closeEventShop" type="button">×</button></div>
+                <div id="eventShopList" class="event-shop-list"></div>
+            </section>
+        </div>
+    </main>
+<audio id="eventLobbyAudio" src="assets/bg.mp3" loop preload="auto"></audio>
+</section>
+
+<div id="lobbyInventoryOverlay" class="lobby-inventory-overlay hidden" aria-hidden="true">
+    <div class="lobby-inventory-modal lobby-inventory-window" role="dialog" aria-modal="true" aria-labelledby="lobbyInventoryTitle">
+        <button id="closeLobbyInventory" class="lobby-inventory-close" type="button">×</button>
+        <div class="lobby-inventory-head compact">
+            <small>PLAYER STORAGE</small>
+            <h2 id="lobbyInventoryTitle">TÚI ĐỒ</h2>
+        </div>
+
+        <div class="lobby-inventory-tabs" role="tablist">
+            <button type="button" class="active" data-inventory-tab="consumable">TIÊU HAO</button>
+            <button type="button" data-inventory-tab="upgrade">NÂNG CẤP</button>
+            <button type="button" data-inventory-tab="material">VẬT LIỆU</button>
+        </div>
+
+        <div class="lobby-inventory-browser">
+            <section class="lobby-inventory-grid-panel">
+                <div id="lobbyInventoryList" class="lobby-inventory-grid"></div>
+            </section>
+
+            <aside class="lobby-inventory-detail">
+                <div id="lobbyInventoryDetailVisual" class="lobby-inventory-detail-visual">🎒</div>
+                <small id="lobbyInventoryDetailCategory">ITEM</small>
+                <h3 id="lobbyInventoryDetailName">CHỌN VẬT PHẨM</h3>
+                <div class="lobby-inventory-owned">SỞ HỮU <b id="lobbyInventoryDetailCount">0</b></div>
+                <p id="lobbyInventoryDetailDescription">Chọn một vật phẩm ở danh sách bên trái để xem thông tin.</p>
+                <button id="lobbyInventoryUseButton" type="button" disabled>SỬ DỤNG</button>
+            </aside>
+        </div>
+    </div>
+</div>
+
+<div id="nightStageChoiceBoxOverlay" class="lobby-inventory-overlay hidden" aria-hidden="true">
+    <div class="lobby-inventory-modal night-stage-choice-modal" role="dialog" aria-modal="true" aria-labelledby="nightStageChoiceTitle">
+        <button id="closeNightStageChoiceBox" class="lobby-inventory-close" type="button">×</button>
+        <div class="lobby-inventory-head">
+            <small>NIGHT STAGE · CHOICE BOX</small>
+            <h2 id="nightStageChoiceTitle">CHỌN 1 TRONG 4</h2>
+            <p>Mỗi hộp chỉ nhận được 1 lựa chọn. Character đã Rank 5 sẽ không thể chọn thêm.</p>
+        </div>
+        <div id="nightStageChoiceGrid" class="night-stage-choice-grid"></div>
+    </div>
+</div>
+
+<div id="eventMailboxOverlay" class="event-mailbox-overlay hidden" aria-hidden="true">
+    <div class="event-mailbox-modal" role="dialog" aria-modal="true">
+        <button id="closeEventMailbox" class="event-mailbox-close" type="button">×</button>
+        <div class="event-mailbox-head"><small>REWARDS DELIVERY</small><h2>EVENT MAILBOX</h2><p>Event milestone rewards are delivered here automatically.</p></div>
+        <div id="eventMailboxList" class="event-mailbox-list"></div>
+    </div>
+</div>
+
+<!-- =========================================================
+     NOW PLAY
+========================================================= -->
+
+<section id="nowPlayScreen" class="game-screen now-play-screen hidden">
+
+    <header class="play-topbar">
+
+        <button id="nowPlayBack" class="play-back-button" type="button">
+            <span>‹</span>
+            <small>BACK</small>
+        </button>
+
+        <div class="play-brand">
+            <span class="play-brand-mark">R!</span>
+            <div>
+                <small>REALYZE!!</small>
+                <strong>NOW PLAY</strong>
+            </div>
+        </div>
+
+        <div class="play-resources">
+
+            <div class="play-resource">
+                <span class="play-resource-icon gem">◆</span>
+                <span id="nowPlayGemCount">0</span>
+            </div>
+
+            <div class="play-resource">
+                <span class="play-resource-icon coin">●</span>
+                <span id="nowPlayCoinCount">0</span>
+            </div>
+
+            <div class="play-resource">
+                <span class="play-resource-icon ticket">◇</span>
+                <span id="nowPlayTicketCount">0</span>
+            </div>
+
+        </div>
+
+    </header>
+
+
+    <main class="now-play-main">
+
+        <div class="now-play-heading">
+            <div>
+                <span>CHOOSE YOUR SONG</span>
+                <h1>NOW PLAY</h1>
+            </div>
+
+            <div class="now-play-status">
+                <span class="status-dot"></span>
+                READY TO PLAY
+            </div>
+        </div>
+
+
+        <div class="now-play-layout">
+
+            <!-- SONG LIST -->
+
+            <aside class="song-list-panel">
+
+                <div class="song-list-header">
+                    <div>
+                        <small>SONG SELECT</small>
+                        <strong>TRACKS</strong>
+                    </div>
+
+                    <span id="songCountLabel">03</span>
+                </div>
+
+                <div id="songList" class="song-list"></div>
+
+                <button id="playEventButton" class="play-event-button" type="button">
+                    <span>✦</span>
+                    <div>
+                        <small>LIMITED</small>
+                        EVENT
+                    </div>
+                    <b>›</b>
+                </button>
+
+            </aside>
+
+
+            <!-- SELECTED SONG -->
+
+            <section class="song-detail-panel">
+
+                <div class="song-detail-top">
+                    <span class="song-detail-label">SELECTED TRACK</span>
+                    <span id="selectedSongNumber">01</span>
+                </div>
+
+                <div class="song-detail-content">
+
+                    <div class="song-art-wrap">
+
+                        <div class="song-art-glow"></div>
+
+                        <div id="songArtwork" class="song-art">
+                            <span id="songArtworkFallback">R!</span>
+                        </div>
+
+                    </div>
+
+
+                    <div class="song-detail-info">
+
+                        <span class="song-kicker">REALYZE!! ORIGINAL</span>
+
+                        <h2 id="selectedSongName">
+                            VIRTUAL TO LIVE
+                        </h2>
+
+                        <p id="selectedSongArtist">
+                            REALYZE!! (but Ebi & Mikon)
+                        </p>
+
+                        <div class="song-meta">
+                            <span>DIFFICULTY</span>
+                            <div id="selectedSongStars" class="song-stars">★★★★★</div>
+                        </div>
+
+                        <div id="difficultyButtons" class="difficulty-buttons">
+
+                            <button
+                                class="difficulty-button active"
+                                data-difficulty="EASY"
+                                type="button"
+                            >
+                                <small>01</small>
+                                EASY
+                            </button>
+
+                            <button
+                                class="difficulty-button locked"
+                                data-difficulty="NORMAL"
+                                type="button"
+                            >
+                                <small>02</small>
+                                NORMAL
+                                <span>LOCKED</span>
+                            </button>
+
+                            <button
+                                class="difficulty-button locked"
+                                data-difficulty="HARD"
+                                type="button"
+                            >
+                                <small>03</small>
+                                HARD
+                                <span>LOCKED</span>
+                            </button>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <div class="song-detail-bottom">
+
+                    <div class="song-progress">
+                        <span>BEST SCORE</span>
+                        <strong id="selectedSongBest">—</strong>
+                    </div>
+
+                    <button id="nowPlayButton" class="now-play-button" type="button">
+                        <span>▶</span>
+                        PLAY
+                    </button>
+
+                </div>
+
+            </section>
+
+        </div>
+
+    </main>
+
+    <div id="nowPlayToast" class="now-play-toast">
+        <strong id="nowPlayToastTitle">NOW PLAY</strong>
+        <span id="nowPlayToastText">Ready.</span>
+    </div>
+
+</section>
+
+<!-- =========================================================
+     SELECT CHARACTER / TEAM
+========================================================= -->
+
+<section id="teamSelectScreen" class="game-screen team-select-screen hidden">
+
+    <header class="team-topbar">
+
+        <button
+            id="teamSelectBack"
+            class="play-back-button"
+            type="button"
+        >
+            <span>‹</span>
+            <small>BACK</small>
+        </button>
+
+        <div class="play-brand">
+
+            <span class="play-brand-mark">R!</span>
+
+            <div>
+                <small>REALYZE!!</small>
+                <strong>TEAM SELECT</strong>
+            </div>
+
+        </div>
+
+        <div class="team-top-status">
+            <span class="status-dot"></span>
+            <span id="teamReadyText">NOT READY</span>
+        </div>
+
+    </header>
+
+
+    <main class="team-select-main">
+
+        <!-- HEADER -->
+
+        <div class="team-select-heading">
+
+            <div>
+
+                <span>BEFORE YOU PLAY</span>
+
+                <h1>SELECT YOUR TEAM</h1>
+
+                <p>
+                    Choose four characters and four different cards. Each character is paired with the card in the same slot.
+                </p>
+
+            </div>
+
+            <div class="team-song-preview">
+
+                <small>PLAYING</small>
+
+                <strong id="teamSongName">
+                    VIRTUAL TO LIVE
+                </strong>
+
+                <span id="teamSongDifficulty">
+                    EASY
+                </span>
+
+            </div>
+
+        </div>
+
+        <!-- CHARACTERS -->
+
+        <section class="team-character-panel">
+
+            <div class="team-section-label">
+
+                <span>01</span>
+
+                <div>
+                    <small>CHARACTER TEAM</small>
+                    <strong>CHOOSE 4 CHARACTERS</strong>
+                </div>
+
+                <b id="teamCharacterCount">0 / 4</b>
+
+            </div>
+
+            <div id="teamCharacterSlots" class="team-character-slots">
+                <!-- JS render 4 character slots -->
+            </div>
+
+            <p class="team-pair-hint">
+                SLOT 01–04 tương ứng với 4 lane trong gameplay. Mỗi character sẽ đi cùng card cùng số slot.
+            </p>
+
+        </section>
+
+
+        <!-- CARDS -->
+
+        <section class="team-card-panel">
+
+            <div class="team-section-label">
+
+                <span>02</span>
+
+                <div>
+                    <small>CARD SET</small>
+                    <strong>CHOOSE 4 CARDS</strong>
+                </div>
+
+                <b id="teamCardCount">
+                    0 / 4
+                </b>
+
+            </div>
+
+
+            <div
+                id="teamCardSlots"
+                class="team-card-slots"
+            >
+
+                <!-- JS sẽ render 4 slot -->
+
+            </div>
+
+        </section>
+
+
+        <!-- BOTTOM -->
+
+        <div class="team-select-bottom">
+
+            <div class="team-selection-status">
+
+                <div class="team-selection-progress">
+
+                    <div
+                        id="teamSelectionProgress"
+                        class="team-selection-progress-fill"
+                    ></div>
+
+                </div>
+
+                <span id="teamSelectionMessage">
+                    SELECT 4 CHARACTERS + 4 CARDS TO START
+                </span>
+
+            </div>
+
+
+            <button
+                id="startTeamPlayButton"
+                class="start-team-play-button"
+                type="button"
+                disabled
+            >
+                <span>▶</span>
+                START PLAY
+            </button>
+
+        </div>
+
+    </main>
+
+<!-- =========================================================
+     RHYTHM GAMEPLAY
+========================================================= -->
+
+<section
+    id="gameplayScreen"
+    class="game-screen gameplay-screen hidden"
+>
+
+    <!-- TOP HUD -->
+    <button id="gameplayBackButton" class="gameplay-back-button" type="button">
+        <span>‹</span>
+        <small>THOÁT</small>
+    </button>
+
+    <header class="gameplay-topbar">
+
+        <div class="gameplay-song-info">
+            <span>REALYZE!!</span>
+
+            <strong id="gameplaySongName">
+                VIRTUAL TO LIVE
+            </strong>
+
+            <small id="gameplayDifficulty">
+                EASY
+            </small>
+        </div>
+
+        <div class="gameplay-score-box">
+            <small>ĐIỂM</small>
+
+            <strong id="gameplayScore">
+                0
+            </strong>
+        </div>
+
+    </header>
+
+
+    <!-- SCORE BAR -->
+    <div class="gameplay-score-bar">
+        <div
+            id="gameplayScoreFill"
+            class="gameplay-score-fill"
+        ></div>
+    </div>
+
+
+    <!-- COMBO -->
+    <div
+        id="gameplayCombo"
+        class="gameplay-combo"
+    >
+        <strong id="gameplayComboNumber">
+            0
+        </strong>
+
+        <span>CHUỖI</span>
+    </div>
+
+
+    <!-- JUDGEMENT -->
+    <div
+        id="gameplayJudgement"
+        class="gameplay-judgement"
+    ></div>
+
+
+    <!-- RHYTHM AREA -->
+    <main class="gameplay-main">
+
+        <div
+            id="gameplayLaneArea"
+            class="gameplay-lane-area"
+        >
+
+            <!-- Falling notes are created by JS -->
+
+            <div
+                id="gameplayHitLine"
+                class="gameplay-hit-line"
+            ></div>
+
+
+
+        </div>
+
+
+
+    </main>
+
+
+
+
+</section>
+<div class="card-info-title">
+                    
+
+    <!-- CARD SELECT POPUP -->
+
+    <div
+        id="cardSelectOverlay"
+        class="card-select-overlay hidden"
+    >
+
+        <div class="card-select-modal">
+
+            <button
+                id="closeCardSelect"
+                class="card-select-close"
+                type="button"
+            >
+                ×
+            </button>
+
+            <div class="card-select-header">
+
+                <small>CHOOSE A CARD</small>
+
+                <h2>SELECT CARD</h2>
+
+                <p>
+                    Choose one card for this slot.
+                </p>
+
+            </div>
+
+
+            <div
+                id="availableTeamCards"
+                class="available-team-cards"
+            >
+                <!-- JS -->
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- CHARACTER SELECT POPUP -->
+
+    <div
+        id="characterSelectOverlay"
+        class="character-select-overlay hidden"
+    >
+
+        <div class="character-select-modal">
+
+            <button
+                id="closeCharacterSelect"
+                class="character-select-close"
+                type="button"
+            >
+                ×
+            </button>
+
+            <div class="character-select-header">
+
+                <small>CHARACTER COLLECTION</small>
+
+                <h2>CHOOSE CHARACTER FOR SLOT</h2>
+
+            </div>
+
+
+            <div
+                id="availableCharacters"
+                class="available-characters"
+            >
+                <!-- JS -->
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+<!-- =========================================================
+     MY CHARACTERS
+========================================================= -->
+
+<section id="characterScreen" class="game-screen card-screen character-screen hidden">
+    <header class="card-topbar">
+        <button id="characterBack" class="back-button" type="button">
+            ← <span>LOBBY</span>
+        </button>
+
+        <div class="card-heading">
+            <span>REALYZE!!</span>
+            <h1>MY CHARACTER</h1>
+        </div>
+
+        <div class="card-counter">
+            <span>CHARACTERS</span>
+            <strong id="characterCount">0</strong>
+        </div>
+    </header>
+
+    <main class="card-main character-main">
+        <div class="card-collection-header character-collection-header">
+            <div>
+                <span class="card-eyebrow">YOUR COLLECTION</span>
+                <h2>MY <em>CHARACTERS</em></h2>
+                <p>Choose a character to use in your next performance.</p>
+            </div>
+
+            <div class="card-total-box">
+                <span>COLLECTED</span>
+                <strong id="characterTotal">0</strong>
+            </div>
+        </div>
+
+        <div id="myCharacterGrid" class="my-card-grid my-character-grid"></div>
+    </main>
+</section>
+
+<!-- =========================================================
+     FRIENDS
+========================================================= -->
+<section id="friendsScreen" class="game-screen friends-screen hidden">
+    <header class="card-topbar friends-topbar">
+        <button id="friendsBack" class="back-button" type="button">← <span>LOBBY</span></button>
+        <div class="card-heading">
+            <span>REALYZE!!</span>
+            <h1>FRIENDS</h1>
+        </div>
+        <div class="card-counter">
+            <span>FRIENDS</span>
+            <strong id="friendCount">0</strong>
+        </div>
+    </header>
+
+    <main class="friends-main">
+        <div class="friends-page-heading">
+            <span class="card-eyebrow">SOCIAL</span>
+            <h2>MY <em>FRIENDS</em></h2>
+            <p>Connect with REALYZE!! players and chat together.</p>
+        </div>
+
+        <div class="friends-layout">
+            <section class="friends-panel friends-list-panel">
+                <div class="friends-panel-heading">
+                    <div>
+                        <span>YOUR LIST</span>
+                        <h3>FRIENDS</h3>
+                    </div>
+                    <strong id="friendListCount">0</strong>
+                </div>
+                <div id="friendsList" class="friends-list"></div>
+            </section>
+
+            <section class="friends-panel friends-search-panel">
+                <div class="friends-panel-heading">
+                    <div>
+                        <span>FIND PLAYERS</span>
+                        <h3>SEARCH FRIENDS</h3>
+                    </div>
+                </div>
+                <div class="friend-search-box">
+                    <input id="friendSearchInput" type="text" maxlength="20" autocomplete="off" placeholder="Nhập ID Name...">
+                    <button id="friendSearchButton" type="button">SEARCH</button>
+                </div>
+                <p class="friend-search-note">Tìm người chơi bằng ID Name đã đăng ký trong REALYZE!!</p>
+                <div id="friendSearchResults" class="friend-search-results">
+                    <div class="friends-empty">Nhập ID Name để tìm người chơi.</div>
+                </div>
+            </section>
+        </div>
+    </main>
+</section>
+
+<!-- FRIEND CHAT -->
+<div id="friendChatOverlay" class="friend-chat-overlay hidden" aria-hidden="true">
+    <div class="friend-chat-modal" role="dialog" aria-modal="true" aria-labelledby="friendChatName">
+        <header class="friend-chat-header">
+            <div>
+                <span>CHAT WITH</span>
+                <h2 id="friendChatName">PLAYER</h2>
+            </div>
+            <button id="friendChatClose" type="button" aria-label="Close">×</button>
+        </header>
+        <div id="friendChatMessages" class="friend-chat-messages"></div>
+        <form id="friendChatForm" class="friend-chat-form" novalidate autocomplete="off">
+            <input id="friendChatInput" type="text" maxlength="300" autocomplete="off" placeholder="Nhập tin nhắn...">
+            <button type="submit">SEND</button>
+        </form>
+    </div>
+</div>
+
+<!-- =========================================================
+     GACHA
+========================================================= -->
+
+<section id="gachaScreen" class="game-screen gacha-screen hidden">
+
+    <!-- GACHA TOP -->
+
+    <header class="gacha-topbar">
+
+        <button id="gachaBack" class="back-button">
+            ← <span>LOBBY</span>
+        </button>
+
+        <div class="gacha-heading">
+
+            <span>REALYZE!!</span>
+
+            <h1>GACHA</h1>
+
+        </div>
+
+        <div class="gacha-top-resources">
+
+            <div class="gacha-stellar-counter" title="NHÂN TỐ TINH TÚ">
+                <span class="gacha-stellar-icon">
+                    <img src="assets/nttt.png" alt="Nhân Tố Tinh Tú" onerror="this.style.display='none'; this.nextElementSibling.style.display='grid';">
+                    <i>✦</i>
+                </span>
+                <div>
+                    <small>NHÂN TỐ TINH TÚ</small>
+                    <strong id="stellarFactorCount">0</strong>
+                </div>
+            </div>
+
+            <div class="gacha-book-counter" title="SÁCH TINH TÚ">
+                <span class="gacha-book-icon">
+                    <img src="assets/stt.png" alt="Sách Tinh Tú"
+                         onerror="this.style.display='none'; this.nextElementSibling.style.display='grid';">
+                    <i>▣</i>
+                </span>
+                <div>
+                    <small>SÁCH TINH TÚ</small>
+                    <strong id="stellarBookCount">0</strong>
+                </div>
+            </div>
+
+            <div class="gacha-gems">
+                <span>◆</span>
+                <strong id="gachaGemCount">5000</strong>
+                <button class="resource-plus">+</button>
+            </div>
+
+        </div>
+
+    </header>
+
+
+
+    <main class="gacha-layout">
+
+
+        <!-- LEFT BANNER LIST -->
+
+        <aside class="banner-list">
+
+            <div class="banner-list-title">
+                BANNERS
+            </div>
+
+
+            <button
+                id="newPlayerBannerButton"
+                class="banner-select new-player-banner"
+                type="button"
+            >
+                <span class="banner-number">00</span>
+                <span>
+                    NEW PLAYER
+                    <small>40 PULL START DASH</small>
+                </span>
+                <b id="newPlayerBannerBadge">40 LEFT</b>
+            </button>
+
+
+            <button
+                id="shotaBannerButton"
+                class="banner-select"
+                type="button"
+            >
+
+                <span class="banner-number">
+                    01
+                </span>
+
+                <span>
+                    BEGINNING
+                    <small>LIMITED CHARACTER GACHA</small>
+                </span>
+
+                <b>CHARACTER</b>
+
+            </button>
+
+
+            <button
+                id="currentBannerButton"
+                class="banner-select active"
+            >
+
+                <span class="banner-number">
+                    02
+                </span>
+
+                <span>
+                    JOYFUL
+                    <small>LIMITED GACHA</small>
+                </span>
+
+                <b>ACTIVE</b>
+
+            </button>
+
+
+            <button
+                id="characterBannerButton"
+                class="banner-select"
+                type="button"
+            >
+
+                <span class="banner-number">
+                    03
+                </span>
+
+                <span>
+                    HATSUNE MIKU
+                    <small>LIMITED 6★ · RADIANT BRIDE</small>
+                </span>
+
+                <b>CHARACTER</b>
+
+            </button>
+
+
+            <button
+                id="akitoBannerButton"
+                class="banner-select"
+                type="button"
+            >
+
+                <span class="banner-number">
+                    04
+                </span>
+
+                <span>
+                    AKITO
+                    <small>LIMITED EVENT BANNER</small>
+                </span>
+
+                <b>LIMITED EVENT</b>
+
+            </button>
+
+            <div class="banner-special-divider">
+                <span>SPECIAL AREA</span>
+            </div>
+
+            <button
+                id="danceBannerButton"
+                class="banner-select dance-banner-select"
+                type="button"
+            >
+                <span class="banner-number dance-banner-number">D</span>
+                <span>
+                    DANCE
+                    <small>SPECIAL ATTRIBUTE BANNER</small>
+                </span>
+                <b>BOOK ONLY</b>
+            </button>
+
+            <button
+                id="stellarShopBannerButton"
+                class="banner-select stellar-shop-banner"
+                type="button"
+            >
+                <span class="banner-number stellar-shop-number">✦</span>
+                <span>
+                    STELLAR EXCHANGE
+                    <small>NHÂN TỐ TINH TÚ SHOP</small>
+                </span>
+                <b>SHOP</b>
+            </button>
+
+
+            <div class="banner-note">
+                More banners<br>
+                coming soon.
+            </div>
+
+        </aside>
+
+
+
+        <!-- CURRENT BANNER -->
+
+        <section id="itemGachaContent" class="gacha-content">
+
+            <div class="gacha-banner-header">
+
+                <div>
+
+                    <span class="limited-label">
+                        LIMITED GACHA
+                    </span>
+
+                    <h2>
+                        THE JOYFUL
+                        <em>BEGINNING</em>
+                    </h2>
+
+                    <p>
+                        Many featured rewards await you!
+                    </p>
+
+                </div>
+
+
+                <div class="rate-box">
+
+                    <strong>
+                        ★ FEATURED RATE
+                    </strong>
+
+                    <span>
+                        1.3% EACH
+                    </span>
+
+                </div>
+
+            </div>
+
+
+
+            <!-- FEATURED ITEMS -->
+
+            <div class="featured-area card-gacha-showcase" id="cardGachaShowcase">
+
+                <!-- XOÀI NON -->
+
+                <article class="featured-card mango-card active" data-card-gacha-slide>
+
+                    <div class="featured-stars">
+                        ★ ★ ★ ★ ★ ★
+                    </div>
+
+                    <div class="item-image-wrap">
+
+                        <img
+                            src="assets/xoai-non.png"
+                            alt="Xoài Non"
+                            onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
+                        >
+
+                        <div class="item-fallback">
+                            ITEM IMAGE
+                        </div>
+
+                    </div>
+
+                    <div class="item-info">
+
+                        <span>
+                            FEATURED ITEM
+                        </span>
+
+                        <h3>
+                            Xoài Non
+                        </h3>
+
+                        <strong>
+                            1.3%
+                        </strong>
+
+                    </div>
+
+                </article>
+
+                <!-- PIANO -->
+
+                <article class="featured-card mango-card" data-card-gacha-slide>
+
+                    <div class="featured-stars">
+                        ★ ★ ★ ★ ★
+                    </div>
+
+                    <div class="item-image-wrap">
+
+                        <img
+                            src="assets/piano.png"
+                            alt="Piano"
+                            onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
+                        >
+
+                        <div class="item-fallback">
+                            ITEM IMAGE
+                        </div>
+
+                    </div>
+
+                    <div class="item-info">
+
+                        <span>
+                            FEATURED ITEM
+                        </span>
+
+                        <h3>
+                            Piano
+                        </h3>
+
+                        <strong>
+                            5.2%
+                        </strong>
+
+                    </div>
+
+                </article>
+
+                <!-- VIOLIN -->
+
+                <article class="featured-card violin-card" data-card-gacha-slide>
+
+                    <div class="featured-stars">
+                        ★ ★ ★ ★ ★ ★
+                    </div>
+
+                    <div class="item-image-wrap">
+
+                        <img
+                            src="assets/violin.png"
+                            alt="Violin"
+                            onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
+                        >
+
+                        <div class="item-fallback">
+                            ITEM IMAGE
+                        </div>
+
+                    </div>
+
+                    <div class="item-info">
+
+                        <span>
+                            FEATURED ITEM
+                        </span>
+
+                        <h3>
+                            Violin
+                        </h3>
+
+                        <strong>
+                            1.3%
+                        </strong>
+
+                    </div>
+
+                </article>
+
+            
+                <button id="cardGachaPrev" class="card-gacha-nav prev" type="button" aria-label="Previous featured card">‹</button>
+                <button id="cardGachaNext" class="card-gacha-nav next" type="button" aria-label="Next featured card">›</button>
+                <div class="card-gacha-dots">
+                    <button class="active" data-card-gacha-dot="0" type="button" aria-label="Featured card 1"></button>
+                    <button data-card-gacha-dot="1" type="button" aria-label="Featured card 2"></button>
+                    <button data-card-gacha-dot="2" type="button" aria-label="Featured card 3"></button>
+                </div>
+            </div>
+
+            <!-- RATE -->
+
+<div class="gacha-rate-bar">
+
+    <div>
+        <span>6★ FEATURED</span>
+        <b>1.3%</b>
+    </div>
+
+    <div>
+        <span>4★ FEATURED</span>
+        <b>15%</b>
+    </div>
+
+    <div>
+        <span>5★ FEATURED</span>
+        <b>7%</b>
+    </div>
+
+    <div>
+        <span>OTHER ITEMS</span>
+        <b>60.4%</b>
+    </div>
+
+</div>
+
+            <!-- =====================================================
+     GACHA HISTORY
+===================================================== -->
+
+<section class="gacha-history-box">
+
+    <div class="gacha-history-header">
+
+        <div>
+            <span>GACHA STATUS</span>
+
+            <h3>
+                PITY
+                <strong id="gachaPityCount">
+                    0
+                </strong>
+            </h3>
+        </div>
+
+        <span class="gacha-history-note">
+            SINCE LAST 6★
+        </span>
+
+    </div>
+
+
+    <div
+        class="gacha-history-list"
+        id="gachaHistoryList"
+    ></div>
+
+</section>
+
+
+
+            <!-- ROLL -->
+
+            <div class="roll-area">
+
+                <button
+                    id="singleRoll"
+                    class="roll-button"
+                >
+
+                    <span>
+                        1 ROLL
+                    </span>
+
+                    <strong>
+                        ◆ 160
+                    </strong>
+
+                </button>
+
+
+                <button
+                    id="tenRoll"
+                    class="roll-button ten"
+                >
+
+                    <span>
+                        10 ROLLS
+                    </span>
+
+                    <strong>
+                        ◆ 1600
+                    </strong>
+
+                    <small>
+                        10x ATTEMPTS
+                    </small>
+
+                </button>
+
+
+
+            </div>
+
+</section>
+
+<!-- =====================================================
+     MIKU LIMITED GACHA
+===================================================== -->
+<!-- =====================================================
+     NEW PLAYER · 40 PULL START DASH
+===================================================== -->
+<section id="newPlayerGachaContent" class="gacha-content new-player-gacha-content hidden">
+    <div class="gacha-banner-header">
+        <div>
+            <span class="limited-label new-player-label">NEW PLAYER · START DASH</span>
+            <h2>WELCOME <em>40 PULLS</em></h2>
+            <p>Mixed CHARACTER + CARD banner. It closes permanently after 40 pulls.</p>
+        </div>
+
+        <div class="rate-box new-player-rate-box">
+            <strong>6★ BOOST</strong>
+            <span id="newPlayerBoostText">+15% FROM PULL 20</span>
+        </div>
+    </div>
+
+    <div class="new-player-showcase">
+        <article class="new-player-feature dance">
+            <img src="assets/shiho1.png" alt="HINOMORI SHIHO" onerror="this.style.display='none'">
+            <div>
+                <small>6★ · DANCE · 0.111%</small>
+                <strong>HINOMORI SHIHO</strong>
+                <span>Rare DANCE support performer.</span>
+            </div>
+        </article>
+
+        <article class="new-player-feature">
+            <img src="assets/saki1.png" alt="TENMA SAKI" onerror="this.style.display='none'">
+            <div>
+                <small>6★ · ACT</small>
+                <strong>TENMA SAKI</strong>
+                <span>New ACT performer.</span>
+            </div>
+        </article>
+
+        <article class="new-player-feature">
+            <img src="assets/luka1.png" alt="MEGURINE LUKA" onerror="this.style.display='none'">
+            <div>
+                <small>6★ · VOCAL</small>
+                <strong>MEGURINE LUKA</strong>
+                <span>New VOCAL performer.</span>
+            </div>
+        </article>
+    </div>
+
+    <div class="new-player-pool-note">
+        <b>CHARACTER</b>
+        <span>SHOTA · ICHIKA · TOUYA · LUMINA · HINOMORI SHIHO · TENMA SAKI · MEGURINE LUKA</span>
+        <b>CARD</b>
+        <span>All normal cards · Event cards excluded.</span>
+    </div>
+
+    <section class="gacha-history-box character-pity-box new-player-status-box">
+        <div class="gacha-history-header">
+            <div>
+                <span>START DASH STATUS</span>
+                <h3><strong id="newPlayerPullCount">0</strong> / 40 PULLS</h3>
+            </div>
+            <span class="gacha-history-note" id="newPlayerRemainingText">40 REMAINING</span>
+        </div>
+
+        <div class="new-player-progress">
+            <i id="newPlayerProgressFill"></i>
+            <em title="6★ boost starts here"></em>
+        </div>
+
+        <small class="new-player-boost-note">
+            Pull 20–40: +15 percentage points to the general 6★ CHARACTER / CARD chance.
+            SHIHO remains exactly 0.111% per pull.
+        </small>
+    </section>
+
+    <div class="roll-area">
+        <button id="newPlayerSingleRoll" class="roll-button" type="button">
+            <span>1 ROLL</span>
+            <strong>◆ 160</strong>
+        </button>
+
+        <button id="newPlayerTenRoll" class="roll-button ten" type="button">
+            <span>10 ROLLS</span>
+            <strong>◆ 1600</strong>
+            <small>10x ATTEMPTS</small>
+        </button>
+    </div>
+
+    <div id="newPlayerClosedNotice" class="new-player-closed hidden">
+        START DASH COMPLETE · 40 / 40
+    </div>
+</section>
+
+<!-- =====================================================
+     SHOTA · BEGINNING LIMITED CHARACTER GACHA
+===================================================== -->
+<section id="shotaGachaContent" class="gacha-content character-gacha-content hidden">
+    <div class="gacha-banner-header">
+        <div>
+            <span class="limited-label">BEGINNING · LIMITED CHARACTER GACHA</span>
+            <h2>BEGINNING</h2>
+            <p>6★ / 5★ / 4★ LIMITED CHARACTERS · Featured art rotates automatically.</p>
+        </div>
+        <div class="rate-box character-rate-box">
+            <strong>★ CHARACTER RATE</strong>
+            <span>1.11110%</span>
+        </div>
+    </div>
+
+    <div id="beginningShowcase" class="beginning-showcase" aria-label="BEGINNING featured slideshow">
+        <div class="beginning-slide active" data-beginning-slide>
+            <img src="assets/shota.png" alt="SHOTA">
+            <div class="beginning-slide-copy"><small>6★ LIMITED CHARACTER</small><h3>SHOTA</h3><b>VOCAL · PERFECT GUARD</b><span>19,780 base BP · +550/Lv</span></div>
+        </div>
+        <div class="beginning-slide" data-beginning-slide>
+            <img src="assets/ichika.png" alt="ICHIKA">
+            <div class="beginning-slide-copy"><small>6★ LIMITED CHARACTER</small><h3>ICHIKA</h3><b>RAP · STARLIGHT BEAT</b><span>22,180 base BP · +575/Lv · Tempo 118</span></div>
+        </div>
+        <div class="beginning-slide" data-beginning-slide>
+            <img src="assets/beginning_touya.png" alt="TOUYA FIRST FLIGHT">
+            <div class="beginning-slide-copy"><small>6★ LIMITED CHARACTER</small><h3>TOUYA</h3><b>VOCAL · CYBER OVERDRIVE</b><span>23,450 base BP · +610/Lv</span></div>
+        </div>
+        <div class="beginning-slide" data-beginning-slide>
+            <img src="assets/saki1.png" alt="TENMA SAKI">
+            <div class="beginning-slide-copy"><small>6★ LIMITED CHARACTER</small><h3>TENMA SAKI</h3><b>ACT · SUNNY STAGE</b><span>21,750 base BP · +585/Lv</span></div>
+        </div>
+        <div class="beginning-slide" data-beginning-slide>
+            <img src="assets/luka1.png" alt="MEGURINE LUKA">
+            <div class="beginning-slide-copy"><small>6★ LIMITED CHARACTER</small><h3>MEGURINE LUKA</h3><b>VOCAL · MEGURINE HARMONY</b><span>22,680 base BP · +600/Lv</span></div>
+        </div>
+        <div class="beginning-slide" data-beginning-slide>
+            <img src="assets/beginning_airi.png" alt="AIRI COUNTDOWN">
+            <div class="beginning-slide-copy"><small>5★ LIMITED CHARACTER</small><h3>AIRI</h3><b>ACT · HAPPY PARADE</b><span>15,950 base BP · +505/Lv</span></div>
+        </div>
+        <div class="beginning-slide" data-beginning-slide>
+            <img src="assets/beginning_akito.png" alt="AKITO OPENING ACT">
+            <div class="beginning-slide-copy"><small>4★ LIMITED CHARACTER</small><h3>AKITO</h3><b>ACT · WINTER WARM-UP</b><span>11,840 base BP · +360/Lv</span></div>
+        </div>
+        <button id="beginningPrev" class="beginning-slide-nav prev" type="button" aria-label="Previous">‹</button>
+        <button id="beginningNext" class="beginning-slide-nav next" type="button" aria-label="Next">›</button>
+        <div class="beginning-slide-dots" id="beginningSlideDots">
+            <button class="active" data-beginning-dot="0" type="button"></button>
+            <button data-beginning-dot="1" type="button"></button>
+            <button data-beginning-dot="2" type="button"></button>
+            <button data-beginning-dot="3" type="button"></button>
+            <button data-beginning-dot="4" type="button"></button>
+            <button data-beginning-dot="5" type="button"></button>
+            <button data-beginning-dot="6" type="button"></button>
+        </div>
+    </div>
+    <div class="beginning-card-line"><strong>BEGINNING FEATURED</strong><span>6★ SHOTA · 6★ ICHIKA · 6★ TOUYA · 6★ SAKI · 6★ LUKA · 5★ AIRI · 4★ AKITO</span></div>
+    <section class="gacha-history-box character-pity-box">
+        <div class="gacha-history-header">
+            <div>
+                <span>BEGINNING GACHA STATUS</span>
+                <h3>PITY <strong id="shotaPityCount">0</strong> / 100</h3>
+            </div>
+            <span class="gacha-history-note">SINCE BEGINNING</span>
+        </div>
+    </section>
+
+    <div class="roll-area">
+        <button id="shotaSingleRoll" class="roll-button" type="button">
+            <span>1 ROLL</span>
+            <strong>◆ 160</strong>
+        </button>
+        <button id="shotaTenRoll" class="roll-button ten" type="button">
+            <span>10 ROLLS</span>
+            <strong>◆ 1600</strong>
+            <small>10x ATTEMPTS</small>
+        </button>
+    </div>
+
+    <p class="gacha-disclaimer">
+        6★ SHOTA / ICHIKA / TOUYA / SAKI / LUKA share BEGINNING pity: 100.
+        AIRI 5★ and AKITO 4★ are BEGINNING limited characters. Only a featured 6★ resets the shared pity.
+    </p>
+</section>
+
+<section id="characterGachaContent" class="gacha-content character-gacha-content hidden">
+    <div class="gacha-banner-header">
+        <div><span class="limited-label">LIMITED CHARACTER GACHA</span><h2>HATSUNE MIKU <em>RADIANT BRIDE</em></h2><p>Recruit the limited 6★ RAP character HATSUNE MIKU — RADIANT BRIDE.</p></div>
+        <div class="rate-box character-rate-box"><strong>★ CHARACTER RATE</strong><span>0.33333%</span></div>
+    </div>
+    <div class="character-banner-feature">
+        <div class="character-banner-art"><img src="assets/miku1.png" alt="HATSUNE MIKU" onerror="this.style.display='none';"></div>
+        <div class="character-banner-info"><span>LIMITED CHARACTER</span><h3>HATSUNE MIKU</h3><div class="character-banner-stars">★★★★★★</div><p>Radiant Bride — a dazzling 6★ RAP performer.</p><div class="character-pity-copy"><strong>MAX PITY — 100 PULLS</strong><span>Guaranteed HATSUNE MIKU on the 100th pull. Can appear early.</span></div></div>
+    </div>
+    <section class="gacha-history-box character-pity-box"><div class="gacha-history-header"><div><span>CHARACTER GACHA STATUS</span><h3>PITY <strong id="characterPityCount">0</strong> / 100</h3></div><span class="gacha-history-note">SINCE RADIANT BRIDE</span></div></section>
+    <div class="roll-area"><button id="characterSingleRoll" class="roll-button" type="button"><span>1 ROLL</span><strong>◆ 160</strong></button><button id="characterTenRoll" class="roll-button ten" type="button"><span>10 ROLLS</span><strong>◆ 1600</strong><small>10x ATTEMPTS</small></button></div>
+    <p class="gacha-disclaimer">6★ Rate: 0.33333% per pull. The separate 5★ HATSUNE MIKU (miku.png) may appear at 5% and does NOT reset 6★ pity. Pity resets only when the 6★ RADIANT BRIDE MIKU is obtained.</p>
+</section>
+
+<!-- =====================================================
+     AKITO LIMITED EVENT GACHA
+===================================================== -->
+<section id="akitoGachaContent" class="gacha-content character-gacha-content akito-event-gacha hidden">
+
+    <div class="gacha-banner-header">
+        <div>
+            <span class="limited-label event-limited-label">LIMITED EVENT BANNER</span>
+            <h2>AKITO <em>ACT RISING</em></h2>
+            <p>Recruit the limited character AKITO.</p>
+        </div>
+        <div class="rate-box character-rate-box">
+            <strong>★ CHARACTER RATE</strong>
+            <span>0.33333%</span>
+        </div>
+    </div>
+
+    <div class="character-banner-feature akito-banner-feature">
+        <div class="character-banner-art akito-banner-art">
+            <img src="assets/akito.png" alt="AKITO" onerror="this.style.display='none';">
+        </div>
+        <div class="character-banner-info">
+            <span>LIMITED EVENT CHARACTER</span>
+            <h3>AKITO</h3>
+            <div class="character-banner-stars">★★★★★★</div>
+            <p>A limited event character featured exclusively in the ACT RISING event banner.</p>
+            <div class="character-pity-copy">
+                <strong>MAX PITY — 120 PULLS</strong>
+                <span>Guaranteed AKITO on the 120th pull. Can appear early.</span>
+            </div>
+        </div>
+    </div>
+
+    <section class="gacha-history-box character-pity-box akito-pity-box">
+        <div class="gacha-history-header">
+            <div>
+                <span>LIMITED EVENT GACHA STATUS</span>
+                <h3>PITY <strong id="akitoPityCount">0</strong> / 120</h3>
+            </div>
+            <span class="gacha-history-note">SINCE AKITO</span>
+        </div>
+    </section>
+
+    <div class="roll-area">
+        <button id="akitoSingleRoll" class="roll-button" type="button">
+            <span>1 ROLL</span>
+            <strong>◆ 160</strong>
+        </button>
+        <button id="akitoTenRoll" class="roll-button ten" type="button">
+            <span>10 ROLLS</span>
+            <strong>◆ 1600</strong>
+            <small>10x ATTEMPTS</small>
+        </button>
+    </div>
+
+    <p class="gacha-disclaimer">Rate: 0.33333% per pull. This pity is separate from LUMINA's banner pity.</p>
+
+</section>
+
+
+<section id="danceGachaContent" class="gacha-content dance-gacha-content hidden">
+    <div class="gacha-banner-header dance-banner-header">
+        <div>
+            <span class="limited-label dance-label">SPECIAL ATTRIBUTE · DANCE</span>
+            <h2>DANCE <em>STELLAR STAGE</em></h2>
+            <p>Special rules · this banner does not use Gems · failed attempts give no card/item.</p>
+        </div>
+
+        <div class="dance-book-balance">
+            <span>
+                <img src="assets/stt.png" alt="Sách Tinh Tú" onerror="this.style.display='none'">
+                <i>▣</i>
+            </span>
+            <div>
+                <small>SÁCH TINH TÚ</small>
+                <strong id="danceBookCount">0</strong>
+            </div>
+        </div>
+    </div>
+
+    <div class="dance-feature-list">
+        <div class="dance-feature-card">
+            <div class="dance-feature-art">
+                <img src="assets/shiho1.png" alt="HINOMORI SHIHO" onerror="this.style.display='none'">
+            </div>
+
+            <div class="dance-feature-copy">
+                <small>6★ · RARE DANCE ATTRIBUTE</small>
+                <h3>HINOMORI SHIHO</h3>
+                <b>DANCE · TEAM AMPLIFIER</b>
+                <p>
+                    Support / acceleration specialist.
+                    Her Event kit amplifies the whole team without creating a DANCE score bar.
+                </p>
+                <div class="dance-rate-chip">BASE RATE · 0.111%</div>
+            </div>
+        </div>
+
+        <div class="dance-feature-card nene">
+            <div class="dance-feature-art">
+                <img src="assets/nene1.png" alt="KUSANAGI NENE" onerror="this.style.display='none'">
+            </div>
+
+            <div class="dance-feature-copy">
+                <small>6★ · RARE DANCE ATTRIBUTE</small>
+                <h3>KUSANAGI NENE</h3>
+                <b>DANCE · ATTRIBUTE BREAKER</b>
+                <p>
+                    Debuff / destruction specialist.
+                    Her Event skills directly erase rival VOCAL / RAP / ACT points with long cooldowns.
+                </p>
+                <div class="dance-rate-chip">BASE RATE · 0.111%</div>
+            </div>
+        </div>
+    </div>
+
+    <section class="gacha-history-box character-pity-box dance-pity-box">
+        <div class="gacha-history-header">
+            <div>
+                <span>DANCE GACHA STATUS</span>
+                <h3>PITY <strong id="dancePityCount">0</strong> / 80</h3>
+            </div>
+            <span class="gacha-history-note">DANCE CHARACTER GUARANTEE · 80</span>
+        </div>
+    </section>
+
+    <div class="dance-rule-grid">
+        <div>
+            <small>COST</small>
+            <strong>10 BOOKS</strong>
+            <span>= 10 ROLLS</span>
+        </div>
+        <div>
+            <small>GET BOOKS</small>
+            <strong>45% CHANCE</strong>
+            <span>Gem-based 10-roll → 1–3 books</span>
+        </div>
+        <div>
+            <small>STELLAR SHOP</small>
+            <strong>3 FACTORS</strong>
+            <span>All DANCE 6★ cost 3 factors</span>
+        </div>
+    </div>
+
+    <div class="roll-area dance-roll-area">
+        <button id="danceSingleRoll" class="roll-button" type="button">
+            <span>1 DANCE ROLL</span>
+            <strong><img src="assets/stt.png" alt="" onerror="this.style.display='none'"> 1</strong>
+            <small>1 BOOK</small>
+        </button>
+        <button id="danceTenRoll" class="roll-button ten" type="button">
+            <span>10 DANCE ROLLS</span>
+            <strong><img src="assets/stt.png" alt="" onerror="this.style.display='none'"> 10</strong>
+            <small>10 BOOKS</small>
+        </button>
+    </div>
+</section>
+
+
+<section id="stellarShopContent" class="gacha-content stellar-shop-content hidden">
+    <div class="stellar-shop-head">
+        <div>
+            <span class="limited-label stellar-shop-label">SPECIAL EXCHANGE</span>
+            <h2>STELLAR <em>EXCHANGE</em></h2>
+            <p>Đổi 6★ không thuộc Event bằng <b>NHÂN TỐ TINH TÚ</b>. Chỉ những nhân vật/card chưa sở hữu hoặc chưa đạt Rank 5 mới có thể đổi.</p>
+        </div>
+
+        <div class="stellar-shop-balance">
+            <span class="stellar-shop-balance-icon">
+                <img src="assets/nttt.png" alt="Nhân Tố Tinh Tú" onerror="this.style.display='none'; this.nextElementSibling.style.display='grid';">
+                <i>✦</i>
+            </span>
+            <div>
+                <small>NHÂN TỐ TINH TÚ</small>
+                <strong id="stellarShopFactorCount">0</strong>
+            </div>
+        </div>
+    </div>
+
+    <div class="stellar-shop-note">
+        <span>HOW TO GET</span>
+        <b>Roll trúng CHARACTER 6★ đã đạt RANK 5 → +1 NHÂN TỐ TINH TÚ</b>
+        <small>Character/Card Event không xuất hiện trong shop này.</small>
+    </div>
+
+    <div class="stellar-shop-tabs" role="tablist" aria-label="Stellar Exchange">
+        <button id="stellarCharacterTab" class="active" type="button" data-stellar-tab="character">6★ CHARACTER</button>
+        <button id="stellarCardTab" type="button" data-stellar-tab="card">6★ CARD</button>
+    </div>
+
+    <div id="stellarShopGrid" class="stellar-shop-grid"></div>
+</section>
+
+<div class="gacha-result-overlay hidden" id="gachaResultOverlay">
+    <div class="gacha-ambient"></div>
+
+    <div class="gacha-summon-stage" id="gachaSummonStage">
+        <div class="summon-rings"><span></span><span></span><span></span></div>
+        <div class="summon-core">✦</div>
+        <div class="summon-caption">CALLING THE RHYTHM...</div>
+        <div class="summon-rarity" id="summonRarity">THƯỜNG</div>
+    </div>
+
+    <div class="gacha-results-panel" id="gachaResultsPanel">
+        <div class="results-header">
+            <span>GACHA RESULT</span>
+            <strong id="resultsCount">10x ATTEMPTS</strong>
+        </div>
+        <div class="gacha-result-grid" id="gachaResultGrid"></div>
+        <button id="closeGachaResult">CONTINUE</button>
+    </div>
+</div>
+
+            <p class="gacha-disclaimer">
+                Rates shown are for the current banner.
+                Other rewards currently use the remaining 97.4%.
+            </p>
+
+    </main>
+
+
+    <div id="gachaToast" class="gacha-toast">
+
+        <strong>
+            COMING SOON
+        </strong>
+
+        <span>
+            Gacha rolling will be activated later.
+        </span>
+
+    </div>
+
+</section>
+
+<!-- =========================================================
+     MY CARD
+========================================================= -->
+
+<section id="cardScreen" class="game-screen card-screen hidden">
+
+    <!-- TOP BAR -->
+    <header class="card-topbar">
+
+        <button id="cardBack" class="back-button">
+            ← <span>LOBBY</span>
+        </button>
+
+        <div class="card-heading">
+            <span>REALYZE!!</span>
+            <h1>MY CARD</h1>
+        </div>
+
+        <div class="card-counter">
+            <span>CARDS</span>
+            <strong id="cardCount">0</strong>
+        </div>
+
+    </header>
+
+
+    <main class="card-main">
+
+        <!-- HEADER -->
+        <div class="card-collection-header">
+
+            <div>
+                <span class="card-eyebrow">
+                    YOUR COLLECTION
+                </span>
+
+                <h2>
+                    MY <em>CARDS</em>
+                </h2>
+
+                <p>
+                    Collect 4★, 5★ and 6★ cards from Gacha.
+                </p>
+            </div>
+
+            <div class="card-total-box">
+                <span>COLLECTED</span>
+                <strong id="cardTotal">0</strong>
+            </div>
+
+        </div>
+
+
+        <!-- FILTER -->
+        <div class="card-filter-bar">
+
+            <button
+                class="card-filter active"
+                data-rarity="all"
+            >
+                ALL
+            </button>
+
+            <button
+                class="card-filter"
+                data-rarity="6"
+            >
+                ★ 6
+            </button>
+
+            <button
+                class="card-filter"
+                data-rarity="5"
+            >
+                ★ 5
+            </button>
+
+            <button
+                class="card-filter"
+                data-rarity="4"
+            >
+                ★ 4
+            </button>
+
+        </div>
+
+        <div class="card-actions">
+    <button id="exchangeCardButton" class="card-exchange-button">
+        EXCHANGE CARD
+    </button>
+</div>
+
+        <!-- CARD GRID -->
+        <div
+            id="myCardGrid"
+            class="my-card-grid"
+        ></div>
+
+
+        <!-- EMPTY -->
+        <div
+            id="emptyCardState"
+            class="empty-card-state hidden"
+        >
+            <div class="empty-card-icon">
+                ▣
+            </div>
+
+            <strong>
+                NO CARDS YET
+            </strong>
+
+            <span>
+                Your 4★, 5★ and 6★ cards<br>
+                will appear here.
+            </span>
+
+            <button id="emptyCardGacha">
+                GO TO GACHA
+            </button>
+        </div>
+
+    </main>
+
+
+
+    <!-- CARD INFORMATION POPUP
+    <div id="cardInfoOverlay" class="card-info-overlay hidden">
+        <div class="card-info-modal" role="dialog" aria-modal="true" aria-labelledby="cardInfoName">
+            <button id="cardInfoBack" class="card-info-close" type="button" aria-label="Back">×</button>
+
+            <div class="card-info-header">
+                <div class="card-info-art-wrap">
+                    <div id="cardInfoArt" class="card-info-art"></div>
+                 </div> -->
+
+<!-- =========================================================
+     CARD INFORMATION
+     ONLY FOR MY CARD
+========================================================= -->
+
+<div
+    id="cardInfoOverlay"
+    class="card-info-overlay hidden"
+>
+
+    <div
+        class="card-info-modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="cardInfoName"
+    >
+
+        <!-- CLOSE -->
+        <button
+            id="cardInfoBack"
+            class="card-info-close"
+            type="button"
+            aria-label="Back"
+        >
+            ×
+        </button>
+
+
+        <!-- CARD HEADER -->
+        <div class="card-info-header">
+
+            <div class="card-info-art-wrap">
+
+                <div
+                    id="cardInfoArt"
+                    class="card-info-art"
+                ></div>
+
+            </div>
+
+
+            <div class="card-info-title">
+
+                <small id="cardInfoNumber">
+                    CARD #001
+                </small>
+
+                <h2 id="cardInfoName">
+                    Bơ
+                </h2>
+
+                <div class="card-info-rank-line">
+
+                    <span id="cardInfoRarity">
+                        ★★★★
+                    </span>
+
+                    <strong id="cardInfoRank">
+                        RANK 1
+                    </strong>
+
+                </div>
+
+            </div>
+          <aside class="character-stat-side-v18">
+            <small>COMBAT STATS</small>
+            
+          </aside>
+
+        </div>
+
+
+        <!-- LEVEL -->
+        <div class="card-info-level">
+
+            <div class="card-info-level-head">
+
+                <div>
+
+                    <span>
+                        LEVEL
+                    </span>
+
+                    <strong id="cardInfoLevel">
+                        LV. 1 / 60
+                    </strong>
+
+                </div>
+
+
+                <button
+                    id="cardInfoUpgrade"
+                    class="card-info-upgrade"
+                    type="button"
+                >
+
+                    <span>
+                        UP LEVEL
+                    </span>
+
+                    <small id="cardInfoUpgradeCost">
+                        ● 100 GOLD
+                    </small>
+
+                </button>
+                <button id="cardInfoMaxUpgrade" class="card-info-upgrade card-info-max-upgrade" type="button">
+                    <span>UP TO MAX</span>
+                    <small id="cardInfoMaxUpgradeCost">● 177,000 GOLD</small>
+                </button>
+
+            </div>
+
+
+            <div class="card-info-level-bar">
+
+                <div
+                    id="cardInfoLevelFill"
+                ></div>
+
+            </div>
+
+        </div>
+
+
+        <!-- STATS -->
+        <div class="card-info-stats">
+
+            <div class="card-info-stat vocal">
+
+                <span>
+                    VOCAL
+                </span>
+
+                <strong id="cardInfoVocal">
+                    0
+                </strong>
+
+            </div>
+
+
+            <div class="card-info-stat rap">
+
+                <span>
+                    RAP
+                </span>
+
+                <strong id="cardInfoRap">
+                    0
+                </strong>
+
+            </div>
+
+
+            <div class="card-info-stat act">
+
+                <span>
+                    ACT
+                </span>
+
+                <strong id="cardInfoAct">
+                    0
+                </strong>
+
+            </div>
+
+
+            <div class="card-info-stat total">
+
+                <span>
+                    TOTAL
+                </span>
+
+                <strong id="cardInfoTotal">
+                    0
+                </strong>
+
+            </div>
+
+        </div>
+
+
+        <!-- SKILL -->
+        <div class="card-info-main-skill">
+
+            <div class="card-info-skill-heading">
+
+                <span>
+                    MAIN SKILL / ATTRIBUTE
+                </span>
+
+                <strong id="cardInfoMainType">
+                    VOCAL
+                </strong>
+
+            </div>
+
+
+            <div class="card-info-skill-body">
+
+                <strong id="cardInfoSkillName">
+                    POWER UP
+                </strong>
+
+                <p id="cardInfoSkillDescription">
+                    —
+                </p>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+</section>
+
+
+
+<!-- CHARACTER INFORMATION: opened ONLY from MY CHARACTERS -->
+<div id="characterInfoOverlay" class="card-info-overlay hidden" aria-hidden="true">
+  <div class="card-info-modal character-info-modal character-info-modal-v16" role="dialog" aria-modal="true" aria-labelledby="characterInfoName">
+    <button id="characterInfoBack" class="card-info-close" type="button" aria-label="Close">×</button>
+
+    <div class="character-info-layout-v16">
+      <!-- LEFT: EQUIPMENT / RELICS -->
+      <aside class="character-relic-panel">
+        <div class="character-relic-head">
+          <div>
+            <small>STAGE BUILD</small>
+            <h3>EQUIPMENT</h3>
+          </div>
+          <span id="characterRelicCount">0 / 4</span>
+        </div>
+
+        <div id="characterRelicSlots" class="character-relic-slots"></div>
+
+        <div id="characterSetSummary" class="character-set-summary">
+          <small>SET EFFECT</small>
+          <p>Equip 2 or 4 pieces of the same set.</p>
+        </div>
+
+        <div class="character-relic-inventory-head">
+          <div><small>RELIC INVENTORY</small><strong>AVAILABLE GEAR</strong></div>
+          <div class="character-relic-filter-controls">
+            <input id="characterRelicSearch" type="search" placeholder="Search set name..." autocomplete="off" aria-label="Search relic set">
+            <select id="characterRelicFilter" aria-label="Filter equipment slot">
+              <option value="ALL">ALL SLOTS</option>
+              <option value="MIC">MIC</option>
+              <option value="OUTFIT">OUTFIT</option>
+              <option value="ACCESSORY">ACCESSORY</option>
+              <option value="CHARM">CHARM</option>
+            </select>
+            <select id="characterRelicRarityFilter" aria-label="Filter relic rarity">
+              <option value="ALL">ALL ★</option>
+              <option value="5">5★</option>
+              <option value="4">4★</option>
+              <option value="3">3★</option>
+            </select>
+            <select id="characterRelicSort" aria-label="Sort relics">
+              <option value="NEWEST">NEWEST</option>
+              <option value="RARITY">RARITY</option>
+              <option value="LEVEL">LEVEL</option>
+              <option value="SET">SET NAME</option>
+            </select>
+          </div>
+        </div>
+        <div id="characterRelicInventory" class="character-relic-inventory"></div>
+      </aside>
+
+      <!-- RIGHT: CHARACTER INFO -->
+      <section class="character-info-content-v16">
+        <div class="card-info-header character-info-hero-v16">
+          <div class="card-info-art-wrap"><div id="characterInfoArt" class="card-info-art"></div></div>
+          <div class="card-info-title">
+            <small id="characterInfoNumber">CHARACTER #001</small>
+            <h2 id="characterInfoName">LUMINA</h2>
+            <div class="card-info-rank-line"><span id="characterInfoRarity">★★★★★★</span><strong id="characterInfoRank">RANK 1</strong></div>
+            
+          </div>
+        </div>
+
+        <div class="character-stat-panel-v19">
+          <div class="character-stat-panel-head">
+            <div><small>COMBAT STATS</small><strong>EVENT BUILD</strong></div>
+            <span>RELIC EFFECTS INCLUDED</span>
+          </div>
+          <div id="characterCombatStats" class="character-combat-stats character-combat-stats-v19"></div>
+        </div>
+
+        <div class="card-info-level character-level-v16">
+          <div class="card-info-level-head">
+            <div><span>LEVEL</span><strong id="characterInfoLevel">LV. 1 / 60</strong></div>
+            <div class="character-level-actions-v16">
+              <button id="characterInfoUpgrade" class="card-info-upgrade" type="button"><span>UP LEVEL</span><small id="characterInfoUpgradeCost">● 100 GOLD</small></button>
+              <button id="characterInfoMaxUpgrade" class="card-info-upgrade card-info-max-upgrade" type="button"><span>UP TO MAX</span><small id="characterInfoMaxUpgradeCost">● 177,000 GOLD</small></button>
+            </div>
+          </div>
+          <div class="card-info-level-bar"><div id="characterInfoLevelFill"></div></div>
+        </div>
+
+        <div class="character-info-stat-single"><span id="characterInfoStatLabel">VOCAL</span><strong id="characterInfoVocal">13,400</strong></div>
+
+        <div class="card-info-main-skill character-main-skill-v16">
+          <div class="card-info-skill-heading"><span>MAIN SKILL / ATTRIBUTE</span><strong id="characterInfoMainType">VOCAL</strong></div>
+          <div class="card-info-skill-body"><strong id="characterInfoSkillName">RADIANT VOICE</strong><p id="characterInfoSkillDescription">Boosts performance score during Skills.</p></div>
+        </div>
+
+        <section id="danceIntrinsicBox" class="dance-intrinsic-box hidden">
+          <div class="dance-intrinsic-head">
+            <div>
+              <small>DANCE ATTRIBUTE · EXCLUSIVE PASSIVE</small>
+              <strong>6 NHÁNH NỘI TẠI</strong>
+            </div>
+            <b id="danceIntrinsicCount">0 / 6</b>
+          </div>
+          <div id="danceIntrinsicGrid" class="dance-intrinsic-grid"></div>
+        </section>
+
+        <div class="character-event-skill-box">
+          <button id="characterEventSkillToggle" class="character-event-skill-toggle" type="button" aria-expanded="false">
+            <span><small>EVENT MODE</small><strong>KỸ NĂNG GAMEPLAY EVENT</strong></span>
+            <b>＋</b>
+          </button>
+          <div id="characterEventSkillPanel" class="character-event-skill-panel hidden"></div>
+        </div>
+      </section>
+    </div>
+  </div>
+</div>
+
+
+<div id="rhythmRewardOverlay" class="rhythm-reward-overlay hidden" aria-hidden="true">
+  <div class="rhythm-reward-modal" role="dialog" aria-modal="true">
+    <button id="rhythmRewardClose" class="rhythm-reward-close" type="button">×</button>
+    <div class="rhythm-reward-head">
+      <small>RHYTHM REWARD RECORD</small>
+      <h2 id="rhythmRewardSongName">VIRTUAL TO LIVE</h2>
+      <div class="rhythm-best-score">BEST SCORE <strong id="rhythmRewardBestScore">0</strong></div>
+    </div>
+    <div id="rhythmRewardList" class="rhythm-reward-list"></div>
+  </div>
+</div>
+
+
+
+
+<div id="logoutOverlay" class="logout-overlay hidden" aria-hidden="true">
+    <div class="logout-card" role="dialog" aria-modal="true" aria-labelledby="logoutTitle">
+        <small>REALYZE!! ACCOUNT</small>
+        <h2 id="logoutTitle">ĐĂNG XUẤT?</h2>
+        <p>Bạn sẽ quay lại màn hình đăng nhập. Tiến trình đã đồng bộ trên tài khoản sẽ không bị xóa.</p>
+        <div class="logout-actions">
+            <button id="logoutCancel" type="button">CANCEL</button>
+            <button id="logoutConfirm" type="button">LOG OUT</button>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-config.js"></script>
+<script src="supabase-client.js"></script>
+<script src="java.js?v=60"></script>
+<script src="night-stage.js?v=65"></script>
+
+<div id="exchangeCardOverlay" class="exchange-card-overlay">
+    <div class="exchange-card-modal">
+
+        <div class="exchange-card-header">
+            <div>
+                <div class="exchange-card-title">EXCHANGE CARD</div>
+                <div class="exchange-card-subtitle">
+                    Select cards to convert into 35 Gems each
+                </div>
+            </div>
+
+            <button id="closeExchangeCard" class="exchange-close">
+                ×
+            </button>
+        </div>
+
+        <div id="exchangeCardList" class="exchange-card-list"></div>
+
+        <div class="exchange-card-footer">
+            <div id="exchangeCardSummary">
+                Selected: 0 · +0 Gems
+            </div>
+
+            <div class="exchange-card-buttons">
+                <button id="cancelExchangeCard" class="exchange-cancel">
+                    CANCEL
+                </button>
+
+                <button id="confirmExchangeCard" class="exchange-confirm">
+                    OK
+                </button>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+
+<!-- =========================================================
+     SETTINGS / ACCOUNT RECOVERY
+========================================================= -->
+<div id="settingsOverlay" class="settings-overlay hidden" aria-hidden="true">
+    <div class="settings-modal" role="dialog" aria-modal="true" aria-labelledby="settingsTitle">
+        <button id="settingsClose" class="settings-close" type="button" aria-label="Close">×</button>
+
+        <header class="settings-header">
+            <span class="settings-header-icon">⚙</span>
+            <div>
+                <small>REALYZE!! ACCOUNT</small>
+                <h2 id="settingsTitle">SETTINGS</h2>
+                <p>Account recovery & game settings.</p>
+            </div>
+        </header>
+
+        <section class="settings-account-card">
+            <div class="settings-account-row">
+                <span>ID NAME</span>
+                <strong id="settingsUsername">PLAYER</strong>
+            </div>
+        </section>
+
+        <section class="recovery-card">
+            <div class="recovery-card-head">
+                <div>
+                    <small>ACCOUNT SECURITY</small>
+                    <h3>RECOVERY CODE</h3>
+                </div>
+                <span id="recoveryStatusBadge" class="recovery-status-badge">NOT SET</span>
+            </div>
+
+            <p class="recovery-copy">
+                Mã này dùng để chứng minh tài khoản là của bạn nếu quên mật khẩu.
+                Hãy lưu nó ở nơi an toàn. REALYZE!! không hiển thị lại mã cũ sau khi đóng popup.
+            </p>
+
+            <div id="recoveryCodeBox" class="recovery-code-box is-empty">
+                <small>YOUR RECOVERY CODE</small>
+                <strong id="recoveryCodeValue">NOT GENERATED</strong>
+                <span id="recoveryCodeMeta">Generate a code to protect this account.</span>
+            </div>
+
+            <div class="recovery-actions">
+                <button id="generateRecoveryCode" type="button">GENERATE CODE</button>
+                <button id="copyRecoveryCode" type="button" class="soft" disabled>COPY</button>
+            </div>
+
+            <button id="regenerateRecoveryCode" class="recovery-regenerate hidden" type="button">
+                GENERATE A NEW CODE
+            </button>
+
+            <p class="recovery-warning">
+                ⚠ Nếu tạo mã mới, mã Recovery cũ sẽ không còn dùng được.
+            </p>
+        </section>
+    </div>
+</div>
+
+<div id="dailyAttendanceOverlay" class="daily-attendance-overlay hidden" aria-hidden="true">
+    <div class="daily-attendance-modal" role="dialog" aria-modal="true" aria-labelledby="dailyAttendanceTitle">
+        <button id="dailyAttendanceClose" class="daily-attendance-close" type="button" aria-label="Close" onclick="closeDailyAttendance()">×</button>
+
+        <div class="daily-attendance-header">
+            <span class="daily-attendance-kicker">DAILY LOGIN REWARD</span>
+            <h2 id="dailyAttendanceTitle">CHECK-IN CALENDAR</h2>
+            <p id="dailyAttendanceMonth">Tháng này</p>
+        </div>
+
+        <div class="daily-attendance-legend">
+            <span><i class="legend-dot claimed"></i> ĐÃ NHẬN</span>
+            <span><i class="legend-dot today"></i> HÔM NAY</span>
+            <span><i class="legend-dot pass"></i> PASS</span>
+            <span><i class="legend-dot future"></i> CHƯA TỚI</span>
+        </div>
+
+        <div class="daily-attendance-weekdays">
+            <span>T2</span><span>T3</span><span>T4</span><span>T5</span><span>T6</span><span>T7</span><span>CN</span>
+        </div>
+
+        <div id="dailyAttendanceGrid" class="daily-attendance-grid"></div>
+
+        <div class="daily-attendance-footer">
+            <p id="dailyAttendanceStatus">ĐANG TẢI LỊCH ĐIỂM DANH...</p>
+            <button id="dailyAttendanceClaim" class="daily-attendance-claim" type="button" disabled onclick="claimDailyAttendance()">LOADING...</button>
+        </div>
+    </div>
+</div>
+<div id="dailyLiveOverlay" class="daily-live-overlay hidden" aria-hidden="true">
+  <div class="daily-live-modal" role="dialog" aria-modal="true" aria-labelledby="dailyLiveTitle">
+    <button id="dailyLiveClose" class="daily-live-close" type="button" aria-label="Close Daily Live" onclick="closeDailyLive()">×</button>
+    <div class="daily-live-head"><small>DAILY LIVE</small><h2 id="dailyLiveTitle">TODAY'S MISSIONS</h2><p>Hoàn thành nhiệm vụ để nhận tối đa <b>480 Gems</b> và <b>200.000 Gold</b> mỗi ngày.</p></div>
+    <div class="daily-live-total"><span><b>◆ 480</b><small>GEMS / DAY</small></span><span><b>● 200.000</b><small>GOLD / DAY</small></span></div>
+    <div id="dailyLiveMissionList" class="daily-live-list"></div>
+    <div class="daily-live-foot"><span id="dailyLiveResetText">RESET HÀNG NGÀY · GMT+7</span><button id="dailyLiveClaimAll" type="button" onclick="claimAllDailyLive()">CLAIM ALL</button></div>
+  </div>
+</div>
+
+</body>
+</html>

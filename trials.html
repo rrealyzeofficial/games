@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<title>REALYZE!! — Stage Trials</title>
+<link rel="stylesheet" href="trials.css">
+</head>
+<body>
+<div class="app">
+<header>
+ <button id="backBtn">‹ BACK</button>
+ <div><small>REALYZE!! · PERMANENT PVE</small><h1>STAGE TRIALS</h1></div>
+ <div class="pass"><span>ENERGY</span><b id="trialEnergyText">0</b><small>20 / RUN</small></div>
+</header>
+<main>
+<section id="trialSelect">
+ <div class="hero">
+   <div>
+     <small>REALYZE!! · PERMANENT BUILD MODE</small>
+     <h2>STAGE <em>TRIALS</em></h2>
+     <p>Clear Floors · Farm Stage Gear · Build specialized teams. Every run costs 20 Energy and cleared floors support Quick Clear.</p>
+     <div class="trial-hero-tags"><span>5 TRIALS</span><span>9 SETS</span><span>3★–5★ RELICS</span></div>
+   </div>
+   <div class="hero-badge">
+     <small>NEW DROP SERIES</small>
+     <strong>CRIMSON FANG</strong>
+     <b>MOON HOWL</b>
+     <span>BURST DAMAGE · EFFECT EXTENSION</span>
+   </div>
+ </div>
+ <div id="trialGrid" class="trial-grid"></div>
+ <div id="floorPanel" class="panel hidden">
+  <button class="x" id="closeFloor">×</button><small id="floorKicker"></small><h2 id="floorTitle"></h2>
+  <div id="setPreview" class="set-preview"></div>
+  <div id="floorGrid" class="floor-grid"></div>
+ </div>
+</section>
+<section id="teamView" class="hidden">
+ <div class="section-head"><button id="teamBack">‹ TRIALS</button><div><small id="teamTrial"></small><h2 id="teamFloor"></h2></div></div>
+ <div class="team-layout">
+  <div><h3>SELECT 3 CHARACTERS</h3><div id="charGrid" class="char-grid"></div></div>
+  <aside><h3>YOUR TEAM</h3><div id="teamSlots"></div><div class="enemy-card"><small>TRIAL TARGET</small><b id="enemyTarget">0</b><span>POINTS TO CLEAR</span></div><button id="startTrial" class="primary">START TRIAL</button><button id="quickClear" class="secondary hidden">QUICK CLEAR</button></aside>
+ </div>
+</section>
+<section id="battleView" class="hidden">
+ <div class="battle-top"><div><small id="battleTrial"></small><h2 id="battleFloor"></h2></div><div><span>TURN</span><b id="turnText">1 / 12</b></div></div>
+ <div class="score-card"><div><small>PERFORMANCE SCORE</small><b id="trialScore">0</b></div><div class="targetbar"><i id="targetBar"></i></div><strong id="targetLabel">TARGET 0</strong></div>
+ <div class="battle-grid"><div id="battleChars" class="battle-chars"></div><aside class="enemy-live"><small>TRIAL PRESSURE</small><b id="pressure">0%</b><p>Pressure reduces your next action. TEMPO and defensive gear reduce its growth.</p></aside></div>
+ <div class="action-box"><small>CURRENT PERFORMER</small><h2 id="actorName"></h2><div id="actionStats" class="stats"></div><div class="actions"><button data-action="vocal">VOCAL</button><button data-action="rap">RAP</button><button data-action="act">ACT</button></div></div>
+ <div id="battleLog" class="log"></div>
+</section>
+<section id="resultView" class="hidden">
+ <div class="result-card"><small>STAGE TRIAL COMPLETE</small><h1 id="resultTitle">CLEAR!</h1><p id="resultSub"></p><div id="dropBox" class="drop-box"></div><button id="resultBack" class="primary">RETURN TO TRIALS</button></div>
+</section>
+
+</main></div>
+
+<div id="quickClearModal" class="quick-modal hidden">
+  <div class="quick-card">
+    <button id="quickClose" class="quick-x" type="button">×</button>
+    <small>STAGE TRIALS · QUICK CLEAR</small>
+    <h2>CHOOSE ENERGY</h2>
+    <p>20 Energy = 1 clear reward. Choose how much Energy you want to spend.</p>
+    <div class="quick-energy-row">
+      <button id="quickMinus" type="button">−20</button>
+      <div><b id="quickEnergyValue">20</b><span>ENERGY</span></div>
+      <button id="quickPlus" type="button">+20</button>
+    </div>
+    <div class="quick-summary"><span>RUNS</span><b id="quickRuns">1</b></div>
+    <button id="quickConfirm" class="primary" type="button">QUICK CLEAR</button>
+  </div>
+</div>
+<div id="toast" class="toast"></div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="supabase-config.js"></script><script src="supabase-client.js"></script><script src="trials.js"></script>
+</body></html>

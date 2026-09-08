@@ -1,0 +1,72 @@
+REALYZE!! STAGE TRIALS V15
+- Permanent PvE farm mode from Lobby.
+- 4 Trials / 10 floors.
+- Trial Pass: max 5, +1 every 2 hours.
+- First clear of each floor costs 0 pass.
+- Cleared floors unlock Quick Clear.
+- 4 equipment slots per character: MIC / OUTFIT / ACCESSORY / CHARM.
+- 7 sets: Radiant Stage, Encore, Blue Flow, Spotlight, Grand Show, Star Breaker, Perfect Guard.
+- Gear rarity scales with floor.
+- Gear has main stat + 1-2 substats.
+- Equipment page supports equipping/removing gear and displays 2pc/4pc effects.
+- Character base combat stats: CRIT Rate / CRIT DMG / Skill Effect / Tempo.
+- Event Gameplay now reads equipped gear, applies 2pc stat bonuses, CRIT to scoring skills, and Skill Effect to buffs.
+- Existing Shota and Rui Event mechanics are preserved.
+
+
+V16 UI / EQUIPMENT UPDATE:
+- Stage Trials UI polished with Nunito + Quicksand, softer cards and spacing.
+- Equipment management removed from Stage Trials screen.
+- Equipment now lives in MY CHARACTER -> INFO, on the LEFT side of Character Info.
+- Character Info shows 4 equipment slots, set effects, relic inventory, filters, equip/remove controls.
+- Character Info also shows CRIT Rate / CRIT DMG / Skill Effect / Tempo after equipment bonuses.
+- trialPass / trialClears / stageGear / equipment are now included in main profile sync fields.
+
+V17 RELIC / EVENT COMBAT:
+- Relics are 3★ / 4★ / 5★ only.
+- Max relic level: 3★ +10, 4★ +15, 5★ +20.
+- Exactly 5 stat lines: 1 main + 4 unique sub lines.
+- Supported lines: CRIT Rate, CRIT DMG, flat Score, VOCAL/RAP/ACT DMG Bonus, Tempo.
+- OUTFIT / ACCESSORY main stat is always flat Score.
+- MIC main stat excludes CRIT Rate and CRIT DMG.
+- CHARM main stat excludes DMG Bonus and Tempo.
+- Sub stats never duplicate the main stat.
+- Universal character base: 5% CRIT Rate, +50% CRIT DMG, +15% VOCAL/RAP/ACT DMG Bonus.
+- Tempo remains character-specific.
+- Relic flat Score is added to Event displayed team BP.
+- Event scoring skills now apply DMG Bonus and CRIT.
+- Tempo participates in opening-order resolution on RPS ties.
+- Character-specific role passives intentionally left for the next design pass.
+
+V18:
+- Removed Trial Pass. Stage Trials now cost 20 Event Energy per run.
+- Quick Clear opens an Energy selector. 20 Energy = 1 reward roll; 40 = 2, etc.
+- Relics still have exactly 1 main + 4 sub stats.
+- Added BP FLAT and BP % as possible substat types. BP FLAT sub roll is at least +245.
+- Main stat restrictions remain: OUTFIT/ACCESSORY = BP FLAT; MIC excludes CRIT; CHARM excludes DMG Bonus and Tempo.
+- Main stat grows every relic level.
+- Substats only gain extra rolls at +3/+6/+9/+12/+15/+20.
+- +3/+6/+9: 30% chance the selected substat roll is x2.
+- +12/+15: 10% chance x3.
+- +20: 2.3% chance x4.
+- Upgrade costs Gold.
+- Event effective BP = (character BP + BP FLAT) × (1 + BP%).
+- Effective BP now scales scoring-skill output in Event, so relic BP truly affects battle score.
+- Team actors are ordered by Tempo.
+- Event setup now has CHECK TEAM STATS showing equipped stats and Vietnamese skill descriptions for all selected characters + Special.
+- Character combat stat summary moved to the right side of Character Info.
+
+V19:
+- Restored a dedicated COMBAT STATS block inside Character Info.
+- Character Info now shows Base BP, Final BP, CRIT Rate, CRIT DMG, V/R/A DMG Bonus, Tempo, BP Flat and BP%.
+- Event CHECK TEAM button moved from setup to the actual battle screen.
+- CHECK TEAM during battle shows current picked team, current relic-applied stats, turn order, and Vietnamese skill descriptions.
+- Relic inventory filtering improved: search by set name, filter slot, filter rarity, sort by newest/rarity/level/set.
+- Unused relics can be sold for Gold; equipped relics cannot be sold until removed.
+
+V20 HOTFIX:
+- Fixed MY CHARACTER -> INFO not opening: V19 referenced nonexistent getCharacterStatValue(); now uses getCharacterStat().
+- Added a defensive relic-render guard so old/malformed gear data cannot block Character Info itself.
+- Fixed Event setup being completely dead: V19 bound .onclick to a CHECK TEAM element that had never been inserted, aborting init().
+- CHECK TEAM is now physically present inside the active battle header and bindings are null-safe.
+- Event BACK, song selection, main character selection, special selection, matchmaking/play and result controls initialize again.

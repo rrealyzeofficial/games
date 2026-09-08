@@ -1,0 +1,13 @@
+REALYZE!! AUDIO-GROUNDED BEATMAPS
+
+VIRTUAL TO LIVE — 3★ — supplied 98s cut
+  EASY   : 186 normal notes + 8 skill notes
+  NORMAL : 273 normal notes + 8 skill notes
+  HARD   : 341 normal notes + 8 skill notes
+
+BOUNCE — 4★ — supplied 133s cut
+  EASY   : 259 normal notes + 10 skill notes
+  NORMAL : 361 normal notes + 10 skill notes
+  HARD   : 464 normal notes + 10 skill notes
+
+Notes are aligned to the supplied audio's beat/onset structure. BOUNCE's quieter opening is intentionally sparser. No hold notes were added. Gold skill notes are aligned to strong beats.
